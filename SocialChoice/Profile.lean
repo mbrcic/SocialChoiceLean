@@ -4,7 +4,7 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Int.Basic
 import Mathlib.Order.Basic
 
-namespace FintypeApproach
+namespace SocialChoice
 
 open Finset
 
@@ -45,7 +45,7 @@ noncomputable def relabelBallot {α : Type*} (r : LinearOrder α) (σ : Equiv.Pe
 -- Permute candidates by relabeling each ballot.
 noncomputable def permuteCandidates {V A : Type*} [Fintype V] [Fintype A]
     (P : Profile V A) (σ : Equiv.Perm A) : Profile V A :=
-  { pref := fun v => relabelBallot (P.pref v) σ }
+  { pref := fun v => relabelBallot (P.pref v) σ.symm }
 
 -- Add a voter via a sum type.
 def addVoter {V A : Type*} [Fintype V] [Fintype A]
@@ -88,4 +88,64 @@ instance (S : Finset Nat) : Fintype (NatAgenda S) := by
 
 abbrev ProfileOnNat (V A : Finset Nat) := Profile (NatElectorate V) (NatAgenda A)
 
-end FintypeApproach
+-- Helpers for counting voters.
+noncomputable def votersPreferring {V A : Type*} [Fintype V] [Fintype A]
+    (P : Profile V A) (a b : A) : Finset V := by
+  classical
+  exact Finset.univ.filter (fun v => Prefers P v a b)
+
+noncomputable def votersTop {V A : Type*} [Fintype V] [Fintype A]
+    (P : Profile V A) (c : A) : Finset V := by
+  classical
+  exact Finset.univ.filter (fun v => TopRank P v c)
+
+noncomputable def votersBottom {V A : Type*} [Fintype V] [Fintype A]
+    (P : Profile V A) (c : A) : Finset V := by
+  classical
+  exact Finset.univ.filter (fun v => BottomRank P v c)
+
+def StrictMajority {V : Type*} [Fintype V] (S : Finset V) : Prop :=
+  2 * S.card > Fintype.card V
+
+-- Candidate renaming on winner sets.
+noncomputable def permuteWinners {A : Type*} (σ : Equiv.Perm A) (s : Finset A) : Finset A := by
+  classical
+  exact s.map σ.toEmbedding
+
+-- Ballot-level predicates used in variable-electorate axioms.
+def BallotTop {A : Type*} (r : LinearOrder A) (c : A) : Prop :=
+  ∀ d : A, d ≠ c → r.lt c d
+
+def BallotBottom {A : Type*} (r : LinearOrder A) (c : A) : Prop :=
+  ∀ d : A, d ≠ c → r.lt d c
+
+-- Variable-agenda helpers.
+noncomputable def liftWinners {A : Type*}
+    {p : A → Prop} [DecidablePred p]
+    (s : Finset {a // p a}) : Finset A := by
+  classical
+  exact s.image (fun a => a.1)
+
+lemma cardinality_lemma {V : Type*} [Fintype V]
+    (p q : V → Prop) [DecidablePred p] [DecidablePred q] :
+    (∀ v, p v → q v) →
+      (Finset.univ.filter p).card ≤ (Finset.univ.filter q).card := by
+  classical
+  intro pq
+  refine Finset.card_le_card ?_
+  intro v hv
+  have hv' : p v := (Finset.mem_filter.mp hv).2
+  exact (Finset.mem_filter.mpr ⟨mem_univ v, pq v hv'⟩)
+
+lemma cardinality_lemma2 {V : Type*} [Fintype V]
+    (p q : V → Prop) [DecidablePred p] [DecidablePred q] :
+    (∀ v, p v ↔ q v) →
+      (Finset.univ.filter p).card = (Finset.univ.filter q).card := by
+  classical
+  intro pq
+  have hset : (Finset.univ.filter p) = (Finset.univ.filter q) := by
+    ext v
+    simp [pq v]
+  simp [hset]
+
+end SocialChoice

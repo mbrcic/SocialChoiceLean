@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "lean-lsp": {
+      "type": "stdio",
+      "command": "/Users/dominik/Downloads/debug-lean-lsp/lean-lsp-mcp/.venv/bin/lean-lsp-mcp",
+      "args": []
+    }
+  }
+}

@@ -1,0 +1,49 @@
+-- This module serves as the root of the `SocialChoice` library.
+-- Import modules here that should be built as part of the library.
+import SocialChoice.Basic
+import SocialChoice.Profile
+import SocialChoice.Rank
+import SocialChoice.Margin
+import SocialChoice.Cycles
+import SocialChoice.Rules
+-- import SocialChoice.Concrete
+
+import SocialChoice.Axioms.Anonymity
+import SocialChoice.Axioms.Clones
+import SocialChoice.Axioms.Condorcet
+import SocialChoice.Axioms.Core
+import SocialChoice.Axioms.Independence
+import SocialChoice.Axioms.Participation
+import SocialChoice.Axioms.Majority
+import SocialChoice.Axioms.Monotonicity
+import SocialChoice.Axioms.Neutrality
+import SocialChoice.Axioms.Pareto
+import SocialChoice.Axioms.Reinforcement
+import SocialChoice.Axioms.Unanimity
+import SocialChoice.Axioms.Strategyproofness
+
+import SocialChoice.Rules.ScoringRules.Borda.Defs
+import SocialChoice.Rules.ScoringRules.Borda.C2Borda
+import SocialChoice.Rules.ScoringRules.Borda.Anonymity
+import SocialChoice.Rules.ScoringRules.Borda.Condorcet
+import SocialChoice.Rules.ScoringRules.Borda.Majority
+import SocialChoice.Rules.ScoringRules.Reinforcement
+import SocialChoice.Rules.ScoringRules.Monotonicity
+import SocialChoice.Rules.ScoringRules.Pareto
+import SocialChoice.Rules.ScoringRules.Anonymity
+import SocialChoice.Rules.ScoringRules.Neutrality
+import SocialChoice.Rules.ScoringRules.Plurality.Defs
+import SocialChoice.Rules.ScoringRules.Plurality.Involvement
+import SocialChoice.Rules.ScoringRules.Plurality.Majority
+import SocialChoice.Rules.ScoringRules.Plurality.Pareto
+import SocialChoice.Rules.ScoringRules.Veto.Defs
+import SocialChoice.Rules.SplitCycle.Defs
+import SocialChoice.Rules.SplitCycle.Clones
+import SocialChoice.Rules.SplitCycle.Condorcet
+import SocialChoice.Rules.SplitCycle.Involvement
+import SocialChoice.Rules.SplitCycle.Monotonicity
+import SocialChoice.Rules.SplitCycle.Pareto
+import SocialChoice.Rules.SplitCycle.Reversal
+
+import SocialChoice.Impossibilities.CondorcetStrategyproofness
+import SocialChoice.Impossibilities.CondorcetParticipation

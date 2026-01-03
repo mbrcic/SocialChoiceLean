@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__lean-lsp__lean_run_code",
+      "mcp__lean-lsp__lean_diagnostic_messages",
+      "mcp__lean-lsp__lean_multi_attempt"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "lean-lsp"
+  ]
+}
