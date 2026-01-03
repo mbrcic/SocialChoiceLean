@@ -71,6 +71,11 @@ noncomputable def profileOnSubset (S : Finset (Fin 12)) :
     Profile (Electorate (Fin 12) S) (Fin 4) :=
   { pref := fun v => (P1Ballots v.1).toLinearOrder }
 
+-- Generic profile definition on a subset of voters, using P5Ballots
+noncomputable def profileOnSubsetP5 (S : Finset (Fin 12)) :
+    Profile (Electorate (Fin 12) S) (Fin 4) :=
+  { pref := fun v => (P5Ballots v.1).toLinearOrder }
+
 -- Specific profiles
 noncomputable def P0ProfileSub : Profile (Electorate (Fin 12) V0) (Fin 4) :=
   profileOnSubset V0
@@ -87,21 +92,30 @@ noncomputable def P3ProfileSub : Profile (Electorate (Fin 12) V3) (Fin 4) :=
 noncomputable def P4ProfileSub : Profile (Electorate (Fin 12) V4) (Fin 4) :=
   profileOnSubset V4
 
--- TODO: the following profiles use P5Ballots instead of P1Ballots
--- will probably need to prove that P0ProfileSub wrt P5Ballots is the same as
--- P0ProfileSub wrt P1Ballots (since P0 is the common starting profile)
+noncomputable def P0ProfileSubP5 : Profile (Electorate (Fin 12) V0) (Fin 4) :=
+  profileOnSubsetP5 V0
 
 noncomputable def P5ProfileSub : Profile (Electorate (Fin 12) V5) (Fin 4) :=
-  profileOnSubset V5
+  profileOnSubsetP5 V5
 
 noncomputable def P6ProfileSub : Profile (Electorate (Fin 12) V6) (Fin 4) :=
-  profileOnSubset V6
+  profileOnSubsetP5 V6
 
 noncomputable def P7ProfileSub : Profile (Electorate (Fin 12) V7) (Fin 4) :=
-  profileOnSubset V7
+  profileOnSubsetP5 V7
 
 noncomputable def P8ProfileSub : Profile (Electorate (Fin 12) V8) (Fin 4) :=
-  profileOnSubset V8
+  profileOnSubsetP5 V8
+
+-- Lemma for restrictProfile equality for P5
+lemma restrictProfile_eq_profileOnSubsetP5 {S T : Finset (Fin 12)} (hST : S ⊆ T) :
+    restrictProfile (profileOnSubsetP5 T) S hST = profileOnSubsetP5 S := by
+  simp [restrictProfile, profileOnSubsetP5]
+
+lemma P0_P5_coincide : P0ProfileSub = P0ProfileSubP5 := by
+  simp [P0ProfileSub, P0ProfileSubP5, profileOnSubset, profileOnSubsetP5]
+  ext v
+  fin_cases v <;> simp [P1Ballots, P5Ballots]
 
 -- Lemma for restrictProfile equality
 lemma restrictProfile_eq_profileOnSubset {S T : Finset (Fin 12)} (hST : S ⊆ T) :
@@ -249,11 +263,106 @@ lemma P3_to_P4_preserve_bd {f : VotingRule} (hf : Resolute f)
   have h1S : (1 : Fin 4) ∈ S := hsubset h1_mem
   simp [S] at h1S
 
--- TODO: add the following lemmas, similar to the existing ones:
--- * P0 to P5 preserve cd
--- * P5 to P6 preserve d
--- * P5 to P6 preserve c
--- * P6 to P7 preserve ca
+lemma P0_to_P5_preserve_cd {f : VotingRule} (hf : Resolute f)
+    (hpart : ResoluteParticipation f hf) {x y : Fin 4}
+    (hx : x ∈ ({2, 3} : Finset (Fin 4)))
+    (hP0 : f P0ProfileSubP5 = {x}) (hP5 : f P5ProfileSub = {y}) :
+    y ∈ ({2, 3} : Finset (Fin 4)) := by
+  let S : Finset (Fin 4) := {2, 3}
+  have hVW : V0 ⊆ V5 := by
+    intro z hz
+    simp [V0, V5] at hz ⊢
+    tauto
+  have hsubset : f P5ProfileSub ⊆ S := by
+    refine resoluteParticipation_superset hf hpart V0 V5 hVW P5ProfileSub S x ?hx ?hxS ?hUpper
+    · erw [restrictProfile_eq_profileOnSubsetP5 (hST := hVW)]
+      exact hP0
+    · simpa [S] using hx
+    · intro w hw
+      simp [V0, V5] at hw
+      fin_cases w <;> try contradiction
+      all_goals {
+        simp [P5ProfileSub, profileOnSubsetP5, P5Ballots]
+        exact ballotDCBA_UpperSet_dc
+      }
+  have hy_mem : y ∈ f P5ProfileSub := by rw [hP5]; simp
+  exact hsubset hy_mem
+
+lemma P5_to_P6_preserve_d {f : VotingRule} (hf : Resolute f)
+    (hpart : ResoluteParticipation f hf) {y : Fin 4}
+    (hP5 : f P5ProfileSub = {3}) (hP6 : f P6ProfileSub = {y}) :
+    y = 3 := by
+  let S : Finset (Fin 4) := {0, 1, 2}
+  by_contra hy
+  have hyS : y ∈ S := by
+    fin_cases y <;> simp [S] at *
+  have hsubset : f P5ProfileSub ⊆ S := by
+    apply resoluteParticipation_superset hf hpart V6 V5 (by simp [V6, V5]; intro x hx; simp_all) P5ProfileSub S y
+    · erw [restrictProfile_eq_profileOnSubsetP5 (hST := by simp [V6, V5]; intro x hx; simp_all)]
+      exact hP6
+    · exact hyS
+    · intro w hw
+      simp [V6, V5] at hw
+      fin_cases w <;> try contradiction
+      all_goals {
+        simp [P5ProfileSub, profileOnSubsetP5, P5Ballots]
+        exact ballotCABD_UpperSet_not_d
+      }
+  have h3_mem : (3 : Fin 4) ∈ f P5ProfileSub := by rw [hP5]; simp
+  have h3S : (3 : Fin 4) ∈ S := hsubset h3_mem
+  simp [S] at h3S
+
+lemma P5_to_P7_preserve_c {f : VotingRule} (hf : Resolute f)
+    (hpart : ResoluteParticipation f hf) {y : Fin 4}
+    (hP5 : f P5ProfileSub = {2}) (hP7 : f P7ProfileSub = {y}) :
+    y = 2 := by
+  let S : Finset (Fin 4) := {0, 1, 3}
+  by_contra hy
+  have hyS : y ∈ S := by
+    fin_cases y <;> simp [S] at *
+  have hsubset : f P5ProfileSub ⊆ S := by
+    apply resoluteParticipation_superset hf hpart V7 V5 (by simp [V7, V5]; intro x hx; simp_all) P5ProfileSub S y
+    · erw [restrictProfile_eq_profileOnSubsetP5 (hST := by simp [V7, V5]; intro x hx; simp_all)]
+      exact hP7
+    · exact hyS
+    · intro w hw
+      simp [V7, V5] at hw
+      fin_cases w <;> try contradiction
+      all_goals {
+        simp [P5ProfileSub, profileOnSubsetP5, P5Ballots]
+        exact ballotABDC_UpperSet_not_c
+      }
+  have h2_mem : (2 : Fin 4) ∈ f P5ProfileSub := by rw [hP5]; simp
+  have h2S : (2 : Fin 4) ∈ S := hsubset h2_mem
+  simp [S] at h2S
+
+lemma P7_to_P8_preserve_ac {f : VotingRule} (hf : Resolute f)
+    (hpart : ResoluteParticipation f hf) {y : Fin 4}
+    (hP7 : f P7ProfileSub = {2}) (hP8 : f P8ProfileSub = {y}) :
+    y ∈ ({0, 2} : Finset (Fin 4)) := by
+  let S : Finset (Fin 4) := {1, 3}
+  by_contra hy
+  have hyS : y ∈ S := by
+    by_contra hy_not_S
+    simp [S] at hy_not_S
+    have hy_in : y ∈ ({0, 2} : Finset (Fin 4)) := by
+      fin_cases y <;> simp at *
+    contradiction
+  have hsubset : f P7ProfileSub ⊆ S := by
+    apply resoluteParticipation_superset hf hpart V8 V7 (by simp [V7, V8]; intro x hx; simp_all) P7ProfileSub S y
+    · erw [restrictProfile_eq_profileOnSubsetP5 (hST := by simp [V7, V8]; intro x hx; simp_all)]
+      exact hP8
+    · exact hyS
+    · intro w hw
+      simp [V7, V8] at hw
+      fin_cases w <;> try contradiction
+      all_goals {
+        simp [P7ProfileSub, profileOnSubsetP5, P5Ballots]
+        exact ballotBDCA_UpperSet_bd
+      }
+  have h2_mem : (2 : Fin 4) ∈ f P7ProfileSub := by rw [hP7]; simp
+  have h2S : (2 : Fin 4) ∈ S := hsubset h2_mem
+  simp [S] at h2S
 
 -- Condorcet Winners
 
@@ -307,9 +416,53 @@ lemma P4_condorcet_winner_a : CondorcetWinner P4ProfileSub 0 := by
           ListBallot.mk']
     decide
 
--- TODO: add the following lemmas, similar to the existing ones:
--- * P6 condorcet winner b
--- * P8 condorcet winner d
+lemma P6_condorcet_winner_b : CondorcetWinner P6ProfileSub 1 := by
+  intro y hy
+  fin_cases y
+  · -- Case y = 0
+    unfold StrictMajority votersPreferring
+    simp [P6ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+          V6, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+          ListBallot.mk']
+    decide
+  · -- Case y = 1
+    contradiction
+  · -- Case y = 2
+    unfold StrictMajority votersPreferring
+    simp [P6ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+          V6, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+          ListBallot.mk']
+    decide
+  · -- Case y = 3
+    unfold StrictMajority votersPreferring
+    simp [P6ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+          V6, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+          ListBallot.mk']
+    decide
+
+lemma P8_condorcet_winner_d : CondorcetWinner P8ProfileSub 3 := by
+  intro y hy
+  fin_cases y
+  · -- Case y = 0
+    unfold StrictMajority votersPreferring
+    simp [P8ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+          V8, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+          ListBallot.mk']
+    decide
+  · -- Case y = 1
+    unfold StrictMajority votersPreferring
+    simp [P8ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+          V8, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+          ListBallot.mk']
+    decide
+  · -- Case y = 2
+    unfold StrictMajority votersPreferring
+    simp [P8ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+          V8, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+          ListBallot.mk']
+    decide
+  · -- Case y = 3
+    contradiction
 
 -- Main Theorem
 
@@ -363,6 +516,53 @@ theorem no_resolute_condorcet_participation_m4_n12 :
       rw [this] at hw_bd
       simp at hw_bd -- 0 \in {1, 3} is False
   · -- Case x \in {c,d}
-    sorry
+    -- Switch to P5 world
+    have h_P0_res_P5 : (f P0ProfileSubP5).card = 1 := by rw [← P0_P5_coincide]; exact h_P0_res
+    -- Since P0ProfileSub = P0ProfileSubP5, f(P0) is same.
+    rw [P0_P5_coincide] at hx
+
+    have hx_cd : x ∈ ({2, 3} : Finset (Fin 4)) := by
+      simp at h_ab
+      fin_cases x <;> simp at *
+
+    have h_P5_res : (f P5ProfileSub).card = 1 := hf P5ProfileSub
+    rcases Finset.card_eq_one.mp h_P5_res with ⟨y, hy⟩
+    have hy_cd : y ∈ ({2, 3} : Finset (Fin 4)) :=
+      P0_to_P5_preserve_cd hf hpart hx_cd hx hy
+
+    rw [Finset.mem_insert, Finset.mem_singleton] at hy_cd
+    rcases hy_cd with (rfl | rfl)
+    · -- y = 2 (c)
+      -- Path to P7, then P8
+      have h_P7_res : (f P7ProfileSub).card = 1 := hf P7ProfileSub
+      rcases Finset.card_eq_one.mp h_P7_res with ⟨z, hz⟩
+      have hz_eq : z = 2 := P5_to_P7_preserve_c hf hpart hy hz
+      rw [hz_eq] at hz
+      -- Path to P8
+      have h_P8_res : (f P8ProfileSub).card = 1 := hf P8ProfileSub
+      rcases Finset.card_eq_one.mp h_P8_res with ⟨w, hw⟩
+      have hw_ac : w ∈ ({0, 2} : Finset (Fin 4)) :=
+        P7_to_P8_preserve_ac hf hpart hz hw
+      -- P8 has CW d (3). f(P8) = {w}. w \in {a, c}.
+      have h_cw : f P8ProfileSub = {3} := hcond P8ProfileSub 3 P8_condorcet_winner_d
+      rw [hw] at h_cw
+      have : w = 3 := by
+         have : w ∈ ({3} : Finset (Fin 4)) := by rw [← h_cw]; simp
+         simpa
+      rw [this] at hw_ac
+      simp at hw_ac -- 3 \in {0, 2} is False
+    · -- y = 3 (d)
+      -- Path to P6
+      have h_P6_res : (f P6ProfileSub).card = 1 := hf P6ProfileSub
+      rcases Finset.card_eq_one.mp h_P6_res with ⟨z, hz⟩
+      have hz_eq : z = 3 := P5_to_P6_preserve_d hf hpart hy hz
+      rw [hz_eq] at hz
+      -- P6 has CW b (1). f(P6) = {d} (3).
+      have h_cw : f P6ProfileSub = {1} := hcond P6ProfileSub 1 P6_condorcet_winner_b
+      rw [hz] at h_cw
+      have : (3 : Fin 4) = 1 := by
+         have : 3 ∈ ({1} : Finset (Fin 4)) := by rw [← h_cw]; simp
+         simpa
+      contradiction
 
 end SocialChoice
