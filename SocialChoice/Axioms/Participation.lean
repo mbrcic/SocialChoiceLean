@@ -50,8 +50,14 @@ lemma restrictProfile_self {U A : Type*} [DecidableEq U] [Fintype A] {W : Finset
 lemma restrictProfile_eq_of_subset_proof {U A : Type*} [DecidableEq U] [Fintype A] {W : Finset U}
     (Q : Profile (Electorate U W) A) {S : Finset U} (h₁ h₂ : S ⊆ W) :
     restrictProfile Q S h₁ = restrictProfile Q S h₂ := by
-  ext v
-  rfl
+  cases Q with
+  | mk pref =>
+      apply congrArg (fun f => Profile.mk f)
+      funext v
+      have hsub : (⟨v.1, h₁ v.2⟩ : Electorate U W) = ⟨v.1, h₂ v.2⟩ := by
+        apply Subtype.ext
+        rfl
+      simpa [hsub]
 
 def UpperSet {A : Type*} [DecidableEq A] (r : LinearOrder A) (S : Finset A) : Prop :=
   ∀ ⦃x y : A⦄, r.lt x y → y ∈ S → x ∈ S
@@ -105,6 +111,12 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
   intro U A _ _ _ V W hVW Q S x hx hxS hUpper
   classical
   let T : Finset U := W \ V
+  have hEqset0 : V ∪ (∅ : Finset U) = V := by simp
+  have hVW' : V ∪ (∅ : Finset U) ⊆ W := by
+    intro z hz
+    exact hVW (by simpa using hz)
+  have hx0 : f (restrictProfile Q (V ∪ (∅ : Finset U)) hVW') = {x} := by
+    convert hx
   have hTsub : T ⊆ W := by
     simpa [T] using (Finset.sdiff_subset : W \ V ⊆ W)
   have hVunion : ∀ s : Finset U, s ⊆ T → V ∪ s ⊆ W := by
@@ -117,15 +129,15 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
     revert hs
     refine Finset.induction_on s ?base ?step
     · intro _ y hy
-      have hV : V ∪ (∅ : Finset U) ⊆ W := hVunion ∅ (by simp [T])
-      have hEqset : V ∪ (∅ : Finset U) = V := by simp
-      cases hEqset
-      have hEqprof : restrictProfile Q V hV = restrictProfile Q V hVW := by
-        exact restrictProfile_eq_of_subset_proof Q hV hVW
-      have hy' : f (restrictProfile Q V hVW) = {y} := by
-        simpa [hEqprof] using hy
+      have hx1 :
+          f (restrictProfile Q (V ∪ (∅ : Finset U)) (hVunion ∅ (by simp [T]))) = {x} := by
+        have hEqprof :
+            restrictProfile Q (V ∪ (∅ : Finset U)) hVW' =
+              restrictProfile Q (V ∪ (∅ : Finset U)) (hVunion ∅ (by simp [T])) := by
+          exact restrictProfile_eq_of_subset_proof Q _ _
+        simpa [hEqprof] using hx0
       have hxy : x = y := by
-        have hxy' : ({x} : Finset A) = {y} := by simpa [hx] using hy'
+        have hxy' : ({x} : Finset A) = {y} := by simpa [hx1] using hy
         have hxmem : x ∈ ({y} : Finset A) := by
           simpa [hxy'] using (by simp : x ∈ ({x} : Finset A))
         simpa using hxmem
@@ -141,8 +153,6 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
       let Sbig : Finset U := insert a Ssmall
       have haW : a ∈ W := hTsub haT
       have hSbig : Sbig ⊆ W := Finset.insert_subset haW hSsmall
-      have hEqbig : V ∪ insert a s = Sbig := by
-        simpa [Sbig, Ssmall] using (Finset.union_insert (a := a) (s := V) (t := s))
       have hcard_small : (f (restrictProfile Q Ssmall hSsmall)).card = 1 := by
         simpa using (hf (restrictProfile Q Ssmall hSsmall))
       rcases Finset.card_eq_one.mp hcard_small with ⟨x', hx'⟩
@@ -155,12 +165,9 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
         intro v
         rfl
       have hy' : f (restrictProfile Q Sbig hSbig) = {y} := by
-        cases hEqbig
-        have hEqprof :
-            restrictProfile Q Sbig (hVunion (insert a s) hs) =
-              restrictProfile Q Sbig hSbig := by
-          exact restrictProfile_eq_of_subset_proof Q _ _
-        simpa [hEqprof] using hy
+        convert hy
+        · simpa [Sbig, Ssmall] using (Finset.union_insert (a := a) (s := V) (t := s)).symm
+        · simpa [Sbig, Ssmall] using (Finset.union_insert (a := a) (s := V) (t := s)).symm
       have hnot :
           ¬ ((restrictProfile Q Sbig hSbig).pref
               (newVoter (u := a) (V := Ssmall) (by
@@ -192,13 +199,14 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
     have hy' : f (restrictProfile Q (V ∪ T) hWT) = {y} := by
       have hy'' : y ∈ ({z} : Finset A) := by simpa [hz] using hy
       have hyz : y = z := by simpa using hy''
-      simpa [hz, hyz] 
+      simpa [hz, hyz]
     exact hprop T (by simp [T]) y hy'
-  have hQeq : restrictProfile Q (V ∪ T) hWT = Q := by
-    cases hW
-    have hEq : restrictProfile Q W hWT = restrictProfile Q W (by intro x hx; exact hx) := by
-      exact restrictProfile_eq_of_subset_proof Q hWT (by intro x hx; exact hx)
-    simpa [hEq] using (restrictProfile_self Q)
-  simpa [hQeq] using hsubset
+  have hQeq : f (restrictProfile Q (V ∪ T) hWT) = f Q := by
+    rw [← restrictProfile_self Q]
+    convert rfl
+    · exact hW.symm
+    · exact hW.symm
+  rw [← hQeq]
+  exact hsubset
 
 end SocialChoice
