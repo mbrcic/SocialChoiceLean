@@ -160,7 +160,7 @@ theorem no_condorcet_subset_reinforcement_9
       have hv6' : v.val < 6 := (Finset.mem_filter.mp hv6).2
       have hv3' : 6 ≤ v.val := (Finset.mem_filter.mp hv3).2
       exact (Nat.not_lt_of_ge hv3' hv6')
-    have hsubset := hsub (V := voters6) (W := voters3) (hdisj := hdisj)
+    have hsubset := hsub (V := voters6) (W := voters3) hdisj
       (P := profile6 w) (Q := profile3 w) (R := profileAll w)
       (by
         -- R restricted to voters6 is profile6 w
