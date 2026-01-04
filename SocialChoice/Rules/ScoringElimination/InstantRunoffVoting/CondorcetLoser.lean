@@ -1,0 +1,467 @@
+import Mathlib.Data.Finset.Empty
+import Mathlib.Data.Finset.Card
+import Mathlib.Data.Finset.Max
+import Mathlib.Data.Fintype.EquivFin
+import Mathlib.Tactic
+import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
+import SocialChoice.Axioms.Condorcet
+
+namespace SocialChoice
+
+open Finset
+open scoped BigOperators
+
+/-!
+# IRV Satisfies the Condorcet Loser Criterion
+
+This file proves that Instant Runoff Voting (IRV) satisfies the Condorcet loser criterion:
+a Condorcet loser (a candidate who loses pairwise to every other candidate) cannot win.
+
+## Proof sketch
+
+Suppose `d` is a Condorcet loser and assume for contradiction that `d` wins IRV.
+Then at some point during elimination, there exists a two-candidate set `{c, d}`
+where `c` is eliminated (has lower plurality score) and `d` survives to win.
+
+But in a two-candidate race:
+- The plurality score of a candidate = number of first-place votes
+- Number of first-place votes = number preferring you (since there are only 2)
+
+Since `d` is a Condorcet loser, more voters prefer `c` to `d` than prefer `d` to `c`.
+Therefore `c` has higher plurality score, contradicting that `c` was eliminated.
+-/
+
+variable {V A : Type} [Fintype V] [Fintype A]
+
+/-! ### Restriction preserves pairwise relations -/
+
+/-! ### A light recursion equation for scoring elimination
+
+We avoid `simp [scoringEliminationAux, ...]` in large proofs because it tends to
+unfold recursive calls and can hit heartbeat limits. The lemma below unfolds only
+the *head* occurrence using `unfold1` and then selects the recursive branch.
+-/
+
+lemma scoringEliminationAux_eq_biUnion_of_not_card_le_one
+    {V : Type} [Fintype V]
+    (score : Nat → Nat → Int)
+    {A : Type} [Fintype A] [DecidableEq A]
+    (P : Profile V A) (hcard : ¬ Fintype.card A ≤ 1) :
+    scoringEliminationAux score A P =
+      let m := Fintype.card A
+      let scoreVec : Nat → Int := fun r => score m r
+      let L : Finset A := lowestScoring P scoreVec
+      L.biUnion (fun c => liftFinset (scoringEliminationAux score _ (restrictProfile P c))) := by
+  classical
+  -- Avoid unfolding recursive calls: keep the RHS as a local definition.
+  let rhs : Finset A :=
+    let m := Fintype.card A
+    let scoreVec : Nat → Int := fun r => score m r
+    let L : Finset A := lowestScoring P scoreVec
+    L.biUnion (fun c => liftFinset (scoringEliminationAux score _ (restrictProfile P c)))
+  -- Unfold only the head `scoringEliminationAux` (not the recursive calls inside `rhs`).
+  change scoringEliminationAux score A P = rhs
+  conv_lhs =>
+    unfold SocialChoice.scoringEliminationAux
+  -- Now we just select the recursive branch of the `by_cases`.
+  simp [hcard, rhs]
+
+@[simp] lemma prefers_restrictProfile_iff {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) (c : A) (v : V) (a b : {x : A // x ≠ c}) :
+    Prefers (restrictProfile P c) v a b ↔ Prefers P v a b := by
+  rfl
+
+lemma margin_eq_margin_restrictProfile {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    {P : Profile V A} {c : A} {a b : {x : A // x ≠ c}} :
+    margin P a b = margin (restrictProfile P c) a b := by
+  classical
+  have h1 :
+      (Finset.univ.filter (fun v => Prefers P v a b)).card =
+        (Finset.univ.filter (fun v => Prefers (restrictProfile P c) v a b)).card := by
+    refine cardinality_lemma2 (p := fun v => Prefers P v a b)
+      (q := fun v => Prefers (restrictProfile P c) v a b) ?_
+    intro v
+    simp
+  have h2 :
+      (Finset.univ.filter (fun v => Prefers P v b a)).card =
+        (Finset.univ.filter (fun v => Prefers (restrictProfile P c) v b a)).card := by
+    refine cardinality_lemma2 (p := fun v => Prefers P v b a)
+      (q := fun v => Prefers (restrictProfile P c) v b a) ?_
+    intro v
+    simp
+  dsimp [margin]
+  simp [h1, h2]
+
+lemma card_subtype_ne_eq {A : Type} [Fintype A] [DecidableEq A] (c : A) :
+    Fintype.card {x : A // x ≠ c} = Fintype.card A - 1 := by
+  classical
+  -- Convert the subtype cardinality to a filtered finset cardinality.
+  have h := (Fintype.card_subtype (α := A) (p := fun x => x ≠ c))
+  -- Rewrite `{x | x ≠ c}` as `univ.erase c`.
+  have hfilter : ({x : A | x ≠ c} : Finset A) = (Finset.univ.erase c) := by
+    ext x
+    by_cases hx : x = c <;> simp [hx]
+  have h' : Fintype.card {x : A // x ≠ c} = (Finset.univ.erase c).card := by
+    -- Avoid `simp` reducing the equality to `True`.
+    have h' := h
+    -- Rewrite the RHS finset using `hfilter`.
+    rw [hfilter] at h'
+    exact h'
+  have herase : (Finset.univ.erase c).card = (Finset.univ : Finset A).card - 1 :=
+    Finset.card_erase_of_mem (s := (Finset.univ : Finset A)) (a := c) (by simp)
+  calc
+    Fintype.card {x : A // x ≠ c} = (Finset.univ.erase c).card := h'
+    _ = (Finset.univ : Finset A).card - 1 := herase
+    _ = Fintype.card A - 1 := by simp [Finset.card_univ]
+
+lemma one_lt_card_subtype_ne {A : Type} [Fintype A] [DecidableEq A] {c : A}
+    (h : 2 < Fintype.card A) : 1 < Fintype.card {x : A // x ≠ c} := by
+  -- From `2 < card A`, we get `1 < card A - 1`, and the subtype has that cardinality.
+  have hpred : 1 < (Fintype.card A).pred := by
+    have hle : 2 ≤ (Fintype.card A).pred := Nat.le_pred_of_lt h
+    exact lt_of_lt_of_le (by decide : (1 : Nat) < 2) hle
+  simpa [card_subtype_ne_eq (A := A) c, Nat.pred_eq_sub_one] using hpred
+
+lemma condorcet_loser_restrictProfile_of_two_lt_card
+    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) {d c : A} (hdc : d ≠ c)
+    (hcard : 2 < Fintype.card A) (hloser : condorcet_loser P d) :
+    condorcet_loser (restrictProfile P c) (⟨d, hdc⟩ : {x : A // x ≠ c}) := by
+  classical
+  refine ⟨?_, ?_⟩
+  · intro y hy
+    have hne : d ≠ (y : A) := by
+      intro hEq
+      apply hy
+      ext
+      simpa using hEq
+    have hpos : margin_pos P (y : A) d := hloser.1 (y : A) hne
+    dsimp [margin_pos] at hpos ⊢
+    have heq := margin_eq_margin_restrictProfile (P := P) (c := c) (a := y)
+      (b := (⟨d, hdc⟩ : {x : A // x ≠ c}))
+    -- `heq` is `margin P y d = margin (restrictProfile P c) y d'`.
+    simpa [heq] using hpos
+  · have hone : 1 < Fintype.card {x : A // x ≠ c} := one_lt_card_subtype_ne (A := A) (c := c) hcard
+    rcases Fintype.exists_ne_of_one_lt_card hone (⟨d, hdc⟩ : {x : A // x ≠ c}) with ⟨y, hy⟩
+    exact ⟨y, hy.symm⟩
+
+lemma not_mem_liftFinset_removed {A : Type} [DecidableEq A] {c : A}
+    (s : Finset {x : A // x ≠ c}) : c ∉ liftFinset s := by
+  classical
+  intro hc
+  -- Unfold `liftFinset` directly at the hypothesis.
+  dsimp [liftFinset] at hc
+  rcases Finset.mem_image.mp hc with ⟨x, _hx, hxval⟩
+  exact x.property (by simpa using hxval)
+
+lemma scoreCandidate_le_of_mem_lowestScoring {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) (score : Nat → Int) {c e : A}
+    (hc : c ∈ lowestScoring P score) :
+    scoreCandidate P score c ≤ scoreCandidate P score e := by
+  classical
+  by_cases hA : (Finset.univ : Finset A).Nonempty
+  · -- Unfold `lowestScoring` in the nonempty case.
+    simp [lowestScoring, hA] at hc
+    -- Work with the score-set and its minimum.
+    set scoreSet : Finset Int := (Finset.univ.image (fun a : A => scoreCandidate P score a))
+    have hScoreNonempty : scoreSet.Nonempty := by
+      simpa [scoreSet, Finset.Nonempty] using hA.image (fun a : A => scoreCandidate P score a)
+    set minScore : Int := scoreSet.min' hScoreNonempty
+    have hcEq : scoreCandidate P score c = minScore := by
+      simpa [scoreSet, minScore] using hc
+    have heMem : scoreCandidate P score e ∈ scoreSet := by
+      refine Finset.mem_image.mpr ?_
+      exact ⟨e, by simp, rfl⟩
+    have hminle : minScore ≤ scoreCandidate P score e := by
+      -- `min'` is below every member.
+      simpa [minScore] using (Finset.min'_le (s := scoreSet) (x := scoreCandidate P score e) heMem)
+    -- Rewrite `minScore` as `scoreCandidate ... c`.
+    simpa [hcEq.symm] using hminle
+  · -- Empty candidate set: `lowestScoring` is empty, so membership is impossible.
+    simp [lowestScoring, hA] at hc
+
+/-! ### Two-candidate election lemmas -/
+
+/-- In a two-element type, if you're not equal to one element, you equal the other -/
+lemma two_elems_eq_or_eq (hcard : Fintype.card A = 2) (a b : A) (hab : a ≠ b) (c : A) :
+    c = a ∨ c = b := by
+  classical
+  have hpair : ({a, b} : Finset A).card = 2 := Finset.card_pair hab
+  have hsub : ({a, b} : Finset A) ⊆ (Finset.univ : Finset A) := by
+    intro x _
+    exact Finset.mem_univ x
+  have hcard_univ : (Finset.univ : Finset A).card = 2 := by
+    simpa [Finset.card_univ] using hcard
+  have hpair_eq : ({a, b} : Finset A) = (Finset.univ : Finset A) := by
+    apply Finset.eq_of_subset_of_card_le hsub
+    simp [hcard_univ, hpair]
+  have huniv : (Finset.univ : Finset A) = {a, b} := hpair_eq.symm
+  have hc : c ∈ ({a, b} : Finset A) := by
+    simpa [huniv] using Finset.mem_univ c
+  simpa using hc
+
+/-- In a two-candidate election, TopRank is equivalent to pairwise preference -/
+lemma topRank_iff_prefers_of_two (P : Profile V A) (hcard : Fintype.card A = 2)
+    (c d : A) (hcd : c ≠ d) (v : V) :
+    TopRank P v c ↔ Prefers P v c d := by
+  constructor
+  · intro htop
+    exact htop d hcd.symm
+  · intro hpref e he
+    rcases two_elems_eq_or_eq hcard c d hcd e with rfl | rfl
+    · exact (he rfl).elim
+    · exact hpref
+
+/-- In a two-candidate election, the number of top-ranks equals
+    the number of voters who prefer that candidate -/
+lemma votersTop_eq_votersPreferring_of_two (P : Profile V A) (hcard : Fintype.card A = 2)
+    (c d : A) (hcd : c ≠ d) :
+    votersTop P c = votersPreferring P c d := by
+  classical
+  ext v
+  simp only [votersTop, votersPreferring, Finset.mem_filter, Finset.mem_univ, true_and]
+  exact topRank_iff_prefers_of_two P hcard c d hcd v
+
+/-- Plurality score equals cards of votersTop -/
+lemma pluralityScore_eq_votersTop_card (P : Profile V A) (c : A) :
+    scoreCandidate P (fun r => if r = 0 then 1 else 0) c =
+      (votersTop P c).card := by
+  classical
+  -- rank = 0 iff TopRank
+  have hrankTop : ∀ v, rank (P.pref v) c = 0 ↔ TopRank P v c := by
+    intro v
+    constructor
+    · intro hr d hd
+      -- rank c = 0 means no one is above c
+      unfold rank at hr
+      have hempty : (Finset.univ.filter (fun x => (P.pref v).lt x c)) = ∅ := by
+        exact Finset.card_eq_zero.mp hr
+      have hd_not_above : d ∉ Finset.univ.filter (fun x => (P.pref v).lt x c) := by
+        simp [hempty]
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hd_not_above
+      -- d is not above c, and d ≠ c, so c < d
+      let _ := P.pref v
+      have hord : c < d ∨ d < c := lt_or_gt_of_ne (Ne.symm hd)
+      cases hord with
+      | inl hlt => exact hlt
+      | inr hgt => exact (hd_not_above hgt).elim
+    · intro htop
+      unfold rank
+      apply Finset.card_eq_zero.mpr
+      apply Finset.eq_empty_iff_forall_notMem.mpr
+      intro d hd
+      have hdlt : (P.pref v).lt d c := (Finset.mem_filter.mp hd).2
+      have hdc : d ≠ c := by
+        intro heq; subst heq
+        let _ := P.pref v
+        exact lt_irrefl _ hdlt
+      have hcd : (P.pref v).lt c d := htop d hdc
+      let _ := P.pref v
+      exact lt_asymm hcd hdlt
+  -- Rewrite to use TopRank instead of rank = 0
+  have heq : (∑ v : V, (fun r => if r = 0 then (1 : Int) else 0) (rank (P.pref v) c)) =
+             ∑ v : V, if TopRank P v c then 1 else 0 := by
+    apply Finset.sum_congr rfl
+    intro v _
+    simp only [hrankTop v]
+  have hsum :
+      (∑ v : V, if TopRank P v c then (1 : Int) else 0) =
+    ((Finset.univ.filter (fun v => TopRank P v c)).card : Int) := by
+    classical
+    have hsum_univ :
+        (∑ v : V, if TopRank P v c then (1 : Int) else 0) =
+          (Finset.univ : Finset V).sum (fun v => if TopRank P v c then (1 : Int) else 0) := by
+      simp
+    have hsum_filtered :
+        ((Finset.univ : Finset V).sum (fun v => if TopRank P v c then (1 : Int) else 0)) =
+          (Finset.univ.filter (fun v => TopRank P v c)).sum (fun _ => (1 : Int)) := by
+      have h := (Finset.sum_filter
+        (s := (Finset.univ : Finset V))
+        (p := fun v => TopRank P v c)
+        (f := fun _ => (1 : Int)))
+      exact h.symm
+    have hsum_card :
+        ((Finset.univ.filter (fun v => TopRank P v c)).sum (fun _ => (1 : Int))) =
+          ((Finset.univ.filter (fun v => TopRank P v c)).card : Int) := by
+      simp
+    exact hsum_univ.trans (hsum_filtered.trans hsum_card)
+  have hscore : scoreCandidate P (fun r => if r = 0 then 1 else 0) c =
+      ∑ v : V, if TopRank P v c then (1 : Int) else 0 := by
+    simpa [scoreCandidate] using heq
+  calc
+    scoreCandidate P (fun r => if r = 0 then 1 else 0) c
+        = ∑ v : V, if TopRank P v c then (1 : Int) else 0 := hscore
+    _ = ((Finset.univ.filter fun v => TopRank P v c).card : Int) := hsum
+    _ = (votersTop P c).card := by
+            simp [votersTop]
+
+/-- In two candidates, plurality score = number preferring you to the other -/
+lemma pluralityScore_eq_votersPreferring_of_two (P : Profile V A) (hcard : Fintype.card A = 2)
+    (c d : A) (hcd : c ≠ d) :
+    scoreCandidate P (fun r => if r = 0 then 1 else 0) c =
+      (votersPreferring P c d).card := by
+  rw [pluralityScore_eq_votersTop_card, votersTop_eq_votersPreferring_of_two P hcard c d hcd]
+
+/-! ### Condorcet loser in two-candidate election -/
+
+/-- A Condorcet loser in a 2-candidate election has strictly fewer first-place votes -/
+lemma condorcet_loser_lower_plurality_two (P : Profile V A) (hcard : Fintype.card A = 2)
+    (c d : A) (hcd : c ≠ d) (hloser : condorcet_loser P d) :
+    scoreCandidate P (fun r => if r = 0 then 1 else 0) d <
+      scoreCandidate P (fun r => if r = 0 then 1 else 0) c := by
+  rw [pluralityScore_eq_votersPreferring_of_two P hcard d c (Ne.symm hcd)]
+  rw [pluralityScore_eq_votersPreferring_of_two P hcard c d hcd]
+  -- hloser says margin_pos P c d (since c ≠ d and d is Condorcet loser)
+  have hmargin : margin_pos P c d := hloser.1 c (Ne.symm hcd)
+  -- margin_pos means more prefer c > d than d > c
+  dsimp [margin_pos, margin] at hmargin
+  have hmargin' :
+      0 < Int.ofNat (votersPreferring P c d).card -
+          Int.ofNat (votersPreferring P d c).card := by
+    simpa [votersPreferring, Prefers] using hmargin
+  -- The margin inequality rearranges to the desired comparison of counts.
+  have hlt :
+      (Int.ofNat (votersPreferring P d c).card) <
+        Int.ofNat (votersPreferring P c d).card := sub_pos.mp hmargin'
+  simpa using hlt
+
+/-! ### Main theorem -/
+
+-- The full proof requires more machinery about the elimination procedure.
+
+set_option maxHeartbeats 1000000
+
+theorem irv_condorcet_loser_criterion : condorcet_loser_criterion instantRunoffVoting := by
+  intro V A _ _ P d hloser
+  classical
+  letI : DecidableEq A := Classical.decEq A
+  -- Reduce to the auxiliary elimination function.
+  change d ∉ scoringEliminationAux pluralityScore A P
+  -- Strong induction on the number of candidates.
+  set n : Nat := Fintype.card A
+  have aux :
+      ∀ n : Nat,
+        (∀ m < n,
+          ∀ {A : Type} [Fintype A] [DecidableEq A],
+            Fintype.card A = m →
+              ∀ {V : Type} [Fintype V] (P : Profile V A) (d : A),
+                condorcet_loser P d → d ∉ scoringEliminationAux pluralityScore A P) →
+        ∀ {A : Type} [Fintype A] [DecidableEq A],
+          Fintype.card A = n →
+            ∀ {V : Type} [Fintype V] (P : Profile V A) (d : A),
+              condorcet_loser P d → d ∉ scoringEliminationAux pluralityScore A P := by
+    intro n ih A _ _ hcard V _ P d hloser
+    classical
+    -- We are never in the base case `card ≤ 1`, since a Condorcet loser requires another candidate.
+    have hnot_le_one : ¬ Fintype.card A ≤ 1 := by
+      intro hle
+      have hsubs : Subsingleton A := (Fintype.card_le_one_iff_subsingleton).1 hle
+      rcases hloser.2 with ⟨y, hy⟩
+      exact hy (Subsingleton.elim d y)
+    -- Split on candidate count.
+    by_cases htwo : Fintype.card A = 2
+    · -- Two-candidate case: the Condorcet loser has strictly lower plurality score,
+      -- hence cannot be the survivor in the unique elimination step.
+      -- Unfold the elimination step.
+      have hcard' : ¬ Fintype.card A ≤ 1 := hnot_le_one
+      have haux :=
+        scoringEliminationAux_eq_biUnion_of_not_card_le_one
+          (score := pluralityScore) (P := P) (hcard := hcard')
+      -- Now argue by contradiction from membership.
+      intro hdmem
+      have hdmem' := hdmem
+      rw [haux] at hdmem'
+      dsimp at hdmem'
+      -- `d` is in the biUnion, so it survives some elimination of a lowest-scoring candidate `c`.
+      rcases (Finset.mem_biUnion.mp hdmem') with ⟨c, hcL, hd_in⟩
+      have hcd : c ≠ d := by
+        intro hEq
+        subst hEq
+        exact (not_mem_liftFinset_removed (c := c) _ hd_in)
+      -- In a two-candidate election, `d` has strictly lower plurality score than `c`.
+      have hlt :
+          scoreCandidate P (fun r => pluralityScore 2 r) d <
+            scoreCandidate P (fun r => pluralityScore 2 r) c := by
+        -- `pluralityScore 2` is the usual plurality scoring vector.
+        simpa [pluralityScore] using
+          (condorcet_loser_lower_plurality_two (V := V) (A := A) (P := P) (hcard := htwo)
+            (c := c) (d := d) (hcd := hcd) (hloser := hloser))
+      -- But `c` is lowest-scoring, so its score is ≤ `d`'s score.
+      have hle :
+          scoreCandidate P (fun r => pluralityScore 2 r) c ≤
+            scoreCandidate P (fun r => pluralityScore 2 r) d :=
+        scoreCandidate_le_of_mem_lowestScoring (P := P)
+          (score := fun r => pluralityScore 2 r) (c := c) (e := d) hcL
+      exact (not_lt_of_ge hle) hlt
+    · -- Recursive case: at least three candidates.
+      have hgt2 : 2 < Fintype.card A := by
+        have hne2 : Fintype.card A ≠ 2 := htwo
+        have hone : 1 < Fintype.card A := Nat.lt_of_not_ge hnot_le_one
+        -- Now exclude `card = 2` to get `2 < card`.
+        exact lt_of_le_of_ne (Nat.succ_le_of_lt hone) (Ne.symm hne2)
+      have hcard' : ¬ Fintype.card A ≤ 1 := hnot_le_one
+      have haux :=
+        scoringEliminationAux_eq_biUnion_of_not_card_le_one
+          (score := pluralityScore) (P := P) (hcard := hcard')
+      intro hdmem
+      have hdmem' := hdmem
+      rw [haux] at hdmem'
+      dsimp at hdmem'
+      rcases (Finset.mem_biUnion.mp hdmem') with ⟨c, hcL, hd_in⟩
+      have hcd : c ≠ d := by
+        intro hEq
+        subst hEq
+        exact (not_mem_liftFinset_removed (c := c) _ hd_in)
+      have hdc : d ≠ c := by simpa [eq_comm] using hcd
+      -- Convert `d ∈ liftFinset ...` into membership of the corresponding subtype element.
+      have hd_in' : (⟨d, hdc⟩ : {x : A // x ≠ c}) ∈
+          scoringEliminationAux pluralityScore {x : A // x ≠ c} (restrictProfile P c) := by
+        -- `liftFinset` is `image Subtype.val`.
+        have himage : d ∈ (scoringEliminationAux pluralityScore {x : A // x ≠ c} (restrictProfile P c)).image
+            (fun x : {x : A // x ≠ c} => (x : A)) := by
+          simpa [liftFinset] using hd_in
+        rcases Finset.mem_image.mp himage with ⟨x, hx, hxval⟩
+        have hx' : x = (⟨d, hdc⟩ : {x : A // x ≠ c}) := by
+          ext
+          simpa using hxval
+        simpa [hx'] using hx
+      -- Apply the induction hypothesis to the restricted election.
+      have hltcard : Fintype.card {x : A // x ≠ c} < n := by
+        -- Use the strict decrease proved in `ScoringElimination/Defs.lean`.
+        simpa [hcard] using (card_restrict_lt (A := A) c)
+      have hloser' :
+          condorcet_loser (restrictProfile P c) (⟨d, hdc⟩ : {x : A // x ≠ c}) :=
+        condorcet_loser_restrictProfile_of_two_lt_card (P := P) (hdc := hdc) (hcard := hgt2) hloser
+      have hnot : (⟨d, hdc⟩ : {x : A // x ≠ c}) ∉
+          scoringEliminationAux pluralityScore {x : A // x ≠ c} (restrictProfile P c) := by
+        -- Specialize IH to the restricted type.
+        have := ih (m := Fintype.card {x : A // x ≠ c}) hltcard
+          (A := {x : A // x ≠ c}) (by rfl) (V := V) (P := restrictProfile P c)
+          (d := (⟨d, hdc⟩ : {x : A // x ≠ c})) hloser'
+        simpa using this
+      exact hnot hd_in'
+  -- Finish by invoking `aux` at `n = card A`.
+  let Motive : Nat → Prop := fun k =>
+    ∀ {A : Type} [Fintype A] [DecidableEq A],
+      Fintype.card A = k →
+        ∀ {V : Type} [Fintype V] (P : Profile V A) (d : A),
+          condorcet_loser P d → d ∉ scoringEliminationAux pluralityScore A P
+  have hStrong : Motive n := by
+    classical
+    refine Nat.strongRecOn (motive := Motive) n (fun k ih => ?_)
+    -- Build the IH required by `aux` from the `strongRecOn` hypothesis `ih`.
+    intro A _ _ hcardA V _ P d hloser
+    have ihAux :
+        ∀ m < k,
+          ∀ {A : Type} [Fintype A] [DecidableEq A],
+            Fintype.card A = m →
+              ∀ {V : Type} [Fintype V] (P : Profile V A) (d : A),
+                condorcet_loser P d → d ∉ scoringEliminationAux pluralityScore A P := by
+      intro m hm A _ _ hcardm V _ P d hloser
+      -- `ih m hm` is the induction hypothesis at `m`.
+      exact (ih m hm) (by simpa using hcardm) (P := P) (d := d) hloser
+    exact aux k ihAux (A := A) (by simpa using hcardA) (V := V) (P := P) (d := d) hloser
+  have := hStrong (A := A) (by rfl) (V := V) (P := P) (d := d) hloser
+  simpa [Motive, n] using this
+
+end SocialChoice
