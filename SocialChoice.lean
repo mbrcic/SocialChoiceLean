@@ -1,12 +1,14 @@
 -- This module serves as the root of the `SocialChoice` library.
 -- Import modules here that should be built as part of the library.
+
+set_option linter.unnecessarySimpa false
+
 import SocialChoice.Basic
 import SocialChoice.Profile
 import SocialChoice.Rank
 import SocialChoice.Margin
 import SocialChoice.Cycles
 import SocialChoice.Rules
--- import SocialChoice.Concrete
 
 import SocialChoice.Axioms.Anonymity
 import SocialChoice.Axioms.Clones
@@ -24,7 +26,6 @@ import SocialChoice.Axioms.Strategyproofness
 
 import SocialChoice.Rules.ScoringRules.Borda.Defs
 import SocialChoice.Rules.ScoringRules.Borda.C2Borda
-import SocialChoice.Rules.ScoringRules.Borda.Anonymity
 import SocialChoice.Rules.ScoringRules.Borda.Condorcet
 import SocialChoice.Rules.ScoringRules.Borda.Majority
 import SocialChoice.Rules.ScoringRules.Reinforcement

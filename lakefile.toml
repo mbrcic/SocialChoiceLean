@@ -1,7 +1,7 @@
 name = "social_choice"
 version = "0.1.0"
 defaultTargets = ["social_choice"]
-moreServerArgs = ["-Dlinter.unnecessarySimpa=false"]
+moreServerArgs = []
 
 [[require]]
 name = "mathlib"
@@ -13,4 +13,4 @@ name = "SocialChoice"
 
 [[lean_exe]]
 name = "social_choice"
-root = "Main"
+root = "SocialChoice"

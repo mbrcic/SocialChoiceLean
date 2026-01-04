@@ -1,7 +1,7 @@
 import SocialChoice.Examples
 import SocialChoice.Axioms.Condorcet
 import SocialChoice.Axioms.Core
-import SocialChoice.Axioms.ResoluteStrategyproofness
+import SocialChoice.Axioms.Strategyproofness
 import Mathlib.Data.Finset.Card
 import Mathlib.Tactic.FinCases
 
