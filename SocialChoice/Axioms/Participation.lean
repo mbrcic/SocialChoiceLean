@@ -4,35 +4,35 @@ import SocialChoice.Axioms.Core
 namespace SocialChoice
 
 def PositiveInvolvement (f : VotingRule) : Prop :=
-  ∀ {V A : Type*} [Fintype V] [Fintype A]
+  ∀ {V A : Type} [Fintype V] [Fintype A]
       (P : Profile V A) (c : A) (ballot : LinearOrder A),
     c ∈ f P → BallotTop ballot c → c ∈ f (addVoter P ballot)
 
 def NegativeInvolvement (f : VotingRule) : Prop :=
-  ∀ {V A : Type*} [Fintype V] [Fintype A]
+  ∀ {V A : Type} [Fintype V] [Fintype A]
       (P : Profile V A) (c : A) (ballot : LinearOrder A),
     c ∉ f P → BallotBottom ballot c → c ∉ f (addVoter P ballot)
 
-abbrev Electorate (U : Type*) (S : Finset U) := {u // u ∈ S}
+abbrev Electorate (U : Type) (S : Finset U) := {u // u ∈ S}
 
-instance (U : Type*) [DecidableEq U] (S : Finset U) : Fintype (Electorate U S) := by
+instance (U : Type) [DecidableEq U] (S : Finset U) : Fintype (Electorate U S) := by
   classical
   simpa [Electorate] using (Fintype.subtype S (by intro x; rfl))
 
-def liftVoter {U : Type*} [DecidableEq U] {V : Finset U} (u : U) (v : Electorate U V) :
+def liftVoter {U : Type} [DecidableEq U] {V : Finset U} (u : U) (v : Electorate U V) :
     Electorate U (insert u V) :=
   ⟨v.1, by simp [v.2]⟩
 
-def newVoter {U : Type*} [DecidableEq U] {V : Finset U} (u : U) (hu : u ∉ V) :
+def newVoter {U : Type} [DecidableEq U] {V : Finset U} (u : U) (hu : u ∉ V) :
     Electorate U (insert u V) :=
   ⟨u, by simp [hu]⟩
 
-noncomputable def restrictProfile {U A : Type*} [DecidableEq U] [Fintype A] {W : Finset U}
+noncomputable def restrictProfile {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
     (Q : Profile (Electorate U W) A) (S : Finset U) (hS : S ⊆ W) :
     Profile (Electorate U S) A :=
   { pref := fun v => Q.pref ⟨v.1, hS v.2⟩ }
 
-lemma restrictProfile_agrees {U A : Type*} [DecidableEq U] [Fintype A] {W S : Finset U}
+lemma restrictProfile_agrees {U A : Type} [DecidableEq U] [Fintype A] {W S : Finset U}
     (Q : Profile (Electorate U W) A) (hS : S ⊆ W) (u : U)
     (hSu : insert u S ⊆ W) :
     ∀ v : Electorate U S,
@@ -41,13 +41,13 @@ lemma restrictProfile_agrees {U A : Type*} [DecidableEq U] [Fintype A] {W S : Fi
   intro v
   rfl
 
-lemma restrictProfile_self {U A : Type*} [DecidableEq U] [Fintype A] {W : Finset U}
+lemma restrictProfile_self {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
     (Q : Profile (Electorate U W) A) :
     restrictProfile Q W (by intro x hx; exact hx) = Q := by
   cases Q
   rfl
 
-lemma restrictProfile_eq_of_subset_proof {U A : Type*} [DecidableEq U] [Fintype A] {W : Finset U}
+lemma restrictProfile_eq_of_subset_proof {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
     (Q : Profile (Electorate U W) A) {S : Finset U} (h₁ h₂ : S ⊆ W) :
     restrictProfile Q S h₁ = restrictProfile Q S h₂ := by
   cases Q with
@@ -59,10 +59,10 @@ lemma restrictProfile_eq_of_subset_proof {U A : Type*} [DecidableEq U] [Fintype 
         rfl
       simpa [hsub]
 
-def UpperSet {A : Type*} [DecidableEq A] (r : LinearOrder A) (S : Finset A) : Prop :=
+def UpperSet {A : Type} [DecidableEq A] (r : LinearOrder A) (S : Finset A) : Prop :=
   ∀ ⦃x y : A⦄, r.lt x y → y ∈ S → x ∈ S
 
-lemma upperSet_mem_of_not_lt {A : Type*} [DecidableEq A]
+lemma upperSet_mem_of_not_lt {A : Type} [DecidableEq A]
     {r : LinearOrder A} {S : Finset A} (hS : UpperSet r S)
     {x y : A} (hx : x ∈ S) (hnot : ¬ r.lt x y) : y ∈ S := by
   by_cases hxy : y = x
@@ -73,7 +73,7 @@ lemma upperSet_mem_of_not_lt {A : Type*} [DecidableEq A]
     | inr hgt => exact (False.elim (hnot hgt))
 
 def ResoluteParticipation (f : VotingRule) (_hf : Resolute f) : Prop :=
-  ∀ {U A : Type*} [DecidableEq U] [Fintype A]
+  ∀ {U A : Type} [DecidableEq U] [Fintype A]
       (V : Finset U) (u : U) (hu : u ∉ V)
       (P : Profile (Electorate U V) A)
       (Q : Profile (Electorate U (insert u V)) A) (x y : A),
@@ -84,7 +84,7 @@ def ResoluteParticipation (f : VotingRule) (_hf : Resolute f) : Prop :=
 
 lemma resoluteParticipation_leaving {f : VotingRule} (hf : Resolute f)
     (hpart : ResoluteParticipation f hf) :
-    ∀ {U A : Type*} [DecidableEq U] [Fintype A]
+    ∀ {U A : Type} [DecidableEq U] [Fintype A]
         (V : Finset U) (u : U) (hu : u ∉ V)
         (P : Profile (Electorate U V) A)
         (Q : Profile (Electorate U (insert u V)) A) (x y : A),
@@ -100,7 +100,7 @@ lemma resoluteParticipation_leaving {f : VotingRule} (hf : Resolute f)
 
 lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
     (hpart : ResoluteParticipation f hf) :
-    ∀ {U A : Type*} [DecidableEq U] [Fintype A] [DecidableEq A]
+    ∀ {U A : Type} [DecidableEq U] [Fintype A] [DecidableEq A]
         (V W : Finset U) (hVW : V ⊆ W)
         (Q : Profile (Electorate U W) A) (S : Finset A) (x : A),
       f (restrictProfile Q V hVW) = {x} →

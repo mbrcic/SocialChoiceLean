@@ -62,7 +62,7 @@ lemma strictMajority_fin3 {S : Finset (Fin 3)} (hcard : S.card = 2) :
   have h : (2 * (2 : Nat) > (3 : Nat)) := by decide
   simpa [hcard] using h
 
-lemma profile_ext {V A : Type*} [Fintype V] [Fintype A]
+lemma profile_ext {V A : Type} [Fintype V] [Fintype A]
     {P Q : Profile V A} (h : P.pref = Q.pref) : P = Q := by
   cases P
   cases Q
@@ -142,7 +142,7 @@ lemma voter2_prefers2_over1 : Prefers swap2Profile 2 2 1 := by
   decide
 
 theorem no_resolute_condorcet_strategyproof_3x3
-    (f : VotingRule.{0, 0}) (hf : Resolute f) :
+    (f : VotingRule) (hf : Resolute f) :
     CondorcetConsistency f → ResoluteStrategyproofness f hf → False := by
   intro hcond hsp
   have hcard : (f cycleProfile).card = 1 := by

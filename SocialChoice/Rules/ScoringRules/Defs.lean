@@ -8,12 +8,12 @@ open Finset
 open scoped BigOperators
 
 -- Total score for a candidate under a scoring vector.
-def scoreCandidate {V A : Type*} [Fintype V] [Fintype A]
+def scoreCandidate {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (score : Nat → Int) (c : A) : Int :=
   ((Finset.univ : Finset V).sum fun v => score (rank (P.pref v) c))
 
 -- Winners for a given scoring vector.
-noncomputable def scoringWinners {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def scoringWinners {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (score : Nat → Int) : Finset A := by
   classical
   by_cases h : (Finset.univ : Finset A).Nonempty
@@ -24,7 +24,7 @@ noncomputable def scoringWinners {V A : Type*} [Fintype V] [Fintype A]
       (Finset.univ.filter (fun c => scoreCandidate P score c = maxScore))
   · exact ∅
 
-lemma scoringWinners_iff_forall_le {V A : Type*} [Fintype V] [Fintype A] [DecidableEq A]
+lemma scoringWinners_iff_forall_le {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
     (P : Profile V A) (score : Nat → Int) (hA : (Finset.univ : Finset A).Nonempty) (c : A) :
     c ∈ scoringWinners P score ↔
       ∀ d : A, scoreCandidate P score d ≤ scoreCandidate P score c := by

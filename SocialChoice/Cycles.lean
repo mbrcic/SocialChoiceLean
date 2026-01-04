@@ -6,21 +6,21 @@ import Mathlib.Data.List.TakeDrop
 
 namespace SocialChoice
 
-def cycle {X : Type*} (P : X -> X -> Prop) (c : List X) : Prop :=
+def cycle {X : Type} (P : X -> X -> Prop) (c : List X) : Prop :=
   ∃ h : c ≠ [], List.IsChain P (List.getLast c h :: c)
 
-def acyclic {X : Type*} (P : X -> X -> Prop) : Prop :=
+def acyclic {X : Type} (P : X -> X -> Prop) : Prop :=
   ∀ c : List X, ¬ cycle P c
 
-def reverse_rel {X : Type*} (P : X -> X -> Prop) : X -> X -> Prop :=
+def reverse_rel {X : Type} (P : X -> X -> Prop) : X -> X -> Prop :=
   fun x y => P y x
 
-theorem length_cycle_pos {X : Type*} {P : X -> X -> Prop} {c : List X}
+theorem length_cycle_pos {X : Type} {P : X -> X -> Prop} {c : List X}
     (hc : cycle P c) : 0 < c.length := by
   rcases hc with ⟨h, _⟩
   exact List.length_pos_of_ne_nil h
 
-theorem rotate'_ne_nil_of_ne_nil {X : Type*} {l : List X} {n : Nat} :
+theorem rotate'_ne_nil_of_ne_nil {X : Type} {l : List X} {n : Nat} :
     l ≠ [] -> l.rotate' n ≠ [] := by
   intro h hrot
   have hlen : l.length = 0 := by
@@ -28,7 +28,7 @@ theorem rotate'_ne_nil_of_ne_nil {X : Type*} {l : List X} {n : Nat} :
     simpa [List.length_rotate'] using hlenRot
   exact h (List.length_eq_zero_iff.mp hlen)
 
-theorem rotate1_cycle_of_cycle {X : Type*} {a : X} {l : List X} {P : X -> X -> Prop} :
+theorem rotate1_cycle_of_cycle {X : Type} {a : X} {l : List X} {P : X -> X -> Prop} :
     cycle P (a :: l) -> cycle P (l ++ [a]) := by
   intro hc
   rcases hc with ⟨hne, hchain⟩
@@ -68,7 +68,7 @@ theorem rotate1_cycle_of_cycle {X : Type*} {a : X} {l : List X} {P : X -> X -> P
     (List.getLast_congr hne' h0 rfl).trans hlast0
   simpa [hlast] using hchain_append
 
-theorem rotate'_cycle_of_cycle {X : Type*} {c : List X} {P : X -> X -> Prop} {n : Nat} :
+theorem rotate'_cycle_of_cycle {X : Type} {c : List X} {P : X -> X -> Prop} {n : Nat} :
     cycle P c -> cycle P (List.rotate' c n) := by
   intro cy
   induction n with
@@ -93,7 +93,7 @@ theorem rotate'_cycle_of_cycle {X : Type*} {c : List X} {P : X -> X -> Prop} {n 
         rotate1_cycle_of_cycle ih''
       simpa [hrot] using hcycle
 
-lemma getLast_reverse_eq_head {X : Type*} {c : List X} (hne : c ≠ []) :
+lemma getLast_reverse_eq_head {X : Type} {c : List X} (hne : c ≠ []) :
     List.getLast c.reverse (by
         intro hnil
         exact hne (List.reverse_eq_nil_iff.mp hnil)) = c.head hne := by
@@ -102,7 +102,7 @@ lemma getLast_reverse_eq_head {X : Type*} {c : List X} (hne : c ≠ []) :
   | cons a t =>
       simp [List.reverse_cons]
 
-lemma getLast_map {α β : Type*} (f : α → β) {l : List α} (hne : l ≠ []) :
+lemma getLast_map {α β : Type} (f : α → β) {l : List α} (hne : l ≠ []) :
     List.getLast (l.map f) (by
         intro hnil
         cases l with
@@ -127,7 +127,7 @@ lemma getLast_map {α β : Type*} (f : α → β) {l : List α} (hne : l ≠ [])
             _ = f (List.getLast (a :: b :: t) (by simp)) := by
                   simp [List.getLast_cons]
 
-lemma cycle_map {α β : Type*} {P : β → β → Prop} {f : α → β} {c : List α} :
+lemma cycle_map {α β : Type} {P : β → β → Prop} {f : α → β} {c : List α} :
     cycle (fun a b => P (f a) (f b)) c → cycle P (c.map f) := by
   intro hcyc
   rcases hcyc with ⟨hne, hchain⟩
@@ -143,7 +143,7 @@ lemma cycle_map {α β : Type*} {P : β → β → Prop} {f : α → β} {c : Li
     simpa [getLast_map (f := f) (l := c) (hne := hne)] using hchain_map
   exact ⟨hne', hchain'⟩
 
-lemma cycle_reverse_rel {X : Type*} {P : X → X → Prop} {c : List X} :
+lemma cycle_reverse_rel {X : Type} {P : X → X → Prop} {c : List X} :
     cycle P c → cycle (reverse_rel P) c.reverse := by
   intro hcyc
   rcases hcyc with ⟨hne, hchain⟩
@@ -177,7 +177,7 @@ lemma cycle_reverse_rel {X : Type*} {P : X → X → Prop} {c : List X} :
       (List.isChain_reverse (l := List.getLast c.reverse hne' :: c.reverse) (R := P)).1 hchain_rev
   simpa using hchain_final
 
-lemma getLast_iterate_succ {α : Type*} (f : α → α) (a : α) (n : Nat) :
+lemma getLast_iterate_succ {α : Type} (f : α → α) (a : α) (n : Nat) :
     List.getLast (List.iterate f a (n + 1)) (by simp) = Nat.iterate f n a := by
   induction n generalizing a with
   | zero =>
@@ -193,7 +193,7 @@ lemma getLast_iterate_succ {α : Type*} (f : α → α) (a : α) (n : Nat) :
         _ = Nat.iterate f (n + 1) a := by
               simp [Function.iterate_succ_apply]
 
-lemma isChain_iterate_reverse_rel {α : Type*} (R : α → α → Prop) (f : α → α)
+lemma isChain_iterate_reverse_rel {α : Type} (R : α → α → Prop) (f : α → α)
     (h : ∀ a, R (f a) a) :
     ∀ n a, List.IsChain (reverse_rel R) (List.iterate f a n)
   | 0, a => by
@@ -210,7 +210,7 @@ lemma isChain_iterate_reverse_rel {α : Type*} (R : α → α → Prop) (f : α 
                 (n := Nat.succ n) (a := f a))
           exact (List.isChain_cons_cons).2 ⟨by simpa [reverse_rel] using h a, htail⟩
 
-theorem dominates_of_cycle_index {X : Type*} (l : List X) (P : X -> X -> Prop)
+theorem dominates_of_cycle_index {X : Type} (l : List X) (P : X -> X -> Prop)
     (c : cycle P l) (i : Nat) (hi : i < l.length)
     (hmod : (i + 1) % l.length < l.length) :
     P (l[i]'hi) (l[(i + 1) % l.length]'hmod) := by
@@ -267,7 +267,7 @@ theorem dominates_of_cycle_index {X : Type*} (l : List X) (P : X -> X -> Prop)
       exact (List.isChain_iff_getElem).1 hchain_tail i hlt
     simpa [hmodEq] using hrel
 
-theorem dominate_of_cycle {X : Type*} (l : List X) (P : X -> X -> Prop) (c : cycle P l) :
+theorem dominate_of_cycle {X : Type} (l : List X) (P : X -> X -> Prop) (c : cycle P l) :
     ∀ x ∈ l, ∃ y ∈ l, P y x := by
   intro x hx
   have hx' : ∃ (i : Fin l.length), l.get i = x := by
@@ -322,7 +322,7 @@ theorem dominate_of_cycle {X : Type*} (l : List X) (P : X -> X -> Prop) (c : cyc
 
 section ToPath
 
-variable {X : Type*} [DecidableEq X]
+variable {X : Type} [DecidableEq X]
 
 def to_path : List X → List X
   | [] => []
@@ -535,7 +535,7 @@ theorem to_path_chain'_of_chain' {P : X → X → Prop} {l : List X} :
               simpa [hpath_eq, h']
             simpa [hpath'] using (List.IsChain.cons_of_ne_nil htp hpath hrel)
 
-theorem rotate'_eq_nil_iff (X : Type*) (l : List X) (n : ℕ) : l.rotate' n = [] ↔ l = [] := by
+theorem rotate'_eq_nil_iff (X : Type) (l : List X) (n : ℕ) : l.rotate' n = [] ↔ l = [] := by
   constructor
   · intro h
     have hlen : (l.rotate' n).length = 0 := by simp [h]
@@ -546,19 +546,19 @@ theorem rotate'_eq_nil_iff (X : Type*) (l : List X) (n : ℕ) : l.rotate' n = []
     cases h
     simp
 
-theorem cycle_of_cycle_imp {X : Type*} {l : List X} {p₁ p₂ : X → X → Prop}
+theorem cycle_of_cycle_imp {X : Type} {l : List X} {p₁ p₂ : X → X → Prop}
     (e : ∀ x y, p₁ x y → p₂ x y) : cycle p₁ l → cycle p₂ l := by
   intro c
   rcases c with ⟨hne, hchain⟩
   refine ⟨hne, ?_⟩
   exact hchain.imp (by intro x y h; exact e x y h)
 
-theorem chain'_take_of_chain {X : Type*} {l : List X} {P : X → X → Prop}
+theorem chain'_take_of_chain {X : Type} {l : List X} {P : X → X → Prop}
     (a : l ≠ []) {n : ℕ} (c : List.IsChain P (l.getLast a :: l)) :
     List.IsChain P (l.take n) := by
   simpa using (List.IsChain.take (l := l) (n := n) c.tail)
 
-lemma getLast_take_idxOf {X : Type*} [DecidableEq X] {l : List X} {a : X} (ha : a ∈ l) :
+lemma getLast_take_idxOf {X : Type} [DecidableEq X] {l : List X} {a : X} (ha : a ∈ l) :
     List.getLast (l.take (List.idxOf a l + 1))
       (by
         have hidx : List.idxOf a l < l.length := List.idxOf_lt_length_iff.2 ha

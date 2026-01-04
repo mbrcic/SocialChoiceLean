@@ -5,7 +5,7 @@ namespace SocialChoice
 
 open Finset
 
-noncomputable def topCount {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def topCount {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) : Nat :=
   (votersTop P c).card
 

@@ -6,7 +6,7 @@ namespace SocialChoice
 
 open Finset
 
-lemma rank_le_of_simpleLift_x {V A : Type*} [Fintype V] [Fintype A]
+lemma rank_le_of_simpleLift_x {V A : Type} [Fintype V] [Fintype A]
     {P P' : Profile V A} {x : A} (h : simpleLift P' P x) (v : V) :
     rank (P'.pref v) x ≤ rank (P.pref v) x := by
   classical
@@ -16,7 +16,7 @@ lemma rank_le_of_simpleLift_x {V A : Type*} [Fintype V] [Fintype A]
   have hd'' : Prefers P v d x := (h.2 d v).2 hd'
   exact Finset.mem_filter.mpr ⟨by simp, hd''⟩
 
-lemma rank_le_of_simpleLift_other {V A : Type*} [Fintype V] [Fintype A]
+lemma rank_le_of_simpleLift_other {V A : Type} [Fintype V] [Fintype A]
     {P P' : Profile V A} {x y : A} (h : simpleLift P' P x) (hy : y ≠ x) (v : V) :
     rank (P.pref v) y ≤ rank (P'.pref v) y := by
   classical

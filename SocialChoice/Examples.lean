@@ -35,7 +35,7 @@ concrete examples in a computational way.
 
 section LinearOrderFromList
 
-variable {A : Type*} [DecidableEq A]
+variable {A : Type} [DecidableEq A]
 
 /--
 Construct a `LinearOrder` from a nodup list that covers all elements of a type.
@@ -120,7 +120,7 @@ end ProfileOfListBallots
 
 section ComputablePredicates
 
-variable {α : Type*} [DecidableEq α]
+variable {α : Type} [DecidableEq α]
 
 /-- Check if candidate `c` is at the top of ballot `l`. -/
 def isTopOfList (l : List α) (c : α) : Bool :=
@@ -175,7 +175,7 @@ lemma prefers_iff_prefersInList (ballots : Fin m → ListBallot n) (v : Fin m) (
   simp only [decide_eq_true_eq]
 
 /-- Helper: the head of a nonempty list has idxOf 0. -/
-lemma idxOf_head_eq_zero {α : Type*} [DecidableEq α] {l : List α} (h : l ≠ []) :
+lemma idxOf_head_eq_zero {α : Type} [DecidableEq α] {l : List α} (h : l ≠ []) :
     l.idxOf (l.head h) = 0 := by
   cases l with
   | nil => contradiction

@@ -1,8 +1,5 @@
 -- This module serves as the root of the `SocialChoice` library.
 -- Import modules here that should be built as part of the library.
-
-set_option linter.unnecessarySimpa false
-
 import SocialChoice.Basic
 import SocialChoice.Profile
 import SocialChoice.Rank

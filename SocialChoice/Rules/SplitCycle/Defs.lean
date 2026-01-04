@@ -5,7 +5,7 @@ import SocialChoice.Cycles
 
 namespace SocialChoice
 
-noncomputable def splitCycleDefeats {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def splitCycleDefeats {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x y : A) : Prop :=
   margin_pos P x y ∧
     ¬ ∃ c : List A, x ∈ c ∧ y ∈ c ∧

@@ -7,13 +7,13 @@ namespace SocialChoice
 
 open Finset
 
-lemma margin_reverse_eq {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_reverse_eq {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a b : A) :
     margin (reverse_profile P) b a = margin P a b := by
   classical
   simp [margin, prefers_reverse_profile]
 
-lemma splitCycleDefeats_reverse_iff {V A : Type*} [Fintype V] [Fintype A]
+lemma splitCycleDefeats_reverse_iff {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x y : A) :
     splitCycleDefeats (reverse_profile P) y x ↔ splitCycleDefeats P x y := by
   classical
@@ -59,7 +59,7 @@ lemma splitCycleDefeats_reverse_iff {V A : Type*} [Fintype V] [Fintype A]
       exact hnocycle ⟨c.reverse, hxmem', hymem', hcycle'⟩
     exact ⟨hpos', hnocycle'⟩
 
-lemma splitCycleDefeats_acyclic {V A : Type*} [Fintype V] [Fintype A]
+lemma splitCycleDefeats_acyclic {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) : acyclic (splitCycleDefeats P) := by
   classical
   intro l hcycle

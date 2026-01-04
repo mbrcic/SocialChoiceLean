@@ -471,7 +471,7 @@ lemma P8_condorcet_winner_d : CondorcetWinner P8ProfileSub 3 := by
 -- Main Theorem
 
 theorem no_resolute_condorcet_participation_m4_n12 :
-    ¬ ∃ (f : VotingRule.{0,0}) (hf : Resolute f), CondorcetConsistency f ∧ ResoluteParticipation f hf := by
+    ¬ ∃ (f : VotingRule) (hf : Resolute f), CondorcetConsistency f ∧ ResoluteParticipation f hf := by
   rintro ⟨f, hf, hcond, hpart⟩
   -- P0 must have result {0} or {1} (a or b) w.l.o.g.
   have h_P0_res : (f P0ProfileSub).card = 1 := hf P0ProfileSub

@@ -7,7 +7,7 @@ namespace SocialChoice
 open Finset
 
 theorem plurality_independenceOfDominated_nonempty :
-    ∀ {V A : Type*} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty V]
+    ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty V]
       (P : Profile V A) (c d : A),
         (∀ v : V, Prefers P v c d) →
           liftWinners (plurality (restrictCandidates P (fun a => a ≠ d))) = plurality P := by

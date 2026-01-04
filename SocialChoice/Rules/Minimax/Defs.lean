@@ -8,7 +8,7 @@ open Finset
 
 section Minimax
 
-variable {V A : Type*} [Fintype V] [Fintype A]
+variable {V A : Type} [Fintype V] [Fintype A]
 
 noncomputable def maxLoss (P : Profile V A) (a : A) : Int := by
   classical

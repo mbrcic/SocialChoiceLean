@@ -4,7 +4,7 @@ import SocialChoice.Rules.ScoringRules.Defs
 
 namespace SocialChoice
 
-lemma scoreCandidate_unionProfiles {V W A : Type*} [Fintype V] [Fintype W] [Fintype A]
+lemma scoreCandidate_unionProfiles {V W A : Type} [Fintype V] [Fintype W] [Fintype A]
     (P₁ : Profile V A) (P₂ : Profile W A) (score : Nat → Int) (c : A) :
     scoreCandidate (unionProfiles P₁ P₂) score c =
       scoreCandidate P₁ score c + scoreCandidate P₂ score c := by

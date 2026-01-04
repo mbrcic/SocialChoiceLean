@@ -6,7 +6,7 @@ namespace SocialChoice
 
 open Finset
 
-lemma margin_lemma {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_lemma {V A : Type} [Fintype V] [Fintype A]
     (P P' : Profile V A) (a b : A) (_ : a ≠ b) :
     (∀ v : V, (Prefers P v a b → Prefers P' v a b) ∧
       (Prefers P' v b a → Prefers P v b a)) →
@@ -38,7 +38,7 @@ lemma margin_lemma {V A : Type*} [Fintype V] [Fintype A]
   have hsub := sub_le_sub h1' h2'
   simpa [margin] using hsub
 
-lemma margin_lemma' {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_lemma' {V A : Type} [Fintype V] [Fintype A]
     (P P' : Profile V A) (a b : A) :
     (∀ v : V, (Prefers P v a b → Prefers P' v a b) ∧
       (Prefers P' v b a → Prefers P v b a)) →
@@ -49,7 +49,7 @@ lemma margin_lemma' {V A : Type*} [Fintype V] [Fintype A]
     simp [self_margin_zero]
   · exact margin_lemma P P' a b h lift
 
-lemma margin_eq_of_simpleLift {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_eq_of_simpleLift {V A : Type} [Fintype V] [Fintype A]
     (P P' : Profile V A) (x a b : A) (ha : a ≠ x) (hb : b ≠ x) :
     simpleLift P' P x → margin P a b = margin P' a b := by
   classical
@@ -72,7 +72,7 @@ lemma margin_eq_of_simpleLift {V A : Type*} [Fintype V] [Fintype A]
   dsimp [margin]
   simp [h1, h2]
 
-lemma margin_lt_margin_of_lift {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_lt_margin_of_lift {V A : Type} [Fintype V] [Fintype A]
     (P P' : Profile V A) (y x : A) :
     simpleLift P' P x → margin P' y x ≤ margin P y x := by
   intro lift

@@ -8,7 +8,7 @@ open Finset
 open scoped BigOperators
 
 theorem borda_independenceOfUniversallyLeastPreferred_nonempty :
-    ∀ {V A : Type*} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty V]
+    ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty V]
       (P : Profile V A) (c d : A),
         c ≠ d →
           (∀ v : V, BottomRank P v d) →

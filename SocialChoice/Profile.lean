@@ -9,10 +9,10 @@ namespace SocialChoice
 open Finset
 
 
-structure Profile (V A : Type*) [Fintype V] [Fintype A] where
+structure Profile (V A : Type) [Fintype V] [Fintype A] where
   pref : V → LinearOrder A
 
-@[ext] lemma Profile.ext {V A : Type*} [Fintype V] [Fintype A]
+@[ext] lemma Profile.ext {V A : Type} [Fintype V] [Fintype A]
     {P Q : Profile V A} (h : ∀ v, P.pref v = Q.pref v) : P = Q := by
   cases P with
   | mk prefP =>
@@ -23,42 +23,42 @@ structure Profile (V A : Type*) [Fintype V] [Fintype A] where
           rfl
 
 abbrev VotingRule :=
-  ∀ {V A : Type*} [Fintype V] [Fintype A], Profile V A → Finset A
+  ∀ {V A : Type} [Fintype V] [Fintype A], Profile V A → Finset A
 
 def IsVotingRule (f : VotingRule) : Prop :=
-  ∀ {V A : Type*} [Fintype V] [Fintype A] (P : Profile V A), (f P).Nonempty
+  ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A), (f P).Nonempty
 
 -- Basic preference predicates.
-def Prefers {V A : Type*} [Fintype V] [Fintype A]
+def Prefers {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (v : V) (a b : A) : Prop :=
   (P.pref v).lt a b
 
-def TopRank {V A : Type*} [Fintype V] [Fintype A]
+def TopRank {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (v : V) (c : A) : Prop :=
   ∀ d : A, d ≠ c → Prefers P v c d
 
-def BottomRank {V A : Type*} [Fintype V] [Fintype A]
+def BottomRank {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (v : V) (c : A) : Prop :=
   ∀ d : A, d ≠ c → Prefers P v d c
 
 -- Permute voters by relabeling the electorate.
-def permuteVoters {V A : Type*} [Fintype V] [Fintype A]
+def permuteVoters {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (σ : Equiv.Perm V) : Profile V A :=
   { pref := fun v => P.pref (σ v) }
 
 -- Relabel a linear order along a permutation.
-noncomputable def relabelBallot {α : Type*} (r : LinearOrder α) (σ : Equiv.Perm α) : LinearOrder α := by
+noncomputable def relabelBallot {α : Type} (r : LinearOrder α) (σ : Equiv.Perm α) : LinearOrder α := by
   classical
   let _ := r
   exact LinearOrder.lift' σ σ.injective
 
 -- Permute candidates by relabeling each ballot.
-noncomputable def permuteCandidates {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def permuteCandidates {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (σ : Equiv.Perm A) : Profile V A :=
   { pref := fun v => relabelBallot (P.pref v) σ.symm }
 
 -- Add a voter via a sum type.
-def addVoter {V A : Type*} [Fintype V] [Fintype A]
+def addVoter {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (ballot : LinearOrder A) : Profile (V ⊕ Unit) A :=
   { pref := fun v =>
       match v with
@@ -66,7 +66,7 @@ def addVoter {V A : Type*} [Fintype V] [Fintype A]
       | Sum.inr _ => ballot }
 
 -- Union of profiles on disjoint electorates using a sum type.
-def unionProfiles {V W A : Type*} [Fintype V] [Fintype W] [Fintype A]
+def unionProfiles {V W A : Type} [Fintype V] [Fintype W] [Fintype A]
     (P₁ : Profile V A) (P₂ : Profile W A) : Profile (V ⊕ W) A :=
   { pref := fun v =>
       match v with
@@ -74,13 +74,13 @@ def unionProfiles {V W A : Type*} [Fintype V] [Fintype W] [Fintype A]
       | Sum.inr w => P₂.pref w }
 
 -- Restrict the agenda by a predicate.
-noncomputable def restrictBallot {A : Type*} (r : LinearOrder A)
+noncomputable def restrictBallot {A : Type} (r : LinearOrder A)
     (p : A → Prop) [DecidablePred p] : LinearOrder {a // p a} := by
   classical
   let _ := r
   infer_instance
 
-noncomputable def restrictCandidates {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def restrictCandidates {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (p : A → Prop) [DecidablePred p] : Profile V {a // p a} :=
   { pref := fun v => restrictBallot (P.pref v) p }
 
@@ -99,44 +99,44 @@ instance (S : Finset Nat) : Fintype (NatAgenda S) := by
 abbrev ProfileOnNat (V A : Finset Nat) := Profile (NatElectorate V) (NatAgenda A)
 
 -- Helpers for counting voters.
-noncomputable def votersPreferring {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def votersPreferring {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a b : A) : Finset V := by
   classical
   exact Finset.univ.filter (fun v => Prefers P v a b)
 
-noncomputable def votersTop {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def votersTop {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) : Finset V := by
   classical
   exact Finset.univ.filter (fun v => TopRank P v c)
 
-noncomputable def votersBottom {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def votersBottom {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) : Finset V := by
   classical
   exact Finset.univ.filter (fun v => BottomRank P v c)
 
-def StrictMajority {V : Type*} [Fintype V] (S : Finset V) : Prop :=
+def StrictMajority {V : Type} [Fintype V] (S : Finset V) : Prop :=
   2 * S.card > Fintype.card V
 
 -- Candidate renaming on winner sets.
-noncomputable def permuteWinners {A : Type*} (σ : Equiv.Perm A) (s : Finset A) : Finset A := by
+noncomputable def permuteWinners {A : Type} (σ : Equiv.Perm A) (s : Finset A) : Finset A := by
   classical
   exact s.map σ.toEmbedding
 
 -- Ballot-level predicates used in variable-electorate axioms.
-def BallotTop {A : Type*} (r : LinearOrder A) (c : A) : Prop :=
+def BallotTop {A : Type} (r : LinearOrder A) (c : A) : Prop :=
   ∀ d : A, d ≠ c → r.lt c d
 
-def BallotBottom {A : Type*} (r : LinearOrder A) (c : A) : Prop :=
+def BallotBottom {A : Type} (r : LinearOrder A) (c : A) : Prop :=
   ∀ d : A, d ≠ c → r.lt d c
 
 -- Variable-agenda helpers.
-noncomputable def liftWinners {A : Type*}
+noncomputable def liftWinners {A : Type}
     {p : A → Prop} [DecidablePred p]
     (s : Finset {a // p a}) : Finset A := by
   classical
   exact s.image (fun a => a.1)
 
-lemma cardinality_lemma {V : Type*} [Fintype V]
+lemma cardinality_lemma {V : Type} [Fintype V]
     (p q : V → Prop) [DecidablePred p] [DecidablePred q] :
     (∀ v, p v → q v) →
       (Finset.univ.filter p).card ≤ (Finset.univ.filter q).card := by
@@ -147,7 +147,7 @@ lemma cardinality_lemma {V : Type*} [Fintype V]
   have hv' : p v := (Finset.mem_filter.mp hv).2
   exact (Finset.mem_filter.mpr ⟨mem_univ v, pq v hv'⟩)
 
-lemma cardinality_lemma2 {V : Type*} [Fintype V]
+lemma cardinality_lemma2 {V : Type} [Fintype V]
     (p q : V → Prop) [DecidablePred p] [DecidablePred q] :
     (∀ v, p v ↔ q v) →
       (Finset.univ.filter p).card = (Finset.univ.filter q).card := by

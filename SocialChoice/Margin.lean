@@ -7,34 +7,34 @@ namespace SocialChoice
 
 open Finset
 
-noncomputable def margin {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def margin {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a b : A) : Int := by
   classical
   exact
     Int.ofNat ((Finset.univ.filter (fun v => Prefers P v a b)).card) -
       Int.ofNat ((Finset.univ.filter (fun v => Prefers P v b a)).card)
 
-def margin_pos {V A : Type*} [Fintype V] [Fintype A]
+def margin_pos {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a b : A) : Prop :=
   0 < margin P a b
 
-def skew_symmetric {A : Type*} (M : A -> A -> Int) : Prop :=
+def skew_symmetric {A : Type} (M : A -> A -> Int) : Prop :=
   forall a b, M a b = -(M b a)
 
-theorem margin_antisymmetric {V A : Type*} [Fintype V] [Fintype A]
+theorem margin_antisymmetric {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) : skew_symmetric (margin P) := by
   classical
   intro a b
   dsimp [margin, skew_symmetric]
   ring
 
-theorem self_margin_zero {V A : Type*} [Fintype V] [Fintype A]
+theorem self_margin_zero {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a : A) : margin P a a = 0 := by
   classical
   dsimp [margin]
   simp
 
-theorem ne_of_margin_pos {V A : Type*} [Fintype V] [Fintype A]
+theorem ne_of_margin_pos {V A : Type} [Fintype V] [Fintype A]
     {P : Profile V A} {a b : A} (h : margin_pos P a b) : a ≠ b := by
   intro hEq
   subst hEq
@@ -42,7 +42,7 @@ theorem ne_of_margin_pos {V A : Type*} [Fintype V] [Fintype A]
     simpa [margin_pos, self_margin_zero] using h
   exact (lt_irrefl 0 h0)
 
-lemma unanimous_margin {V A : Type*} [Fintype V] [Fintype A] [Nonempty V]
+lemma unanimous_margin {V A : Type} [Fintype V] [Fintype A] [Nonempty V]
     (P : Profile V A) (x y : A) :
     (∀ v : V, Prefers P v x y) → margin_pos P x y := by
   classical
@@ -68,7 +68,7 @@ lemma unanimous_margin {V A : Type*} [Fintype V] [Fintype A] [Nonempty V]
   dsimp [margin_pos, margin]
   simpa [hxy_card, hyx_card] using hpos
 
-lemma unanimous_margin_eq_card {V A : Type*} [Fintype V] [Fintype A]
+lemma unanimous_margin_eq_card {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x y : A) :
     (∀ v : V, Prefers P v x y) → margin P x y = (Fintype.card V : Int) := by
   classical
@@ -92,7 +92,7 @@ lemma unanimous_margin_eq_card {V A : Type*} [Fintype V] [Fintype A]
   dsimp [margin]
   simpa [hxy_card, hyx_card]
 
-lemma margin_le_card {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_le_card {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a b : A) :
     margin P a b ≤ (Fintype.card V : Int) := by
   classical
@@ -116,7 +116,7 @@ lemma margin_le_card {V A : Type*} [Fintype V] [Fintype A]
     simpa [margin] using hsub
   exact hmargin.trans h1'
 
-lemma unanimous_of_margin_ge_card {V A : Type*} [Fintype V] [Fintype A]
+lemma unanimous_of_margin_ge_card {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a b : A) :
     (Fintype.card V : Int) ≤ margin P a b → ∀ v : V, Prefers P v a b := by
   classical
@@ -149,12 +149,12 @@ lemma unanimous_of_margin_ge_card {V A : Type*} [Fintype V] [Fintype A]
     lt_of_le_of_lt hmargin_le hcard_lt'
   exact (not_lt_of_ge hle hlt)
 
-lemma margin_pos_irrefl {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_pos_irrefl {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) : ∀ x, ¬ margin_pos P x x := by
   intro x
   simp [margin_pos, self_margin_zero]
 
-lemma margin_pos_asymm {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_pos_asymm {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) : ∀ x y, margin_pos P x y → ¬ margin_pos P y x := by
   intro x y hxy hyx
   have hskew : margin P y x = - margin P x y := by
@@ -167,7 +167,7 @@ lemma margin_pos_asymm {V A : Type*} [Fintype V] [Fintype A]
     simpa [margin_pos] using hyx
   exact (lt_asymm hyx' hneg)
 
-lemma margin_addVoter_eq_of_prefers {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_addVoter_eq_of_prefers {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (ballot : LinearOrder A) (a b : A) (h : ballot.lt a b) :
     margin (addVoter P ballot) a b = margin P a b + 1 := by
   classical
@@ -233,7 +233,7 @@ lemma margin_addVoter_eq_of_prefers {V A : Type*} [Fintype V] [Fintype A]
   simp [hcard_ab, hcard_ba]
   ring
 
-lemma margin_addVoter_eq_of_prefers_rev {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_addVoter_eq_of_prefers_rev {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (ballot : LinearOrder A) (a b : A) (h : ballot.lt b a) :
     margin (addVoter P ballot) a b = margin P a b - 1 := by
   have hswap : margin (addVoter P ballot) b a = margin P b a + 1 :=
@@ -248,7 +248,7 @@ lemma margin_addVoter_eq_of_prefers_rev {V A : Type*} [Fintype V] [Fintype A]
     _ = (- margin P b a) - 1 := by ring
     _ = margin P a b - 1 := by simpa [hskewP]
 
-lemma margin_le_addVoter {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_le_addVoter {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (ballot : LinearOrder A) (a b : A) :
     margin P a b ≤ margin (addVoter P ballot) a b + 1 := by
   classical
@@ -269,7 +269,7 @@ lemma margin_le_addVoter {V A : Type*} [Fintype V] [Fintype A]
           margin_addVoter_eq_of_prefers_rev P ballot a b hgt'
         linarith [hmargin]
 
-lemma margin_addVoter_le {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_addVoter_le {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (ballot : LinearOrder A) (a b : A) :
     margin (addVoter P ballot) a b ≤ margin P a b + 1 := by
   classical

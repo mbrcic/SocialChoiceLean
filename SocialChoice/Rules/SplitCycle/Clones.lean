@@ -12,16 +12,16 @@ namespace SocialChoice
 
 open Finset
 
-noncomputable local instance {A : Type*} [Fintype A] (c : A) : Fintype {x : A // x ≠ c} := by
+noncomputable local instance {A : Type} [Fintype A] (c : A) : Fintype {x : A // x ≠ c} := by
   classical
   infer_instance
 
-@[simp] lemma prefers_minusCandidate_iff {V A : Type*} [Fintype V] [Fintype A]
+@[simp] lemma prefers_minusCandidate_iff {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) (v : V) (a b : {x : A // x ≠ c}) :
     Prefers (minusCandidate P c) v a b ↔ Prefers P v a b := by
   rfl
 
-lemma margin_eq_margin_minusCandidate {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_eq_margin_minusCandidate {V A : Type} [Fintype V] [Fintype A]
     {P : Profile V A} {c : A} {a b : {x : A // x ≠ c}} :
     margin P a b = margin (minusCandidate P c) a b := by
   classical
@@ -42,7 +42,7 @@ lemma margin_eq_margin_minusCandidate {V A : Type*} [Fintype V] [Fintype A]
   dsimp [margin]
   simp [h1, h2]
 
-lemma margin_eq_clone_non_clone {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_eq_clone_non_clone {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c})
     (b e : {x : A // x ≠ c}) (H : e ∈ D) (Hb : b ∉ D) :
     clones P c D → margin P c b = margin (minusCandidate P c) e b := by
@@ -68,7 +68,7 @@ lemma margin_eq_clone_non_clone {V A : Type*} [Fintype V] [Fintype A]
   dsimp [margin]
   simp [h1, h2]
 
-lemma margin_eq_clone_non_clone' {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_eq_clone_non_clone' {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c})
     {b e : {x : A // x ≠ c}} (H : e ∈ D) (Hb : b ∉ D) :
     clones P c D → margin P b c = margin (minusCandidate P c) b e := by
@@ -87,7 +87,7 @@ lemma margin_eq_clone_non_clone' {V A : Type*} [Fintype V] [Fintype A]
       symm
       exact hskewP'
 
-lemma clone_mem_iff {A : Type*} [Fintype A] (c : A) (D : Set {x : A // x ≠ c})
+lemma clone_mem_iff {A : Type} [Fintype A] (c : A) (D : Set {x : A // x ≠ c})
     {a : A} (ha : a ≠ c) :
     (∀ p : a ≠ c, (⟨a, p⟩ : {x : A // x ≠ c}) ∈ D) ↔
       (⟨a, ha⟩ : {x : A // x ≠ c}) ∈ D := by
@@ -97,7 +97,7 @@ lemma clone_mem_iff {A : Type*} [Fintype A] (c : A) (D : Set {x : A // x ≠ c})
   · intro h p
     simpa using h
 
-lemma margin_eq_clone_left {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_eq_clone_left {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c})
     {a : A} (ha : a ≠ c) (haD : (⟨a, ha⟩ : {x : A // x ≠ c}) ∈ D)
     {b : {x : A // x ≠ c}} (hb : b ∉ D) (clone : clones P c D) :
@@ -108,7 +108,7 @@ lemma margin_eq_clone_left {V A : Type*} [Fintype V] [Fintype A]
     simpa using (h1.trans h2.symm)
   exact hcb.symm
 
-lemma margin_eq_clone_right {V A : Type*} [Fintype V] [Fintype A]
+lemma margin_eq_clone_right {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c})
     {a : {x : A // x ≠ c}} (ha : a ∉ D)
     {e : {x : A // x ≠ c}} (he : e ∈ D) (clone : clones P c D) :
@@ -128,7 +128,7 @@ lemma margin_eq_clone_right {V A : Type*} [Fintype V] [Fintype A]
       symm
       exact hskewP'
 
-noncomputable def removeClones {A : Type*} [Fintype A]
+noncomputable def removeClones {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) : List A → List A := by
   classical
   intro l
@@ -137,7 +137,7 @@ noncomputable def removeClones {A : Type*} [Fintype A]
       (l.map (fun x =>
         if (∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D) then c else x))
 
-lemma replaceClonesHelper {A : Type*} [Fintype A]
+lemma replaceClonesHelper {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) {x : A}
     (h : ¬∀ (p : x ≠ c), (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D) : x ≠ c := by
   intro hx
@@ -146,7 +146,7 @@ lemma replaceClonesHelper {A : Type*} [Fintype A]
   intro p
   exact (False.elim (p rfl))
 
-noncomputable def replaceClones {A : Type*} [Fintype A]
+noncomputable def replaceClones {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (d : {x : A // x ≠ c}) (_hd : d ∈ D) :
     List A → List {x : A // x ≠ c} := by
   classical
@@ -158,13 +158,13 @@ noncomputable def replaceClones {A : Type*} [Fintype A]
           (fun _ => d)
           (fun h => ⟨x, replaceClonesHelper c D h⟩)))
 
-noncomputable def removeClones' {A : Type*} [Fintype A]
+noncomputable def removeClones' {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) : List {x : A // x ≠ c} → List A := by
   classical
   intro l
   exact to_path (l.map (fun x => if x ∈ D then c else (x : A)))
 
-lemma removeClones_nil_iff {A : Type*} [Fintype A]
+lemma removeClones_nil_iff {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List A) :
     l = [] ↔ removeClones c D l = [] := by
   classical
@@ -181,12 +181,12 @@ lemma removeClones_nil_iff {A : Type*} [Fintype A]
       exact (to_path_eq_nil_iff _).1 this
     exact (List.map_eq_nil_iff.mp h')
 
-lemma removeClones_ne_nil_iff {A : Type*} [Fintype A]
+lemma removeClones_ne_nil_iff {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List A) :
     l ≠ [] ↔ removeClones c D l ≠ [] :=
   not_iff_not.mpr (removeClones_nil_iff c D l)
 
-lemma removeClones_nodup {A : Type*} [Fintype A]
+lemma removeClones_nodup {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List A) :
     (removeClones c D l).Nodup := by
   classical
@@ -194,7 +194,7 @@ lemma removeClones_nodup {A : Type*} [Fintype A]
     (to_path_nodup (l.map (fun x =>
       if (∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D) then c else x)))
 
-lemma removeClones_first_elem {A : Type*} [Fintype A]
+lemma removeClones_first_elem {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List A) (a : A)
     (hnot : ∀ p : a ≠ c, (⟨a, p⟩ : {x : A // x ≠ c}) ∉ D)
     (hne : l ≠ []) :
@@ -238,7 +238,7 @@ lemma removeClones_first_elem {A : Type*} [Fintype A]
     _ = f a := by simpa [h0]
     _ = a := hf
 
-lemma removeClones_last_elem {A : Type*} [Fintype A]
+lemma removeClones_last_elem {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List A) (a : A)
     (hnot : ∀ p : a ≠ c, (⟨a, p⟩ : {x : A // x ≠ c}) ∉ D)
     (hne : l ≠ []) :
@@ -276,7 +276,7 @@ lemma removeClones_last_elem {A : Type*} [Fintype A]
     _ = f a := by simpa [hlast]
     _ = a := hf
 
-lemma removeClones_last_c {A : Type*} [Fintype A]
+lemma removeClones_last_c {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List A) (d : {x : A // x ≠ c})
     (hd : d ∈ D) (hne : l ≠ []) :
     l.getLast hne = (d : A) →
@@ -309,7 +309,7 @@ lemma removeClones_last_c {A : Type*} [Fintype A]
     _ = f d := by simpa [hlast]
     _ = c := hf
 
-lemma removeClones'_nil_iff {A : Type*} [Fintype A]
+lemma removeClones'_nil_iff {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List {x : A // x ≠ c}) :
     l = [] ↔ removeClones' c D l = [] := by
   classical
@@ -324,19 +324,19 @@ lemma removeClones'_nil_iff {A : Type*} [Fintype A]
       exact (to_path_eq_nil_iff _).1 this
     exact (List.map_eq_nil_iff.mp h')
 
-lemma removeClones'_ne_nil_iff {A : Type*} [Fintype A]
+lemma removeClones'_ne_nil_iff {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List {x : A // x ≠ c}) :
     l ≠ [] ↔ removeClones' c D l ≠ [] :=
   not_iff_not.mpr (removeClones'_nil_iff c D l)
 
-lemma removeClones'_nodup {A : Type*} [Fintype A]
+lemma removeClones'_nodup {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List {x : A // x ≠ c}) :
     (removeClones' c D l).Nodup := by
   classical
   simpa [removeClones'] using
     (to_path_nodup (l.map (fun x => if x ∈ D then c else (x : A))))
 
-lemma removeClones'_first_elem {A : Type*} [Fintype A]
+lemma removeClones'_first_elem {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List {x : A // x ≠ c})
     (a : {x : A // x ≠ c}) (hnot : a ∉ D) (hne : l ≠ []) :
     l[0]'(List.length_pos_of_ne_nil hne) = a →
@@ -372,7 +372,7 @@ lemma removeClones'_first_elem {A : Type*} [Fintype A]
     _ = f a := by simpa [h0]
     _ = a := hf
 
-lemma removeClones'_last_elem {A : Type*} [Fintype A]
+lemma removeClones'_last_elem {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List {x : A // x ≠ c})
     (a : {x : A // x ≠ c}) (hnot : a ∉ D) (hne : l ≠ []) :
     l.getLast hne = a →
@@ -402,7 +402,7 @@ lemma removeClones'_last_elem {A : Type*} [Fintype A]
     _ = f a := by simpa [hlast]
     _ = a := hf
 
-lemma replaceClones_nil_iff {A : Type*} [Fintype A]
+lemma replaceClones_nil_iff {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (d : {x : A // x ≠ c}) (hd : d ∈ D) (l : List A) :
     l = [] ↔ replaceClones c D d hd l = [] := by
   classical
@@ -423,12 +423,12 @@ lemma replaceClones_nil_iff {A : Type*} [Fintype A]
       exact (to_path_eq_nil_iff _).1 this
     exact (List.map_eq_nil_iff.mp h')
 
-lemma replaceClones_ne_nil_iff {A : Type*} [Fintype A]
+lemma replaceClones_ne_nil_iff {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (d : {x : A // x ≠ c}) (hd : d ∈ D) (l : List A) :
     l ≠ [] ↔ replaceClones c D d hd l ≠ [] :=
   not_iff_not.mpr (replaceClones_nil_iff c D d hd l)
 
-lemma replaceClones_nodup {A : Type*} [Fintype A]
+lemma replaceClones_nodup {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (d : {x : A // x ≠ c}) (hd : d ∈ D) (l : List A) :
     (replaceClones c D d hd l).Nodup := by
   classical
@@ -438,7 +438,7 @@ lemma replaceClones_nodup {A : Type*} [Fintype A]
         (fun _ => d)
         (fun h => ⟨x, replaceClonesHelper c D h⟩))))
 
-lemma replaceClones_first_elem {A : Type*} [Fintype A]
+lemma replaceClones_first_elem {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (d : {x : A // x ≠ c}) (hd : d ∈ D)
     (l : List A) (a : A)
     (hnot : ¬∀ p : a ≠ c, (⟨a, p⟩ : {x : A // x ≠ c}) ∈ D)
@@ -478,7 +478,7 @@ lemma replaceClones_first_elem {A : Type*} [Fintype A]
     _ = f a := by simpa [h0]
     _ = ⟨a, replaceClonesHelper c D hnot⟩ := hf
 
-lemma replaceClones_last_elem {A : Type*} [Fintype A]
+lemma replaceClones_last_elem {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (d : {x : A // x ≠ c}) (hd : d ∈ D)
     (l : List A) (a : A)
     (hnot : ¬∀ p : a ≠ c, (⟨a, p⟩ : {x : A // x ≠ c}) ∈ D)
@@ -513,7 +513,7 @@ lemma replaceClones_last_elem {A : Type*} [Fintype A]
     _ = f a := by simpa [hlast]
     _ = ⟨a, replaceClonesHelper c D hnot⟩ := hf
 
-lemma replaceClones_last_c {A : Type*} [Fintype A]
+lemma replaceClones_last_c {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (d : {x : A // x ≠ c}) (hd : d ∈ D)
     (l : List A) (hne : l ≠ []) :
     l.getLast hne = c →
@@ -550,9 +550,9 @@ lemma replaceClones_last_c {A : Type*} [Fintype A]
 
 section ChainTransport
 
-variable {V A : Type*} [Fintype V] [Fintype A]
+variable {V A : Type} [Fintype V] [Fintype A]
 
-lemma not_clone_mem {A : Type*} [Fintype A] (c : A) (D : Set {x : A // x ≠ c})
+lemma not_clone_mem {A : Type} [Fintype A] (c : A) (D : Set {x : A // x ≠ c})
     {x : A} (h : ¬∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D) :
     (⟨x, replaceClonesHelper c D h⟩ : {x : A // x ≠ c}) ∉ D := by
   intro hx
@@ -562,7 +562,7 @@ lemma not_clone_mem {A : Type*} [Fintype A] (c : A) (D : Set {x : A // x ≠ c})
     exact (hiff.mpr hx)
   exact h hall
 
-lemma chain_of_chain_eq_or {X : Type*} {R : X → X → Prop} {l : List X}
+lemma chain_of_chain_eq_or {X : Type} {R : X → X → Prop} {l : List X}
     (hchain : List.IsChain (fun a b => a = b ∨ R a b) l) (hnodup : l.Nodup) :
     List.IsChain R l := by
   refine (List.isChain_iff_getElem (R := R) (l := l)).2 ?_
@@ -1148,9 +1148,9 @@ end ChainTransport
 
 section DefeatEquivalence
 
-variable {V A : Type*} [Fintype V] [Fintype A]
+variable {V A : Type} [Fintype V] [Fintype A]
 
-def splitCycleDefeatsPath {V A : Type*} [Fintype V] [Fintype A]
+def splitCycleDefeatsPath {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x y : A) : Prop :=
   margin_pos P x y ∧
     ¬ ∃ l : List A, ∃ h : l ≠ [],
@@ -1159,7 +1159,7 @@ def splitCycleDefeatsPath {V A : Type*} [Fintype V] [Fintype A]
           l.getLast h = x ∧
             List.IsChain (fun a b => margin P x y ≤ margin P a b) l
 
-lemma cycle_of_path {X : Type*} {R : X → X → Prop} {l : List X}
+lemma cycle_of_path {X : Type} {R : X → X → Prop} {l : List X}
     {x y : X} (hne : l ≠ [])
     (hfirst : l[0]'(List.length_pos_of_ne_nil hne) = y)
     (hlast : l.getLast hne = x)
@@ -1173,7 +1173,7 @@ lemma cycle_of_path {X : Type*} {R : X → X → Prop} {l : List X}
   refine ⟨hne, ?_⟩
   simpa [hlast] using hchain'
 
-lemma path_of_cycle {X : Type*} [DecidableEq X] {R : X → X → Prop}
+lemma path_of_cycle {X : Type} [DecidableEq X] {R : X → X → Prop}
     {c : List X} {x y : X} (hcycle : cycle R c) (hx : x ∈ c) (hy : y ∈ c) :
     ∃ l : List X, ∃ h : l ≠ [],
       l.Nodup ∧
@@ -1257,7 +1257,7 @@ lemma path_of_cycle {X : Type*} [DecidableEq X] {R : X → X → Prop}
     exact hlast'.trans hlast_l3
   exact ⟨l, hne_l, hnodup_l, hfirst_l, hlast_l, hchain_l⟩
 
-lemma splitCycleDefeats_iff_path {V A : Type*} [Fintype V] [Fintype A]
+lemma splitCycleDefeats_iff_path {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x y : A) :
     splitCycleDefeats P x y ↔ splitCycleDefeatsPath P x y := by
   classical
@@ -1291,7 +1291,7 @@ end DefeatEquivalence
 
 section CloneDefeats
 
-variable {V A : Type*} [Fintype V] [Fintype A]
+variable {V A : Type} [Fintype V] [Fintype A]
 
 lemma clone_maintains_defeat (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c})
     (a b : {x : A // x ≠ c}) (Hb : b ∉ D) :
@@ -1776,7 +1776,7 @@ end CloneDefeats
 
 section Final
 
-lemma cycle_of_forall_defeater {X : Type*} [Fintype X]
+lemma cycle_of_forall_defeater {X : Type} [Fintype X]
     {R : X → X → Prop} (x0 : X) (hdef : ∀ x, ∃ y, R y x) :
     ∃ c : List X, cycle R c := by
   classical
@@ -1924,7 +1924,7 @@ lemma cycle_of_forall_defeater {X : Type*} [Fintype X]
         simpa [cS, hlast] using hchain_cycle
       exact ⟨cS, hcycleS⟩
 
-variable {V A : Type*} [Fintype V] [Fintype A]
+variable {V A : Type} [Fintype V] [Fintype A]
 
 theorem non_clone_choice_ind_clones_split_cycle : nonCloneChoiceIndClones splitCycle := by
   intro V A _ _ P c D clone a ha

@@ -81,7 +81,7 @@ noncomputable def profileAll (w : Fin 3) : Profile (Electorate (Fin 9) (voters6 
   restrictProfile (fullProfile w) (voters6 ∪ voters3) (by
     intro x hx; exact (Finset.mem_univ x))
 
-lemma restrictProfile_nested {U A : Type*} [DecidableEq U] [Fintype A]
+lemma restrictProfile_nested {U A : Type} [DecidableEq U] [Fintype A]
     {S T W : Finset U} (hST : S ⊆ T) (hTW : T ⊆ W)
     (Q : Profile (Electorate U W) A) :
     restrictProfile (restrictProfile Q T hTW) S hST =
@@ -141,7 +141,7 @@ lemma union_condorcet_prev (w : Fin 3) :
 
 /-- No Condorcet-consistent rule satisfying subset reinforcement on 9 voters. -/
 theorem no_condorcet_subset_reinforcement_9
-    (f : VotingRule.{0, 0}) (hf : IsVotingRule f)
+    (f : VotingRule) (hf : IsVotingRule f)
     (hcond : CondorcetConsistency f) (hsub : SubsetReinforcement f) : False := by
   classical
   -- Choose a candidate from the 6-voter cycle profile; make that the reinforcement winner.
@@ -154,7 +154,13 @@ theorem no_condorcet_subset_reinforcement_9
     hcond (profile3 w) w (reinforcement_block_condorcet w)
   -- Subset reinforcement lifts w to the combined profile.
   have hw_union : w ∈ f (profileAll w) := by
-    have hsubset := hsub (V := voters6) (W := voters3)
+    have hdisj : Disjoint voters6 voters3 := by
+      refine Finset.disjoint_left.mpr ?_
+      intro v hv6 hv3
+      have hv6' : v.val < 6 := (Finset.mem_filter.mp hv6).2
+      have hv3' : 6 ≤ v.val := (Finset.mem_filter.mp hv3).2
+      exact (Nat.not_lt_of_ge hv3' hv6')
+    have hsubset := hsub (V := voters6) (W := voters3) (hdisj := hdisj)
       (P := profile6 w) (Q := profile3 w) (R := profileAll w)
       (by
         -- R restricted to voters6 is profile6 w

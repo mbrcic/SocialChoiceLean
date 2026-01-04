@@ -5,7 +5,7 @@ import SocialChoice.Rules.ScoringRules.Defs
 
 namespace SocialChoice
 
-lemma rank_relabelBallot_symm {A : Type*} [Fintype A] (r : LinearOrder A)
+lemma rank_relabelBallot_symm {A : Type} [Fintype A] (r : LinearOrder A)
     (σ : Equiv.Perm A) (c : A) :
     rank (relabelBallot r σ.symm) (σ c) = rank r c := by
   classical

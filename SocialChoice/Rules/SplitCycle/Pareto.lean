@@ -6,7 +6,7 @@ namespace SocialChoice
 
 open Finset
 
-lemma prefers_acyclic {V A : Type*} [Fintype V] [Fintype A]
+lemma prefers_acyclic {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (v : V) : acyclic (fun a b => Prefers P v a b) := by
   intro c hc
   rcases hc with ⟨hne, hchain⟩

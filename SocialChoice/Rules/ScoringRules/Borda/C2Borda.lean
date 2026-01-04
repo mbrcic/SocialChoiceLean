@@ -9,7 +9,7 @@ open Finset
 open scoped BigOperators
 open Classical
 
-noncomputable def c2BordaScore {V A : Type*} [Fintype V] [Fintype A]
+noncomputable def c2BordaScore {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x : A) : Int := by
   classical
   exact (Finset.univ.sum (fun y => margin P x y))
@@ -24,7 +24,7 @@ noncomputable def c2BordaRule : VotingRule :=
       exact (Finset.univ.filter (fun c => c2BordaScore P c = maxScore))
     · exact ∅
 
-lemma prefers_partition_card {A : Type*} [Fintype A] (r : LinearOrder A) (x : A) :
+lemma prefers_partition_card {A : Type} [Fintype A] (r : LinearOrder A) (x : A) :
     (Finset.univ.filter (fun y => r.lt y x)).card +
         (Finset.univ.filter (fun y => r.lt x y)).card =
       Fintype.card A - 1 := by
@@ -82,7 +82,7 @@ lemma prefers_partition_card {A : Type*} [Fintype A] (r : LinearOrder A) (x : A)
     simpa using (Finset.card_erase_of_mem (s := (Finset.univ : Finset A)) hx)
   exact hsum.trans herase
 
-lemma bordaScore_eq_card_prefers {A : Type*} [Fintype A] (r : LinearOrder A) (x : A) :
+lemma bordaScore_eq_card_prefers {A : Type} [Fintype A] (r : LinearOrder A) (x : A) :
     bordaScore (Fintype.card A) (rank r x) =
       Int.ofNat ((Finset.univ.filter (fun y => r.lt x y)).card) := by
   classical
@@ -103,7 +103,7 @@ lemma bordaScore_eq_card_prefers {A : Type*} [Fintype A] (r : LinearOrder A) (x 
     exact hsum''
   simp [bordaScore, hbelow]
 
-lemma c2BordaScore_eq_affine {V A : Type*} [Fintype V] [Fintype A]
+lemma c2BordaScore_eq_affine {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x : A) :
     c2BordaScore P x =
       2 * scoreCandidate P (fun r => bordaScore (Fintype.card A) r) x -
@@ -339,7 +339,7 @@ lemma c2BordaScore_eq_affine {V A : Type*} [Fintype V] [Fintype A]
         (Fintype.card V : Int) * ((Fintype.card A : Int) - 1) := by
         simpa [hscore]
 
-theorem borda_eq_c2BordaRule {V A : Type*} [Fintype V] [Fintype A]
+theorem borda_eq_c2BordaRule {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) : borda P = c2BordaRule P := by
   classical
   by_cases h : (Finset.univ : Finset A).Nonempty
@@ -415,7 +415,7 @@ theorem borda_eq_c2BordaRule {V A : Type*} [Fintype V] [Fintype A]
   · unfold borda scoringRule c2BordaRule scoringWinners
     simp [h]
 
-lemma c2BordaScore_pos_of_condorcet_winner {V A : Type*} [Fintype V] [Fintype A]
+lemma c2BordaScore_pos_of_condorcet_winner {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x : A) (hwin : condorcet_winner P x) (hne : ∃ y, y ≠ x) :
     0 < c2BordaScore P x := by
   classical
@@ -442,7 +442,7 @@ lemma c2BordaScore_pos_of_condorcet_winner {V A : Type*} [Fintype V] [Fintype A]
     simpa [c2BordaScore, hx0] using hsum'
   simpa [hsum] using hpos
 
-lemma c2BordaScore_neg_of_condorcet_loser {V A : Type*} [Fintype V] [Fintype A]
+lemma c2BordaScore_neg_of_condorcet_loser {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x : A) (hlose : condorcet_loser P x) :
     c2BordaScore P x < 0 := by
   classical
@@ -489,7 +489,7 @@ lemma c2BordaScore_neg_of_condorcet_loser {V A : Type*} [Fintype V] [Fintype A]
     simpa using (neg_neg_of_pos hpos)
   simpa [hsum_neg] using hneg
 
-lemma c2BordaScore_sum_zero {V A : Type*} [Fintype V] [Fintype A]
+lemma c2BordaScore_sum_zero {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) :
     (Finset.univ : Finset A).sum (fun x => c2BordaScore P x) = 0 := by
   classical
@@ -532,7 +532,7 @@ lemma c2BordaScore_sum_zero {V A : Type*} [Fintype V] [Fintype A]
     linarith
   simpa [c2BordaScore] using hsum
 
-lemma c2BordaRule_score_nonneg {V A : Type*} [Fintype V] [Fintype A]
+lemma c2BordaRule_score_nonneg {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) {x : A} (hx : x ∈ c2BordaRule P) :
     0 ≤ c2BordaScore P x := by
   classical
