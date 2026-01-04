@@ -12,6 +12,16 @@ open Finset
 structure Profile (V A : Type*) [Fintype V] [Fintype A] where
   pref : V → LinearOrder A
 
+@[ext] lemma Profile.ext {V A : Type*} [Fintype V] [Fintype A]
+    {P Q : Profile V A} (h : ∀ v, P.pref v = Q.pref v) : P = Q := by
+  cases P with
+  | mk prefP =>
+      cases Q with
+      | mk prefQ =>
+          have hfun : prefP = prefQ := funext h
+          cases hfun
+          rfl
+
 abbrev VotingRule :=
   ∀ {V A : Type*} [Fintype V] [Fintype A], Profile V A → Finset A
 

@@ -9,8 +9,10 @@ resoluteness, Condorcet consistency, and resolute participation
 simultaneously. It works by analyzing several explicit profiles
 with m=4 alternatvies and up to n=12 voters.
 
-The proof follows the computer-aided proof of Theorem 3 in
-Brandt et al. (2016).
+The proof follows the computer-aided proof of
+Brandt et al. (2016), in the improved version presented
+in Dominik Peters' 2019 DPhil thesis:
+https://dominik-peters.de/publications/thesis.pdf#page=27
 -/
 
 namespace SocialChoice
@@ -364,105 +366,107 @@ lemma P7_to_P8_preserve_ac {f : VotingRule} (hf : Resolute f)
   have h2S : (2 : Fin 4) ∈ S := hsubset h2_mem
   simp [S] at h2S
 
--- Condorcet Winners
+-- Condorcet winners for the four key profiles.
 
-set_option maxHeartbeats 1000000
+@[simp] private lemma P2_strict_majority_0 : StrictMajority (votersPreferring P2ProfileSub 2 0) := by
+  unfold StrictMajority votersPreferring
+  simp [P2ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
+        V2, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P2_strict_majority_1 : StrictMajority (votersPreferring P2ProfileSub 2 1) := by
+  unfold StrictMajority votersPreferring
+  simp [P2ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
+        V2, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P2_strict_majority_3 : StrictMajority (votersPreferring P2ProfileSub 2 3) := by
+  unfold StrictMajority votersPreferring
+  simp [P2ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
+        V2, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P4_strict_majority_1 : StrictMajority (votersPreferring P4ProfileSub 0 1) := by
+  unfold StrictMajority votersPreferring
+  simp [P4ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
+        V4, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P4_strict_majority_2 : StrictMajority (votersPreferring P4ProfileSub 0 2) := by
+  unfold StrictMajority votersPreferring
+  simp [P4ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
+        V4, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P4_strict_majority_3 : StrictMajority (votersPreferring P4ProfileSub 0 3) := by
+  unfold StrictMajority votersPreferring
+  simp [P4ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
+        V4, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P6_strict_majority_0 : StrictMajority (votersPreferring P6ProfileSub 1 0) := by
+  unfold StrictMajority votersPreferring
+  simp [P6ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+        V6, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P6_strict_majority_2 : StrictMajority (votersPreferring P6ProfileSub 1 2) := by
+  unfold StrictMajority votersPreferring
+  simp [P6ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+        V6, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P6_strict_majority_3 : StrictMajority (votersPreferring P6ProfileSub 1 3) := by
+  unfold StrictMajority votersPreferring
+  simp [P6ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+        V6, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P8_strict_majority_0 : StrictMajority (votersPreferring P8ProfileSub 3 0) := by
+  unfold StrictMajority votersPreferring
+  simp [P8ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+        V8, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P8_strict_majority_1 : StrictMajority (votersPreferring P8ProfileSub 3 1) := by
+  unfold StrictMajority votersPreferring
+  simp [P8ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+        V8, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+        ListBallot.mk']
+  decide
+
+@[simp] private lemma P8_strict_majority_2 : StrictMajority (votersPreferring P8ProfileSub 3 2) := by
+  unfold StrictMajority votersPreferring
+  simp [P8ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
+        V8, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
+        ListBallot.mk']
+  decide
 
 lemma P2_condorcet_winner_c : CondorcetWinner P2ProfileSub 2 := by
   intro y hy
-  fin_cases y
-  · -- Case y = 0
-    unfold StrictMajority votersPreferring
-    simp [P2ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
-          V2, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
-          ListBallot.mk']
-    decide
-  · -- Case y = 1
-    unfold StrictMajority votersPreferring
-    simp [P2ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
-          V2, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
-          ListBallot.mk']
-    decide
-  · -- Case y = 2
-    contradiction
-  · -- Case y = 3
-    unfold StrictMajority votersPreferring
-    simp [P2ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
-          V2, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
-          ListBallot.mk']
-    decide
+  fin_cases y <;> first | cases hy rfl | simp
 
 lemma P4_condorcet_winner_a : CondorcetWinner P4ProfileSub 0 := by
   intro y hy
-  fin_cases y
-  · -- Case y = 0
-    contradiction
-  · -- Case y = 1
-    unfold StrictMajority votersPreferring
-    simp [P4ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
-          V4, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
-          ListBallot.mk']
-    decide
-  · -- Case y = 2
-    unfold StrictMajority votersPreferring
-    simp [P4ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
-          V4, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
-          ListBallot.mk']
-    decide
-  · -- Case y = 3
-    unfold StrictMajority votersPreferring
-    simp [P4ProfileSub, profileOnSubset, Prefers, ListBallot.lt_iff_idxOf,
-          V4, P1Ballots, ballotABCD, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB,
-          ListBallot.mk']
-    decide
+  fin_cases y <;> first | cases hy rfl | simp
 
 lemma P6_condorcet_winner_b : CondorcetWinner P6ProfileSub 1 := by
   intro y hy
-  fin_cases y
-  · -- Case y = 0
-    unfold StrictMajority votersPreferring
-    simp [P6ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
-          V6, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
-          ListBallot.mk']
-    decide
-  · -- Case y = 1
-    contradiction
-  · -- Case y = 2
-    unfold StrictMajority votersPreferring
-    simp [P6ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
-          V6, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
-          ListBallot.mk']
-    decide
-  · -- Case y = 3
-    unfold StrictMajority votersPreferring
-    simp [P6ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
-          V6, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
-          ListBallot.mk']
-    decide
+  fin_cases y <;> first | cases hy rfl | simp
 
 lemma P8_condorcet_winner_d : CondorcetWinner P8ProfileSub 3 := by
   intro y hy
-  fin_cases y
-  · -- Case y = 0
-    unfold StrictMajority votersPreferring
-    simp [P8ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
-          V8, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
-          ListBallot.mk']
-    decide
-  · -- Case y = 1
-    unfold StrictMajority votersPreferring
-    simp [P8ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
-          V8, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
-          ListBallot.mk']
-    decide
-  · -- Case y = 2
-    unfold StrictMajority votersPreferring
-    simp [P8ProfileSub, profileOnSubsetP5, Prefers, ListBallot.lt_iff_idxOf,
-          V8, P5Ballots, ballotABDC, ballotBDCA, ballotCABD, ballotDCAB, ballotDCBA,
-          ListBallot.mk']
-    decide
-  · -- Case y = 3
-    contradiction
+  fin_cases y <;> first | cases hy rfl | simp
 
 -- Main Theorem
 
