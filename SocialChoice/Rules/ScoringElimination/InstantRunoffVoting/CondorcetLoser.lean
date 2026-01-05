@@ -3,6 +3,7 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Data.Finset.Max
 import Mathlib.Data.Fintype.EquivFin
 import Mathlib.Tactic
+import SocialChoice.Rules.ScoringElimination.Defs
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
 import SocialChoice.Axioms.Condorcet
 
@@ -92,28 +93,6 @@ lemma margin_eq_margin_restrictProfile {V A : Type} [Fintype V] [Fintype A] [Dec
   dsimp [margin]
   simp [h1, h2]
 
-lemma card_subtype_ne_eq {A : Type} [Fintype A] [DecidableEq A] (c : A) :
-    Fintype.card {x : A // x ≠ c} = Fintype.card A - 1 := by
-  classical
-  -- Convert the subtype cardinality to a filtered finset cardinality.
-  have h := (Fintype.card_subtype (α := A) (p := fun x => x ≠ c))
-  -- Rewrite `{x | x ≠ c}` as `univ.erase c`.
-  have hfilter : ({x : A | x ≠ c} : Finset A) = (Finset.univ.erase c) := by
-    ext x
-    by_cases hx : x = c <;> simp [hx]
-  have h' : Fintype.card {x : A // x ≠ c} = (Finset.univ.erase c).card := by
-    -- Avoid `simp` reducing the equality to `True`.
-    have h' := h
-    -- Rewrite the RHS finset using `hfilter`.
-    rw [hfilter] at h'
-    exact h'
-  have herase : (Finset.univ.erase c).card = (Finset.univ : Finset A).card - 1 :=
-    Finset.card_erase_of_mem (s := (Finset.univ : Finset A)) (a := c) (by simp)
-  calc
-    Fintype.card {x : A // x ≠ c} = (Finset.univ.erase c).card := h'
-    _ = (Finset.univ : Finset A).card - 1 := herase
-    _ = Fintype.card A - 1 := by simp [Finset.card_univ]
-
 lemma one_lt_card_subtype_ne {A : Type} [Fintype A] [DecidableEq A] {c : A}
     (h : 2 < Fintype.card A) : 1 < Fintype.card {x : A // x ≠ c} := by
   -- From `2 < card A`, we get `1 < card A - 1`, and the subtype has that cardinality.
@@ -144,41 +123,6 @@ lemma condorcet_loser_restrictProfile_of_two_lt_card
   · have hone : 1 < Fintype.card {x : A // x ≠ c} := one_lt_card_subtype_ne (A := A) (c := c) hcard
     rcases Fintype.exists_ne_of_one_lt_card hone (⟨d, hdc⟩ : {x : A // x ≠ c}) with ⟨y, hy⟩
     exact ⟨y, hy.symm⟩
-
-lemma not_mem_liftFinset_removed {A : Type} [DecidableEq A] {c : A}
-    (s : Finset {x : A // x ≠ c}) : c ∉ liftFinset s := by
-  classical
-  intro hc
-  -- Unfold `liftFinset` directly at the hypothesis.
-  dsimp [liftFinset] at hc
-  rcases Finset.mem_image.mp hc with ⟨x, _hx, hxval⟩
-  exact x.property (by simpa using hxval)
-
-lemma scoreCandidate_le_of_mem_lowestScoring {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P : Profile V A) (score : Nat → Int) {c e : A}
-    (hc : c ∈ lowestScoring P score) :
-    scoreCandidate P score c ≤ scoreCandidate P score e := by
-  classical
-  by_cases hA : (Finset.univ : Finset A).Nonempty
-  · -- Unfold `lowestScoring` in the nonempty case.
-    simp [lowestScoring, hA] at hc
-    -- Work with the score-set and its minimum.
-    set scoreSet : Finset Int := (Finset.univ.image (fun a : A => scoreCandidate P score a))
-    have hScoreNonempty : scoreSet.Nonempty := by
-      simpa [scoreSet, Finset.Nonempty] using hA.image (fun a : A => scoreCandidate P score a)
-    set minScore : Int := scoreSet.min' hScoreNonempty
-    have hcEq : scoreCandidate P score c = minScore := by
-      simpa [scoreSet, minScore] using hc
-    have heMem : scoreCandidate P score e ∈ scoreSet := by
-      refine Finset.mem_image.mpr ?_
-      exact ⟨e, by simp, rfl⟩
-    have hminle : minScore ≤ scoreCandidate P score e := by
-      -- `min'` is below every member.
-      simpa [minScore] using (Finset.min'_le (s := scoreSet) (x := scoreCandidate P score e) heMem)
-    -- Rewrite `minScore` as `scoreCandidate ... c`.
-    simpa [hcEq.symm] using hminle
-  · -- Empty candidate set: `lowestScoring` is empty, so membership is impossible.
-    simp [lowestScoring, hA] at hc
 
 /-! ### Two-candidate election lemmas -/
 
@@ -326,10 +270,6 @@ lemma condorcet_loser_lower_plurality_two (P : Profile V A) (hcard : Fintype.car
   simpa using hlt
 
 /-! ### Main theorem -/
-
--- The full proof requires more machinery about the elimination procedure.
-
-set_option maxHeartbeats 1000000
 
 theorem irv_condorcet_loser_criterion : condorcet_loser_criterion instantRunoffVoting := by
   intro V A _ _ P d hloser
