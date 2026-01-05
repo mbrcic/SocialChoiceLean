@@ -10,7 +10,3 @@ rev = "master"
 
 [[lean_lib]]
 name = "SocialChoice"
-
-[[lean_exe]]
-name = "social_choice"
-root = "SocialChoice"

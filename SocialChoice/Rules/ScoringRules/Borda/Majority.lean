@@ -8,18 +8,18 @@ open Finset
 
 section LocalExample
 
-abbrev V3 := Fin 3
+abbrev Voters3 := Fin 3
 abbrev A3 := Fin 3
 
 def bordaBallot012 : ListBallot 3 := ListBallot.identity 3
 def bordaBallot120 : ListBallot 3 := ListBallot.mk' [1, 2, 0]
 
-def bordaExampleBallots : V3 → ListBallot 3
+def bordaExampleBallots : Voters3 → ListBallot 3
   | 0 => bordaBallot012
   | 1 => bordaBallot012
   | 2 => bordaBallot120
 
-noncomputable def bordaExampleProfile : Profile V3 A3 :=
+noncomputable def bordaExampleProfile : Profile Voters3 A3 :=
   profileOfListBallots bordaExampleBallots
 
 lemma bordaExampleProfile_eq :
