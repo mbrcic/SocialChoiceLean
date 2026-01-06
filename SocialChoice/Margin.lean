@@ -39,7 +39,7 @@ theorem ne_of_margin_pos {V A : Type} [Fintype V] [Fintype A]
   intro hEq
   subst hEq
   have h0 : (0 : Int) < 0 := by
-    simpa [margin_pos, self_margin_zero] using h
+    simp [margin_pos, self_margin_zero] at h
   exact (lt_irrefl 0 h0)
 
 lemma unanimous_margin {V A : Type} [Fintype V] [Fintype A] [Nonempty V]
@@ -53,7 +53,7 @@ lemma unanimous_margin {V A : Type} [Fintype V] [Fintype A] [Nonempty V]
         (Finset.univ.filter (fun v => Prefers P v x y)) = (Finset.univ : Finset V) := by
       ext v
       simp [hxy v]
-    simpa [hxy_set]
+    simp [hxy_set]
   have hyx_card : (Finset.univ.filter (fun v => Prefers P v y x)).card = 0 := by
     apply Finset.card_eq_zero.mpr
     apply Finset.eq_empty_iff_forall_notMem.mpr
@@ -79,7 +79,7 @@ lemma unanimous_margin_eq_card {V A : Type} [Fintype V] [Fintype A]
         (Finset.univ.filter (fun v => Prefers P v x y)) = (Finset.univ : Finset V) := by
       ext v
       simp [hxy v]
-    simpa [hxy_set]
+    simp [hxy_set]
   have hyx_card : (Finset.univ.filter (fun v => Prefers P v y x)).card = 0 := by
     apply Finset.card_eq_zero.mpr
     apply Finset.eq_empty_iff_forall_notMem.mpr
@@ -90,7 +90,7 @@ lemma unanimous_margin_eq_card {V A : Type} [Fintype V] [Fintype A]
       exact lt_asymm hxyv
     exact hcontra (by simpa using (Finset.mem_filter.mp hv).2)
   dsimp [margin]
-  simpa [hxy_card, hyx_card]
+  simp [hxy_card, hyx_card]
 
 lemma margin_le_card {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a b : A) :
@@ -113,7 +113,7 @@ lemma margin_le_card {V A : Type} [Fintype V] [Fintype A]
     exact sub_le_self _ h2'
   have hmargin :
       margin P a b ≤ Int.ofNat (Finset.univ.filter (fun v => Prefers P v a b)).card := by
-    simpa [margin] using hsub
+    simp [margin]
   exact hmargin.trans h1'
 
 lemma unanimous_of_margin_ge_card {V A : Type} [Fintype V] [Fintype A]
@@ -125,7 +125,7 @@ lemma unanimous_of_margin_ge_card {V A : Type} [Fintype V] [Fintype A]
   have hne : (Finset.univ.filter (fun v => Prefers P v a b)) ≠ (Finset.univ : Finset V) := by
     intro hEq
     have : v ∈ (Finset.univ.filter (fun v => Prefers P v a b)) := by
-      simpa [hEq] using (Finset.mem_univ v)
+      simp [hEq]
     exact hnot (Finset.mem_filter.mp this).2
   have hcard_lt :
       (Finset.univ.filter (fun v => Prefers P v a b)).card < Fintype.card V := by
@@ -144,7 +144,7 @@ lemma unanimous_of_margin_ge_card {V A : Type} [Fintype V] [Fintype A]
             Int.ofNat (Finset.univ.filter (fun v => Prefers P v b a)).card ≤
           Int.ofNat (Finset.univ.filter (fun v => Prefers P v a b)).card := by
       exact sub_le_self _ h2'
-    simpa [margin] using hsub
+    simp [margin]
   have hlt : margin P a b < (Fintype.card V : Int) :=
     lt_of_le_of_lt hmargin_le hcard_lt'
   exact (not_lt_of_ge hle hlt)
@@ -196,7 +196,7 @@ lemma margin_addVoter_eq_of_prefers {V A : Type} [Fintype V] [Fintype A]
           (insert (Sum.inr ()) (S0.image (Sum.inl : V → V ⊕ Unit))).card =
             (S0.image (Sum.inl : V → V ⊕ Unit)).card + 1 :=
         Finset.card_insert_of_notMem hnotmem
-      simpa [hS] using hcard'
+      simp [hS]
     calc
       S.card = (S0.image (Sum.inl : V → V ⊕ Unit)).card + 1 := hcard
       _ = S0.card + 1 := by
@@ -246,7 +246,7 @@ lemma margin_addVoter_eq_of_prefers_rev {V A : Type} [Fintype V] [Fintype A]
     margin (addVoter P ballot) a b = - margin (addVoter P ballot) b a := hskewP'
     _ = - (margin P b a + 1) := by simp [hswap]
     _ = (- margin P b a) - 1 := by ring
-    _ = margin P a b - 1 := by simpa [hskewP]
+    _ = margin P a b - 1 := by simp [hskewP]
 
 lemma margin_le_addVoter {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (ballot : LinearOrder A) (a b : A) :

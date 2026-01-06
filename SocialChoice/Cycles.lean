@@ -86,9 +86,9 @@ theorem rotate'_cycle_of_cycle {X : Type} {c : List X} {P : X -> X -> Prop} {n :
             symm
             simpa using (List.rotate'_rotate' c n 1)
           _ = (a :: l).rotate' 1 := by
-            simpa [hcons]
+            simp [hcons]
           _ = l ++ [a] := by
-            simp [List.rotate'_cons_succ, List.rotate'_zero]
+            simp
       have hcycle : cycle P (l ++ [a]) :=
         rotate1_cycle_of_cycle ih''
       simpa [hrot] using hcycle
@@ -230,10 +230,10 @@ theorem dominates_of_cycle_index {X : Type} (l : List X) (P : X -> X -> Prop)
       change l.get ⟨i, hi⟩ = List.getLast l hne
       calc
         l.get ⟨i, hi⟩ = l.get ⟨l.length - 1, hpred⟩ := by
-          simpa [hfin]
+          simp [hfin]
         _ = List.getLast l (by
               intro hnil
-              simpa [hnil] using hpred) := by
+              simp [hnil] at hpred) := by
           simpa using (List.get_length_sub_one (l := l) hpred)
         _ = List.getLast l hne := by
           exact List.getLast_congr _ _ rfl
@@ -244,7 +244,7 @@ theorem dominates_of_cycle_index {X : Type} (l : List X) (P : X -> X -> Prop)
       change l.get ⟨(i + 1) % l.length, hmod⟩ = l.get ⟨0, hlen⟩
       apply congrArg (fun j => l.get j)
       apply Fin.ext
-      simpa [hmod0]
+      simp [hmod0]
     have hrel : P (List.getLast l hne) (l.get ⟨0, hlen⟩) := by
       obtain ⟨b, l', rfl⟩ := List.exists_cons_of_ne_nil hne
       have hrel' : P (List.getLast (b :: l') (by simp)) b := by
@@ -469,7 +469,7 @@ theorem to_path_last_elem (l : List X) (h : l ≠ []) :
             have hpath' :
                 to_path (a :: b :: t) =
                   (to_path (b :: t)).drop (List.idxOf a (to_path (b :: t))) := by
-              simpa [hpath, h'] 
+              simpa [hpath, h']
             calc
               (to_path (a :: b :: t)).getLast
                     (to_path_ne_nil_iff (a :: b :: t) (by simp)) =

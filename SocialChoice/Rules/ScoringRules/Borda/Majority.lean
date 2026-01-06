@@ -40,8 +40,7 @@ end LocalExample
 lemma strictMajority_fin3 {S : Finset (Fin 3)} (hcard : S.card = 2) :
     StrictMajority S := by
   unfold StrictMajority
-  have h : (2 * (2 : Nat) > (3 : Nat)) := by decide
-  simpa [hcard] using h
+  simp [hcard]
 
 lemma exampleProfile_strictMajority_top0 :
     StrictMajority (votersTop bordaExampleProfile 0) := by
@@ -58,7 +57,7 @@ theorem borda_not_majorityCriterion : ¬ MajorityCriterion borda := by
     hmaj bordaExampleProfile 0 hmaj'
   have hb : (1 : Fin 3) ∈ borda bordaExampleProfile := exampleProfile_borda_has_b
   have hb' : (1 : Fin 3) ∈ ({0} : Finset (Fin 3)) := by
-    simpa [hres] using hb
+    simp [hres] at hb
   simp at hb'
 
 end SocialChoice
