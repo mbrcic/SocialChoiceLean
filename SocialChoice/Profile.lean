@@ -158,4 +158,40 @@ lemma cardinality_lemma2 {V : Type} [Fintype V]
     simp [pq v]
   simp [hset]
 
+/-! ## Cardinality Lemmas for Subtypes -/
+
+/-- Cardinality strictly decreases when removing one element. -/
+lemma card_subtype_ne_lt {α : Type} [Fintype α] [DecidableEq α] (x : α) :
+    Fintype.card {y : α // y ≠ x} < Fintype.card α :=
+  Fintype.card_subtype_lt (x := x) (by simp)
+
+/-- Cardinality of {y // y ≠ x} equals card α - 1. -/
+lemma card_subtype_ne_eq {α : Type} [Fintype α] [DecidableEq α] (x : α) :
+    Fintype.card {y : α // y ≠ x} = Fintype.card α - 1 := by
+  classical
+  have h := (Fintype.card_subtype (α := α) (p := fun y => y ≠ x))
+  have hfilter : ({y : α | y ≠ x} : Finset α) = (Finset.univ.erase x) := by
+    ext y
+    by_cases hy : y = x <;> simp [hy]
+  have h' : Fintype.card {y : α // y ≠ x} = (Finset.univ.erase x).card := by
+    rw [hfilter] at h
+    exact h
+  have herase : (Finset.univ.erase x).card = (Finset.univ : Finset α).card - 1 :=
+    Finset.card_erase_of_mem (s := (Finset.univ : Finset α)) (a := x) (by simp)
+  calc
+    Fintype.card {y : α // y ≠ x} = (Finset.univ.erase x).card := h'
+    _ = (Finset.univ : Finset α).card - 1 := herase
+    _ = Fintype.card α - 1 := by simp [Finset.card_univ]
+
+/-- If there are at least 2 elements, there exist two distinct elements. -/
+lemma exists_pair_of_one_lt_card {α : Type} [Fintype α]
+    (h : 1 < Fintype.card α) : ∃ x y : α, x ≠ y := by
+  classical
+  have hne : ¬ Subsingleton α := by
+    intro hsub
+    have hcard := Fintype.card_le_one_iff_subsingleton.mpr hsub
+    omega
+  rw [not_subsingleton_iff_nontrivial] at hne
+  exact Nontrivial.exists_pair_ne
+
 end SocialChoice
