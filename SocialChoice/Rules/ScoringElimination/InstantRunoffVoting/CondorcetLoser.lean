@@ -99,7 +99,7 @@ lemma one_lt_card_subtype_ne {A : Type} [Fintype A] [DecidableEq A] {c : A}
   have hpred : 1 < (Fintype.card A).pred := by
     have hle : 2 ≤ (Fintype.card A).pred := Nat.le_pred_of_lt h
     exact lt_of_lt_of_le (by decide : (1 : Nat) < 2) hle
-  simpa [card_subtype_ne_eq (A := A) c, Nat.pred_eq_sub_one] using hpred
+  simpa [card_subtype_ne_eq c, Nat.pred_eq_sub_one] using hpred
 
 lemma condorcet_loser_restrictProfile_of_two_lt_card
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
