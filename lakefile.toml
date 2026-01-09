@@ -1,6 +1,6 @@
 name = "social_choice"
 version = "0.1.0"
-defaultTargets = ["social_choice"]
+defaultTargets = ["SocialChoice"]
 moreServerArgs = []
 
 [[require]]
