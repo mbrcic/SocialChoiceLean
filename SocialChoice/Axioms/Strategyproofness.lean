@@ -54,13 +54,4 @@ def PessimistStrategyproof (f : VotingRule) : Prop :=
     ¬∃ x ∈ f P,
         ∀ y ∈ f (updateProfile P v ballot), Prefers P v y x
 
-/-- An alternative is **viable** for a voting rule if it can be the unique winner
-    at some profile. -/
-def Viable (f : VotingRule) {V A : Type} [Fintype V] [Fintype A] (c : A) : Prop :=
-  ∃ P : Profile V A, f P = {c}
-
-/-- All alternatives are viable. -/
-def AllViable (f : VotingRule) : Prop :=
-  ∀ {V A : Type} [Fintype V] [Fintype A] (c : A), Viable f c
-
 end SocialChoice
