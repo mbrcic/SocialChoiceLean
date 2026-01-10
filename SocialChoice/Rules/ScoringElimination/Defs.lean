@@ -100,31 +100,13 @@ lemma scoreCandidate_le_of_mem_lowestScoring {V A : Type} [Fintype V] [Fintype A
     simp [lowestScoring, hA] at hc
 
 -- Cardinality decreases when removing a candidate
+-- These are aliases to the generic lemmas in Profile.lean
 lemma card_restrict_lt {A : Type} [Fintype A] [DecidableEq A] (c : A) :
     Fintype.card {x : A // x ≠ c} < Fintype.card A :=
-  Fintype.card_subtype_lt (x := c) (by simp)
+  card_subtype_ne_lt c
 
-lemma card_subtype_ne_eq {A : Type} [Fintype A] [DecidableEq A] (c : A) :
-    Fintype.card {x : A // x ≠ c} = Fintype.card A - 1 := by
-  classical
-  -- Convert the subtype cardinality to a filtered finset cardinality.
-  have h := (Fintype.card_subtype (α := A) (p := fun x => x ≠ c))
-  -- Rewrite `{x | x ≠ c}` as `univ.erase c`.
-  have hfilter : ({x : A | x ≠ c} : Finset A) = (Finset.univ.erase c) := by
-    ext x
-    by_cases hx : x = c <;> simp [hx]
-  have h' : Fintype.card {x : A // x ≠ c} = (Finset.univ.erase c).card := by
-    -- Avoid `simp` reducing the equality to `True`.
-    have h' := h
-    -- Rewrite the RHS finset using `hfilter`.
-    rw [hfilter] at h'
-    exact h'
-  have herase : (Finset.univ.erase c).card = (Finset.univ : Finset A).card - 1 :=
-    Finset.card_erase_of_mem (s := (Finset.univ : Finset A)) (a := c) (by simp)
-  calc
-    Fintype.card {x : A // x ≠ c} = (Finset.univ.erase c).card := h'
-    _ = (Finset.univ : Finset A).card - 1 := herase
-    _ = Fintype.card A - 1 := by simp [Finset.card_univ]
+-- Note: The generic version is `SocialChoice.card_subtype_ne_eq` in Profile.lean.
+-- This alias preserves backward compatibility for code using the `A` naming convention.
 
 -- Lift a finset from a subtype back to the original type
 noncomputable def liftFinset {A : Type} [DecidableEq A] {p : A → Prop}
