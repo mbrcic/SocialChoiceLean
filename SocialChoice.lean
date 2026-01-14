@@ -22,19 +22,20 @@ import SocialChoice.Axioms.Reinforcement
 import SocialChoice.Axioms.Unanimity
 import SocialChoice.Axioms.Strategyproofness
 
-import SocialChoice.Rules.ScoringRules.Borda.Defs
-import SocialChoice.Rules.ScoringRules.Borda.C2Borda
-import SocialChoice.Rules.ScoringRules.Borda.Condorcet
-import SocialChoice.Rules.ScoringRules.Borda.Majority
-import SocialChoice.Rules.ScoringRules.Reinforcement
-import SocialChoice.Rules.ScoringRules.Monotonicity
-import SocialChoice.Rules.ScoringRules.Pareto
 import SocialChoice.Rules.ScoringRules.Anonymity
 import SocialChoice.Rules.ScoringRules.Neutrality
+import SocialChoice.Rules.ScoringRules.Reinforcement
+import SocialChoice.Rules.ScoringRules.Pareto
+import SocialChoice.Rules.ScoringRules.Condorcet
+import SocialChoice.Rules.ScoringRules.Monotonicity
 import SocialChoice.Rules.ScoringRules.Plurality.Defs
 import SocialChoice.Rules.ScoringRules.Plurality.Involvement
 import SocialChoice.Rules.ScoringRules.Plurality.Majority
 import SocialChoice.Rules.ScoringRules.Plurality.Pareto
+import SocialChoice.Rules.ScoringRules.Borda.Defs
+import SocialChoice.Rules.ScoringRules.Borda.C2Borda
+import SocialChoice.Rules.ScoringRules.Borda.Condorcet
+import SocialChoice.Rules.ScoringRules.Borda.Majority
 import SocialChoice.Rules.ScoringRules.Veto.Defs
 import SocialChoice.Rules.ScoringElimination.Defs
 import SocialChoice.Rules.ScoringElimination.Basic
