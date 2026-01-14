@@ -1,4 +1,5 @@
 import SocialChoice.Rules.ScoringElimination.Defs
+import SocialChoice.Rules.ScoringRules.Borda.Defs
 
 namespace SocialChoice
 
@@ -15,13 +16,9 @@ repeats until one candidate remains.
 When there are ties for elimination, we use parallel-universe tie-breaking.
 -/
 
-/-- The Borda scoring vector: position r out of m candidates gets m - 1 - r points. -/
-def bordaScore' : Nat → Nat → Int :=
-  fun m r => (m : Int) - 1 - r
-
 /-- Baldwin's method (Borda elimination). -/
 noncomputable def baldwin : VotingRule :=
-  scoringEliminationRule bordaScore'
+  scoringEliminationRule bordaScore
 
 /-- Alias for Baldwin's method. -/
 noncomputable abbrev bordaElimination : VotingRule := baldwin

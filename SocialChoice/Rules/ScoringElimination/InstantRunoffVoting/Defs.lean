@@ -1,4 +1,5 @@
 import SocialChoice.Rules.ScoringElimination.Defs
+import SocialChoice.Rules.ScoringRules.Plurality.Defs
 
 namespace SocialChoice
 
@@ -14,10 +15,6 @@ repeats until one candidate remains.
 
 When there are ties for elimination, we use parallel-universe tie-breaking.
 -/
-
-/-- The plurality scoring vector: only the top-ranked candidate gets 1 point. -/
-def pluralityScore : Nat → Nat → Int :=
-  fun _m r => if r = 0 then 1 else 0
 
 /-- Instant Runoff Voting (plurality elimination). -/
 noncomputable def instantRunoffVoting : VotingRule :=
