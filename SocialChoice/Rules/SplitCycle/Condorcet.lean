@@ -15,7 +15,7 @@ theorem split_cycle_condorcet_criterion : condorcet_criterion splitCycle := by
   · intro hx
     have hxcond : ∀ y, ¬ splitCycleDefeats P y x := (Finset.mem_filter.mp hx).2
     by_cases h : x = c
-    · simpa [h]
+    · simp [h]
     · have hdef : splitCycleDefeats P c x := by
         have hpos : margin_pos P c x := hw x (by simpa [eq_comm] using h)
         refine ⟨hpos, ?_⟩

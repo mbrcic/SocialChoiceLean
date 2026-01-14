@@ -20,7 +20,7 @@ open Finset
 /-- Base case: For a single voter (Unit type), any resolute, unanimous voting rule
     selects the unique voter's top choice. -/
 theorem gs_base_case_unit {A : Type} [Fintype A] [Nonempty A]
-    (f : VotingRule) (hf : Resolute f)
+    (f : VotingRule) (_hf : Resolute f)
     (hf_unan : Unanimity f) :
     ∀ P : Profile Unit A, f P = {topChoice P ()} := by
   intro P
@@ -34,7 +34,7 @@ theorem gs_base_case_unit {A : Type} [Fintype A] [Nonempty A]
 /-- Base case with explicit cardinality condition. -/
 theorem gs_base_case {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
     (hcard_V : Fintype.card V = 1)
-    (f : VotingRule) (hf : Resolute f)
+    (f : VotingRule) (_hf : Resolute f)
     (hf_unan : Unanimity f) :
     ∃ d : V, ∀ P : Profile V A, f P = {topChoice P d} := by
   -- There's exactly one voter, so pick it

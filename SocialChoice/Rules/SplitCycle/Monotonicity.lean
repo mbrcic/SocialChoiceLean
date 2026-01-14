@@ -127,7 +127,8 @@ theorem splitCycle_monotonicity : Monotonicity splitCycle := by
     have hchain_take :=
       chain'_take_of_chain (l := crot) (a := hcrot_ne)
         (n := List.idxOf y crot + 1) hchain_rot
-    simpa [l3] using hchain_take
+    simp [l3]
+    exact hchain_take
   have hne_l3 : l3 ≠ [] := by
     have hle : List.idxOf y crot + 1 ≤ crot.length := Nat.succ_le_of_lt hidx_y
     have hlen :
@@ -135,15 +136,18 @@ theorem splitCycle_monotonicity : Monotonicity splitCycle := by
       simpa [l3] using
         (List.length_take_of_le (l := crot) (i := List.idxOf y crot + 1) hle)
     have hpos : 0 < l3.length := by
-      simpa [hlen] using Nat.succ_pos (List.idxOf y crot)
+      simp [hlen]
     exact List.length_pos_iff_ne_nil.mp hpos
   set l : List A := to_path l3
   have hne_l : l ≠ [] := by
-    simpa [l] using (to_path_ne_nil_iff l3 hne_l3)
+    simp [l]
+    exact to_path_ne_nil_iff l3 hne_l3
   have hchain_l : List.IsChain R l := by
-    simpa [l] using (to_path_chain'_of_chain' (l := l3) hchain_l3)
+    simp [l]
+    exact to_path_chain'_of_chain' (l := l3) hchain_l3
   have hnodup_l : l.Nodup := by
-    simpa [l] using (to_path_nodup l3)
+    simp [l]
+    exact to_path_nodup l3
   have hhead_crot : crot.head hcrot_ne = x := by
     have h0c : 0 < crot.length := List.length_pos_of_ne_nil hcrot_ne
     have hidx_x : List.idxOf x c < c.length := List.idxOf_lt_length_iff.2 hxmem
@@ -226,19 +230,19 @@ theorem splitCycle_monotonicity : Monotonicity splitCycle := by
           exact hpair' 0 i h0_l hlt (Nat.pos_of_ne_zero h0)
         intro hEq
         apply hpair0i
-        simpa [hfirst_l, hEq] using rfl
+        simp [hfirst_l, hEq]
       have hne_i1 : l[i + 1] ≠ x := by
         have hpair01 : l[0]'h0_l ≠ l[i + 1]'hi := by
           exact hpair' 0 (i + 1) h0_l hi (Nat.succ_pos _)
         intro hEq
         apply hpair01
-        simpa [hfirst_l, hEq] using rfl
+        simp [hfirst_l, hEq]
       have hmargin_eq :
           margin P (l[i]) (l[i + 1]) = margin P' (l[i]) (l[i + 1]) := by
         exact margin_eq_of_simpleLift P P' x (l[i]) (l[i + 1]) hne_i hne_i1 hLift
       have hmargin_le :
           margin P (l[i]) (l[i + 1]) ≤ margin P' (l[i]) (l[i + 1]) := by
-        simpa [hmargin_eq]
+        simp [hmargin_eq]
       exact le_trans hrel' hmargin_le
   have hcycle_l : cycle R' l := by
     refine ⟨hne_l, ?_⟩

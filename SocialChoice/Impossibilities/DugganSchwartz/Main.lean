@@ -15,6 +15,7 @@ variable [DecidableEq A]
 noncomputable def ballotTopSetList (S : Finset A) (a : A) : List A :=
   a :: (S.erase a).toList ++ (Finset.univ \ S).toList
 
+omit [Nonempty A] in
 lemma ballotTopSetList_nodup (S : Finset A) (a : A) (ha : a ∈ S) :
     (ballotTopSetList S a).Nodup := by
   classical
@@ -24,7 +25,7 @@ lemma ballotTopSetList_nodup (S : Finset A) (a : A) (ha : a ∈ S) :
     simpa using (Finset.univ \ S).nodup_toList
   have ha_not_erase : a ∉ (S.erase a).toList := by
     have : a ∉ (S.erase a) := by simp
-    simpa [Finset.mem_toList] using this
+    simp [Finset.mem_toList, this]
   have ha_not_rest : a ∉ (Finset.univ \ S).toList := by
     have : a ∉ (Finset.univ \ S) := by
       simp [ha]
@@ -57,6 +58,7 @@ lemma ballotTopSetList_nodup (S : Finset A) (a : A) (ha : a ∈ S) :
     exact List.nodup_cons.2 ⟨ha_not_tail, htail⟩
   simpa [ballotTopSetList] using hnodup
 
+omit [Nonempty A] in
 lemma ballotTopSetList_complete (S : Finset A) (a : A) (ha : a ∈ S) :
     ∀ x : A, x ∈ ballotTopSetList S a := by
   classical
@@ -83,6 +85,7 @@ noncomputable def ballotTopSet (S : Finset A) (a : A) (ha : a ∈ S) : LinearOrd
     (ballotTopSetList_nodup S a ha)
     (ballotTopSetList_complete S a ha)
 
+omit [Nonempty A] in
 lemma ballotTopSet_topSet (S : Finset A) (a : A) (ha : a ∈ S) :
     BallotTopSet (ballotTopSet S a ha) S := by
   classical
@@ -121,7 +124,7 @@ lemma ballotTopSet_topSet (S : Finset A) (a : A) (ha : a ∈ S) :
     have hy_idx : l.idxOf y = lS.length + lT.idxOf y := by
       simpa [l] using (List.idxOf_append_of_notMem (l₁ := lS) (l₂ := lT) hy_not_lS)
     have hle : lS.length ≤ lS.length + lT.idxOf y := Nat.le_add_right _ _
-    simpa [hy_idx] using hle
+    simp [hy_idx, hle]
   have hlt : l.idxOf x < l.idxOf y := lt_of_lt_of_le hx_idx_lt hy_idx_ge
   have hlt' :
       (linearOrderOfList l (ballotTopSetList_nodup S a ha)
@@ -131,6 +134,7 @@ lemma ballotTopSet_topSet (S : Finset A) (a : A) (ha : a ∈ S) :
       (hcomplete := ballotTopSetList_complete S a ha) x y).2 hlt
   simpa [ballotTopSet, ballotTopSetList, l, lS, lT] using hlt'
 
+omit [Nonempty A] in
 lemma ballotTopSet_prefers_top (S : Finset A) (a b : A) (ha : a ∈ S) (hb : b ≠ a) :
     (ballotTopSet S a ha).lt a b := by
   classical
@@ -153,6 +157,7 @@ lemma ballotTopSet_prefers_top (S : Finset A) (a b : A) (ha : a ∈ S) (hb : b �
 
 end BallotTopSet
 
+omit [Nonempty A] in
 lemma winners_subset_of_ballotTopSet_update (f : VotingRule)
     (hf_pess : PessimistStrategyproof f)
     (P : Profile V A) (v : V) (ballot : LinearOrder A) (S : Finset A)
@@ -178,6 +183,7 @@ lemma winners_subset_of_ballotTopSet_update (f : VotingRule)
     simpa [P', Prefers, updateProfile] using hlt
   exact (hf_pess P' v (P.pref v)) hmanip
 
+omit [Nonempty A] in
 lemma singleton_winner_of_topSet (f : VotingRule)
     (hf_total : IsVotingRule f)
     (hf_opt : OptimistStrategyproof f)
@@ -198,7 +204,7 @@ lemma singleton_winner_of_topSet (f : VotingRule)
       intro hb
       subst hb
       let _ := P_a.pref v
-      exact (lt_irrefl b (by simpa [Prefers] using hpb))
+      simp [Prefers] at hpb
     have htop : TopRank P v a :=
       (topSet_singleton_iff_topRank (P := P) (c := a)).1 hTop v
     exact htop b hb_ne
@@ -245,13 +251,13 @@ theorem duggan_schwartz
     have hge1 : 1 ≤ S.card := Nat.succ_le_iff.mpr hcard_pos
     have hcard1 : S.card = 1 := Nat.le_antisymm hle1 hge1
     obtain ⟨a, haS⟩ := (Finset.card_eq_one).1 hcard1
-    have hfa : f P0 = {a} := by simpa [S, haS]
+    have hfa : f P0 = {a} := by simp [S, haS]
     have htop : TopRank P0 i a := hi P0 a hfa
     have hx_eq : x = a := by
       have h := eq_topChoice_of_topRank (P := P0) (v := i) (c := a) htop
       simpa [x] using h.symm
     have hx_mem : x ∈ f P0 := by
-      simpa [x, hx_eq, hfa]
+      simp [x, hx_eq, hfa]
     exact (hx_not hx_mem).elim
   letI := P0.pref i
   let a := Finset.min' S hS_nonempty
@@ -278,7 +284,7 @@ theorem duggan_schwartz
   have hsubset_updates :
       f (profileUpdateSet P0 P_top others) ⊆ S := by
     refine Finset.induction_on (s := others) ?base ?step
-    · simpa [profileUpdateSet_empty, S]
+    · simp [profileUpdateSet_empty, S]
     · intro v T hv hT
       let Q := profileUpdateSet P0 P_top T
       have hBallot : BallotTopSet ballot S :=
@@ -328,7 +334,7 @@ theorem duggan_schwartz
       simp [P_top, updateProfile]
     · have hu' : u ∈ others := by
         simp [others, hu]
-      simp [P1, P_top, profileUpdateSet, updateProfile, others, hu, hu']
+      simp [P1, P_top, profileUpdateSet, updateProfile, others, hu]
   have hmanip :
       ∃ x ∈ f P1, ∀ y ∈ f (updateProfile P1 i ballot), Prefers P1 i y x := by
     refine ⟨b, ?_, ?_⟩

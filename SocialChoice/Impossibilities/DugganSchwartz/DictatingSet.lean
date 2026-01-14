@@ -524,7 +524,8 @@ lemma ballotTopAB_topSet (a b : A) (hab : a ≠ b) :
         (List.idxOf_cons_ne (a := y) (b := a) (l := b :: rest.toList) hya.symm)
     have : 0 < l.idxOf y := by
       simp [hy_succ]
-    exact by simpa [hidxa] using this
+    simp [hidxa]
+    exact this
   have hlt_b : l.idxOf b < l.idxOf y := by
     have hidxb : l.idxOf b = 1 := by
       simp [l, List.idxOf_cons_ne _ hab]
@@ -539,8 +540,9 @@ lemma ballotTopAB_topSet (a b : A) (hab : a ≠ b) :
         _ = Nat.succ (Nat.succ (List.idxOf y rest.toList)) := by
             simpa using hy_succ2
     have : 1 < l.idxOf y := by
-      simpa [hy_ge] using (Nat.succ_lt_succ (Nat.succ_pos _))
-    exact by simpa [hidxb] using this
+      simp [hy_ge]
+    simp [hidxb]
+    exact this
   cases hxa with
   | inl hxa' =>
       subst hxa'
@@ -665,6 +667,7 @@ lemma dictatingSet_univ_of_downMonotonicitySingleton_viable
 
 /-! Lemma 2.8 (Taylor 2002) -/
 
+omit [DecidableEq A] in
 lemma updateProfileList_map_const (P : Profile V A) (l : List V) (ballot : LinearOrder A) :
     updateProfileList P (l.map (fun v => (v, ballot))) =
       { pref := fun v => if v ∈ l then ballot else P.pref v } := by
@@ -730,6 +733,7 @@ lemma winner_preserved_of_optimist_top (f : VotingRule) (hf_opt : OptimistStrate
       exact htop x hx_ne
   exact hf_opt P' v (P.pref v) hmanip
 
+omit [DecidableEq V] in
 lemma winner_preserved_of_pessimist_pref (f : VotingRule) (hf_pess : PessimistStrategyproof f)
     (P : Profile V A) (v : V) (ballot : LinearOrder A) (a : A)
     (ha : a ∈ f P)
@@ -1180,6 +1184,7 @@ lemma aXb_partition_of_opt_pess_viable (f : VotingRule)
 
 /-! Lemma 2.9 (Taylor 2002) -/
 
+omit [DecidableEq V] [DecidableEq A] in
 lemma not_aXb_empty_of_viable (f : VotingRule) (hviable : Viable f) (a b : A) :
     ¬ aXb (V := V) (A := A) f (∅ : Finset V) a b := by
   classical

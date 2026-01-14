@@ -350,11 +350,9 @@ lemma listOfLinearOrder_lt_iff_idxOf (r : LinearOrder A) [DecidableEq A] (a b : 
   have hb : b ∈ l := listOfLinearOrder_complete (r := r) b
   let e := List.SortedLT.getIso l hsorted
   have hidxa : (e.symm ⟨a, ha⟩).val = l.idxOf a := by
-    simpa [e] using
-      (List.SortedLT.coe_getIso_symm_apply (l := l) (H := hsorted) (x := ⟨a, ha⟩))
+    simp [e, List.SortedLT.coe_getIso_symm_apply]
   have hidxb : (e.symm ⟨b, hb⟩).val = l.idxOf b := by
-    simpa [e] using
-      (List.SortedLT.coe_getIso_symm_apply (l := l) (H := hsorted) (x := ⟨b, hb⟩))
+    simp [e, List.SortedLT.coe_getIso_symm_apply]
   have hlt :
       r.lt a b ↔ (e.symm ⟨a, ha⟩ < e.symm ⟨b, hb⟩) := by
     have h :=
@@ -439,8 +437,9 @@ lemma adjacentInOrder_iff_adjacentInList (r : LinearOrder A) (a b : A) :
       subst z
       simpa using (List.Nodup.idxOf_getElem hnodup (l.idxOf a + 1) ha1_len)
     have hidx_az : l.idxOf a < l.idxOf z := by
-      simpa [hz_idx] using (Nat.lt_succ_self (l.idxOf a))
-    have hidx_zb : l.idxOf z < l.idxOf b := by      simpa [hz_idx] using hlt'
+      simp [hz_idx]
+    have hidx_zb : l.idxOf z < l.idxOf b := by
+      simpa [hz_idx] using hlt'
     have haz : r.lt a z := (listOfLinearOrder_lt_iff_idxOf (r := r) a z).2 hidx_az
     have hzb : r.lt z b := (listOfLinearOrder_lt_iff_idxOf (r := r) z b).2 hidx_zb
     exact hno z ⟨haz, hzb⟩
@@ -462,6 +461,7 @@ lemma adjacentInOrder_iff_adjacentInList (r : LinearOrder A) (a b : A) :
         exact hlt''
       exact (lt_irrefl _ (lt_of_lt_of_le hlt' hle))
 
+omit [Fintype A] in
 lemma adjacentInList_idxOf_succ (l : List A) (hnodup : l.Nodup) (x : A)
     (hx : l.idxOf x + 1 < l.length) :
     AdjacentInList l x (l[l.idxOf x + 1]'hx) := by
@@ -509,22 +509,23 @@ lemma rank_eq_idxOf_listOfLinearOrder (r : LinearOrder A) (a : A) :
           (OrderIso.lt_iff_lt (e := e)
             (x := e.symm ⟨x.1, by
               simpa [l] using (listOfLinearOrder_complete (r := r) x.1)⟩) (y := idx))
-        simpa [idx] using h.symm
+        simp [idx, h.symm]
       have hsub : (⟨x.1, by
             simpa [l] using (listOfLinearOrder_complete (r := r) x.1)⟩ : {y // y ∈ l}) <
           ⟨a, ha⟩ := by
-        simpa using x.2
+        exact x.2
       exact hlt.mpr hsub
     · have hlt : e i.1 < ⟨a, ha⟩ := by
         have h' := (OrderIso.lt_iff_lt (e := e) (x := i.1) (y := idx)).2 i.2
-        simpa [idx] using h'
-      simpa using hlt
+        simp [idx] at h'
+        exact h'
+      exact hlt
     · intro x
       apply Subtype.ext
       have h := e.apply_symm_apply
         (⟨x.1, by
           simpa [l] using (listOfLinearOrder_complete (r := r) x.1)⟩ : {y // y ∈ l})
-      simpa using congrArg Subtype.val h
+      simp
     · intro i
       apply Subtype.ext
       have h := e.symm_apply_apply i.1
@@ -553,13 +554,13 @@ lemma rank_eq_idxOf_listOfLinearOrder (r : LinearOrder A) (a : A) :
         rfl
     simpa using (hcard'.trans (by simp))
   have hidx : idx.val = (listOfLinearOrder r).idxOf a := by
-    simpa [idx, e, l] using
-      (List.SortedLT.coe_getIso_symm_apply (l := l) (H := hsorted) (x := ⟨a, ha⟩))
+    simp [idx, e, l, List.SortedLT.coe_getIso_symm_apply]
   calc
     rank r a = Fintype.card {x : A // r.lt x a} := hrank
     _ = Fintype.card {i : Fin l.length // i < idx} := hcard
     _ = idx.val := hfin
-    _ = (listOfLinearOrder r).idxOf a := by simp only [hidx]
+    _ = (listOfLinearOrder r).idxOf a := by
+      simp [hidx]
 
 end RankIdxOf
 

@@ -56,6 +56,13 @@ When debugging Lean code, the user prefers that agents use the `lean_diagnostics
 
 The agent should also be aware of the `lean_hover_info` and `lean_goal` tools.
 
+### Fixing unnecessary simpa warnings
+
+When the linter suggests "try `simp` instead of `simpa`", the common fixes are:
+- Replace `simpa using h` with `simp [h]` or `simp at h` followed by `exact h`.
+- Replace `simpa [lemma] using h` with `simp [lemma]` (or `simp [lemma] at h` + `exact h`) if the goal is already definitional.
+- If `simp` makes no progress, keep `simpa` but rewrite the proof to `exact` the lemma or add the missing rewrite to the simp set.
+
 ## Exception for Copilot in VS Code
 
 When the user is using GitHub Copilot in VS Code, they prefer that agents do not use the lean-lsp diagnostics tool, and instead use the native `get_errors` tool provided by VS Code. This is much faster (10x faster). However, if these are insufficient to solve the problem, then the agent can revert to using the lean-lsp mcp plugin tools as a fallback.

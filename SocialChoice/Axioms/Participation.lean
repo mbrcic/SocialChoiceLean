@@ -57,7 +57,7 @@ lemma restrictElectorate_eq_of_subset_proof {U A : Type} [DecidableEq U] [Fintyp
       have hsub : (⟨v.1, h₁ v.2⟩ : Electorate U W) = ⟨v.1, h₂ v.2⟩ := by
         apply Subtype.ext
         rfl
-      simpa [hsub]
+      simp [hsub]
 
 def UpperSet {A : Type} [DecidableEq A] (r : LinearOrder A) (S : Finset A) : Prop :=
   ∀ ⦃x y : A⦄, r.lt x y → y ∈ S → x ∈ S
@@ -118,7 +118,7 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
   have hx0 : f (restrictElectorate Q (V ∪ (∅ : Finset U)) hVW') = {x} := by
     convert hx
   have hTsub : T ⊆ W := by
-    simpa [T] using (Finset.sdiff_subset : W \ V ⊆ W)
+    simp [T]
   have hVunion : ∀ s : Finset U, s ⊆ T → V ∪ s ⊆ W := by
     intro s hs
     exact Finset.union_subset hVW (Finset.Subset.trans hs hTsub)
@@ -166,8 +166,8 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
         rfl
       have hy' : f (restrictElectorate Q Sbig hSbig) = {y} := by
         convert hy
-        · simpa [Sbig, Ssmall] using (Finset.union_insert (a := a) (s := V) (t := s)).symm
-        · simpa [Sbig, Ssmall] using (Finset.union_insert (a := a) (s := V) (t := s)).symm
+        · simp [Sbig, Ssmall]
+        · simp [Sbig, Ssmall]
       have hnot :
           ¬ ((restrictElectorate Q Sbig hSbig).pref
               (newVoter (u := a) (V := Ssmall) (by
@@ -180,7 +180,7 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
         · exact hy'
         ·
           have haV : a ∉ V := (Finset.mem_sdiff.mp (by simpa [T] using haT)).2
-          simpa [Ssmall, haV, ha]
+          simp [Ssmall, haV, ha]
       have hUpper_a : UpperSet (Q.pref ⟨a, haW⟩) S := by
         exact hUpper a (by simpa [T] using haT)
       have hnot' :
@@ -190,7 +190,7 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
   have hW : V ∪ T = W := by
     simpa [T] using (Finset.union_sdiff_of_subset hVW)
   have hWT : V ∪ T ⊆ W := by
-    simpa [hW] using (Finset.subset_refl W)
+    simp [hW]
   have hsubset : f (restrictElectorate Q (V ∪ T) hWT) ⊆ S := by
     intro y hy
     have hcard : (f (restrictElectorate Q (V ∪ T) hWT)).card = 1 := by
@@ -199,7 +199,7 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
     have hy' : f (restrictElectorate Q (V ∪ T) hWT) = {y} := by
       have hy'' : y ∈ ({z} : Finset A) := by simpa [hz] using hy
       have hyz : y = z := by simpa using hy''
-      simpa [hz, hyz]
+      simp [hz, hyz]
     exact hprop T (by simp [T]) y hy'
   have hQeq : f (restrictElectorate Q (V ∪ T) hWT) = f Q := by
     rw [← restrictElectorate_self Q]

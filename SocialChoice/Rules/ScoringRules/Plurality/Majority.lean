@@ -60,17 +60,17 @@ theorem plurality_majorityCriterion : MajorityCriterion plurality := by
       exact (mem_filter.mp hd').2
     have hcd : topCount P c ≤ topCount P d := hd' c
     by_cases hne : d = c
-    · simpa [hne]
+    · simp [hne]
     · have hlt' := hlt d hne
       exact (by
         have : False := (not_lt_of_ge hcd) hlt'
-        simpa [hne] using this)
+        exact this.elim)
   · intro hd
     have hd' : d = c := by simpa using hd
     have hmax : ∀ e : A, topCount P e ≤ topCount P c := by
       intro e
       by_cases hne : e = c
-      · simpa [hne]
+      · simp [hne]
       · exact Nat.le_of_lt (hlt e hne)
     have hc : c ∈ (Finset.univ : Finset A) := by
       exact mem_univ c
@@ -124,13 +124,12 @@ lemma pluralityMajorityLoser_votersBottom :
 
 lemma pluralityMajorityLoser_votersBottom_card :
     (votersBottom pluralityMajorityLoserProfile 0).card = 4 := by
-  simpa [pluralityMajorityLoser_votersBottom]
+  simp [pluralityMajorityLoser_votersBottom]
 
 lemma strictMajority_fin7 {S : Finset (Fin 7)} (hcard : S.card = 4) :
     StrictMajority S := by
   unfold StrictMajority
-  have h : (2 * (4 : Nat) > (7 : Nat)) := by decide
-  simpa [hcard] using h
+  simp [hcard]
 
 lemma pluralityMajorityLoser_strictMajority_bottom0 :
     StrictMajority (votersBottom pluralityMajorityLoserProfile 0) := by

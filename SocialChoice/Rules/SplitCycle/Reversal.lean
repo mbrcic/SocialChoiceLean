@@ -84,7 +84,7 @@ lemma splitCycleDefeats_acyclic {V A : Type} [Fintype V] [Fintype A]
     intro j
     have hlt : j.val + 1 < L.length := by
       have hlt' : j.val + 1 < l.length + 1 := Nat.succ_lt_succ j.isLt
-      simpa [L] using hlt'
+      simp [L, hlt']
     simpa using hchain' j.val hlt
   have hdef : splitCycleDefeats P x y := by
     simpa [x, y] using hchain_edges i
@@ -107,13 +107,13 @@ lemma splitCycleDefeats_acyclic {V A : Type} [Fintype V] [Fintype A]
     have hxmemL : x ∈ L := List.get_mem _ _
     rcases List.mem_cons.mp hxmemL with hxmemL | hxmemL
     · have hxmemL' : l.getLast hne ∈ l := List.getLast_mem hne
-      simpa [hxmemL] using hxmemL'
+      simp [hxmemL, hxmemL']
     · exact hxmemL
   have hymem : y ∈ l := by
     have hymemL : y ∈ L := List.get_mem _ _
     rcases List.mem_cons.mp hymemL with hymemL | hymemL
     · have hymemL' : l.getLast hne ∈ l := List.getLast_mem hne
-      simpa [hymemL] using hymemL'
+      simp [hymemL, hymemL']
     · exact hymemL
   exact hnocycle ⟨l, hxmem, hymem, hcycle'⟩
 
@@ -173,7 +173,7 @@ theorem split_cycle_reversal_symmetry : reversal_symmetry splitCycle := by
             simpa [a0, seq] using (Function.iterate_add_apply s m i y0S).symm
           calc
             Nat.iterate s m a0 = Nat.iterate s (m + i) y0S := hiter'
-            _ = Nat.iterate s (i + m) y0S := by simpa [Nat.add_comm]
+            _ = Nat.iterate s (i + m) y0S := by simp [Nat.add_comm]
             _ = Nat.iterate s i y0S := hiter
             _ = a0 := by simp [a0, seq]
         have hmne : m ≠ 0 := Nat.ne_of_gt hmpos
@@ -210,9 +210,8 @@ theorem split_cycle_reversal_symmetry : reversal_symmetry splitCycle := by
             (l ++ [a0]).IsChain
               (reverse_rel (fun a b : S => splitCycleDefeats P a.1 b.1)) := by
           refine List.IsChain.append hchain_l ?_ hrel
-          simpa using
-            (List.isChain_singleton (R := reverse_rel (fun a b : S =>
-              splitCycleDefeats P a.1 b.1)) a0)
+          exact (List.isChain_singleton (R := reverse_rel (fun a b : S =>
+            splitCycleDefeats P a.1 b.1)) a0)
         have hchain_cycle :
             (a0 :: l.reverse).IsChain (fun a b : S => splitCycleDefeats P a.1 b.1) := by
           have hchain_rev :
@@ -228,7 +227,7 @@ theorem split_cycle_reversal_symmetry : reversal_symmetry splitCycle := by
           have hlast' := getLast_reverse_eq_head (c := l) (hne := hlne)
           have hhead : l.head hlne = a0 := by
             simp [l]
-          simpa [cS, hhead] using hlast'
+          simp [cS, hhead, hlast']
         have hcycleS : cycle (fun a b : S => splitCycleDefeats P a.1 b.1) cS := by
           refine ⟨hne, ?_⟩
           simpa [cS, hlast] using hchain_cycle
@@ -253,7 +252,7 @@ theorem split_cycle_reversal_symmetry : reversal_symmetry splitCycle := by
             simpa [a0, seq] using (Function.iterate_add_apply s m j y0S).symm
           calc
             Nat.iterate s m a0 = Nat.iterate s (m + j) y0S := hiter'
-            _ = Nat.iterate s (j + m) y0S := by simpa [Nat.add_comm]
+            _ = Nat.iterate s (j + m) y0S := by simp [Nat.add_comm]
             _ = Nat.iterate s j y0S := hiter
             _ = a0 := by simp [a0, seq]
         have hmne : m ≠ 0 := Nat.ne_of_gt hmpos
@@ -290,9 +289,8 @@ theorem split_cycle_reversal_symmetry : reversal_symmetry splitCycle := by
             (l ++ [a0]).IsChain
               (reverse_rel (fun a b : S => splitCycleDefeats P a.1 b.1)) := by
           refine List.IsChain.append hchain_l ?_ hrel
-          simpa using
-            (List.isChain_singleton (R := reverse_rel (fun a b : S =>
-              splitCycleDefeats P a.1 b.1)) a0)
+          exact (List.isChain_singleton (R := reverse_rel (fun a b : S =>
+            splitCycleDefeats P a.1 b.1)) a0)
         have hchain_cycle :
             (a0 :: l.reverse).IsChain (fun a b : S => splitCycleDefeats P a.1 b.1) := by
           have hchain_rev :
@@ -308,7 +306,7 @@ theorem split_cycle_reversal_symmetry : reversal_symmetry splitCycle := by
           have hlast' := getLast_reverse_eq_head (c := l) (hne := hlne)
           have hhead : l.head hlne = a0 := by
             simp [l]
-          simpa [cS, hhead] using hlast'
+          simp [cS, hhead, hlast']
         have hcycleS : cycle (fun a b : S => splitCycleDefeats P a.1 b.1) cS := by
           refine ⟨hne, ?_⟩
           simpa [cS, hlast] using hchain_cycle

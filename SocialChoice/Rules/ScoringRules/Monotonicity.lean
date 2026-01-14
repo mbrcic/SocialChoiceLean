@@ -72,7 +72,7 @@ theorem scoringRule_monotonicity (score : Nat → Nat → Int)
   have hle' : ∀ y, scoreCandidate P' scoreFun y ≤ scoreCandidate P' scoreFun x := by
     intro y
     by_cases hy : y = x
-    · simpa [hy]
+    · simp [hy]
     · have h1 := hscore_y y hy
       have h2 := hPmax y
       have h3 := hscore_x

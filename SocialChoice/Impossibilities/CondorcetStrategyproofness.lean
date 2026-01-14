@@ -59,8 +59,7 @@ lemma votersPreferring_card_eq_countPrefers {m n : ℕ}
 lemma strictMajority_fin3 {S : Finset (Fin 3)} (hcard : S.card = 2) :
     StrictMajority S := by
   unfold StrictMajority
-  have h : (2 * (2 : Nat) > (3 : Nat)) := by decide
-  simpa [hcard] using h
+  simp [hcard]
 
 lemma profile_ext {V A : Type} [Fintype V] [Fintype A]
     {P Q : Profile V A} (h : P.pref = Q.pref) : P = Q := by

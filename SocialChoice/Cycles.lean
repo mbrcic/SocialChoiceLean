@@ -37,7 +37,7 @@ theorem rotate1_cycle_of_cycle {X : Type} {a : X} {l : List X} {P : X -> X -> Pr
   have hchain_tail : List.IsChain P (a :: l) :=
     hchain.tail
   have hchain_singleton : List.IsChain P ([a] : List X) := by
-    simpa using (List.isChain_singleton (R := P) a)
+    exact (List.isChain_singleton (R := P) a)
   have hrel :
       ∀ x ∈ (a :: l).getLast?, ∀ y ∈ ([a] : List X).head?, P x y := by
     intro x hx y hy
@@ -63,7 +63,7 @@ theorem rotate1_cycle_of_cycle {X : Type} {a : X} {l : List X} {P : X -> X -> Pr
   have h0 : l ++ [a] ≠ [] :=
     List.append_ne_nil_of_right_ne_nil l (List.cons_ne_nil a [])
   have hlast0 : List.getLast (l ++ [a]) h0 = a := by
-    simpa using (List.getLast_append_singleton (l := l) (a := a))
+    simp
   have hlast : List.getLast (l ++ [a]) hne' = a :=
     (List.getLast_congr hne' h0 rfl).trans hlast0
   simpa [hlast] using hchain_append
@@ -155,7 +155,7 @@ lemma cycle_reverse_rel {X : Type} {P : X → X → Prop} {c : List X} :
   refine ⟨hne', ?_⟩
   have hchain_tail : c.IsChain P := hchain.tail
   have hchain_singleton : ([c.head hne] : List X).IsChain P := by
-    simpa using (List.isChain_singleton (R := P) (c.head hne))
+    exact (List.isChain_singleton (R := P) (c.head hne))
   have hrel : ∀ x ∈ c.getLast?, ∀ y ∈ ([c.head hne] : List X).head?, P x y := by
     intro x hx y hy
     obtain ⟨hx', hxEq⟩ := List.mem_getLast?_eq_getLast (l := c) (x := x) hx
@@ -276,27 +276,25 @@ theorem dominate_of_cycle {X : Type} (l : List X) (P : X -> X -> Prop) (c : cycl
   rcases hx' with ⟨i, rfl⟩
   have hlen : 0 < l.length := length_cycle_pos c
   by_cases hzero : i.val = 0
-  · have hrel : P (List.getLast l (by
-        intro hnil
-        simpa [hnil] using hlen)) (l.get ⟨0, hlen⟩) := by
-      rcases c with ⟨hne, hchain⟩
+  · rcases c with ⟨hne, hchain⟩
+    have hrel : P (List.getLast l hne) (l.get ⟨0, hlen⟩) := by
       obtain ⟨b, l', rfl⟩ := List.exists_cons_of_ne_nil hne
       have hrel' : P (List.getLast (b :: l') (by simp)) b := by
-        simpa using (List.IsChain.rel_head hchain)
-      simpa using hrel'
-    refine ⟨List.getLast l (by
-      intro hnil
-      simpa [hnil] using hlen), ?_, ?_⟩
-    · rcases c with ⟨hne, _⟩
-      exact List.getLast_mem hne
-    · simpa [hzero, Fin.ext_iff] using hrel
+        exact (List.IsChain.rel_head hchain)
+      simp [hrel']
+    refine ⟨List.getLast l hne, ?_, ?_⟩
+    · exact List.getLast_mem hne
+    · have hi : i = ⟨0, hlen⟩ := by
+        apply Fin.ext
+        simpa using hzero
+      simpa [hi] using hrel
   · have hlt : i.val - 1 + 1 < l.length := by
       have hlt' : i.val < l.length := i.isLt
       have hpos : 0 < i.val := Nat.pos_of_ne_zero hzero
       have : i.val - 1 + 1 = i.val := by
         simpa [Nat.succ_eq_add_one, Nat.pred_eq_sub_one] using
           (Nat.succ_pred_eq_of_pos hpos)
-      simpa [this] using hlt'
+      simp [this, hlt']
     have hmod : (i.val - 1 + 1) % l.length < l.length :=
       Nat.mod_lt _ hlen
     have hrel :=
@@ -316,9 +314,13 @@ theorem dominate_of_cycle {X : Type} (l : List X) (P : X -> X -> Prop) (c : cycl
           simpa [Nat.succ_eq_add_one, Nat.pred_eq_sub_one] using
             (Nat.succ_pred_eq_of_pos hpos)
         have hlt'' : i.val - 1 + 1 < l.length := by
-          simpa [hstep] using hlt'
-        simpa [hstep] using (Nat.mod_eq_of_lt hlt'')
-      simpa [hmodEq, Fin.ext_iff] using hrel
+          simp [hstep, hlt']
+        calc
+          (i.val - 1 + 1) % l.length = i.val - 1 + 1 := Nat.mod_eq_of_lt hlt''
+          _ = i.val := hstep
+      have hrel' := hrel
+      simp [hmodEq] at hrel'
+      exact hrel'
 
 section ToPath
 
@@ -332,6 +334,7 @@ def to_path : List X → List X
       else
         u :: to_path p
 
+omit [DecidableEq X] in
 theorem nodup_drop_of_nodup {l : List X} {n : ℕ} : l.Nodup → (l.drop n).Nodup := by
   intro h
   exact List.Nodup.sublist (List.drop_sublist n l) h
@@ -347,7 +350,7 @@ theorem to_path_nodup (l : List X) : (to_path l).Nodup := by
       · have hnot : a ∉ to_path l := by
           intro hmem
           exact h (List.idxOf_lt_length_iff.2 hmem)
-        simp [to_path, h, List.nodup_cons, hnot, ih]
+        simp [to_path, List.nodup_cons, hnot, ih]
 
 theorem to_path_eq_nil_iff (l : List X) : to_path l = [] ↔ l = [] := by
   cases l with
@@ -376,6 +379,7 @@ theorem to_path_ne_nil_iff (l : List X) (h : l ≠ []) : to_path l ≠ [] := by
 theorem to_path_length_pos (l : List X) (h : l ≠ []) : 0 < (to_path l).length := by
   exact List.length_pos_of_ne_nil (to_path_ne_nil_iff l h)
 
+omit [DecidableEq X] in
 theorem getElem_drop_zero {l : List X} {n : Nat} (h : n < l.length) :
     (l.drop n)[0]'(by
       have : 0 < l.length - n := Nat.sub_pos_of_lt h
@@ -390,7 +394,7 @@ theorem getElem_drop_zero {l : List X} {n : Nat} (h : n < l.length) :
       | succ n =>
           have h' : n < l.length := by
             simpa using h
-          simpa using (ih (n := n) h')
+          simp [ih (n := n) h']
 
 theorem to_path_first_elem (l : List X) (h : l ≠ []) :
     (to_path l)[0]'(to_path_length_pos l h) = l[0]'(List.length_pos_of_ne_nil h) := by
@@ -408,13 +412,14 @@ theorem to_path_first_elem (l : List X) (h : l ≠ []) :
             ((to_path l).drop (List.idxOf a (to_path l)))[0]'
                 (by simpa [List.length_drop] using hlen)
                 = (to_path l)[List.idxOf a (to_path l)]'h' := by
-                    simpa using (getElem_drop_zero (l := to_path l)
+                    exact (getElem_drop_zero (l := to_path l)
                       (n := List.idxOf a (to_path l)) h')
             _ = a := by
-              simpa using (List.getElem_idxOf (l := to_path l) (a := a) h')
-        simpa [to_path, h'] using hhead
+              exact (List.getElem_idxOf (xs := to_path l) (x := a) h')
+        simp [to_path, h', hhead]
       · simp [to_path, h']
 
+omit [DecidableEq X] in
 theorem getLast_drop {l : List X} {n : Nat} (h : n < l.length) :
     List.getLast (l.drop n) (by
       have : 0 < l.length - n := Nat.sub_pos_of_lt h
@@ -432,7 +437,7 @@ theorem getLast_drop {l : List X} {n : Nat} (h : n < l.length) :
       List.getLast (l.take n ++ l.drop n)
         (List.append_ne_nil_of_right_ne_nil _ hdrop) = List.getLast (l.drop n) hdrop :=
     List.getLast_append_of_right_ne_nil (l₁ := l.take n) (l₂ := l.drop n) hdrop
-  simpa [List.take_append_drop] using hlast
+  simp
 
 theorem to_path_last_elem (l : List X) (h : l ≠ []) :
     (to_path l).getLast (to_path_ne_nil_iff l h) = l.getLast h := by
@@ -462,39 +467,40 @@ theorem to_path_last_elem (l : List X) (h : l ≠ []) :
                     Nat.sub_pos_of_lt h'
                   exact List.length_pos_iff_ne_nil.mp (by simpa [List.length_drop] using this)) =
                 List.getLast (to_path (b :: t)) htp := by
-              simpa using (getLast_drop (l := to_path (b :: t))
+              exact (getLast_drop (l := to_path (b :: t))
                 (n := List.idxOf a (to_path (b :: t))) h')
             have ih' : List.getLast (to_path (b :: t)) htp = List.getLast (b :: t) hl := by
-              simpa using (ih (h := hl))
+              exact (ih (h := hl))
             have hpath' :
                 to_path (a :: b :: t) =
                   (to_path (b :: t)).drop (List.idxOf a (to_path (b :: t))) := by
-              simpa [hpath, h']
+              simp [hpath, h']
             calc
               (to_path (a :: b :: t)).getLast
                     (to_path_ne_nil_iff (a :: b :: t) (by simp)) =
                   List.getLast (to_path (b :: t)) htp := by
-                    simpa [hpath'] using hdrop
+                    simp [hpath', hdrop]
               _ = List.getLast (b :: t) hl := ih'
               _ = List.getLast (a :: b :: t) (by simp) := by
                     simp [List.getLast_cons]
           · have ih' : List.getLast (to_path (b :: t)) htp = List.getLast (b :: t) hl := by
-              simpa using (ih (h := hl))
+              exact (ih (h := hl))
             have hpath' : to_path (a :: b :: t) = a :: to_path (b :: t) := by
-              simpa [hpath, h']
+              simp [hpath, h']
             calc
               (to_path (a :: b :: t)).getLast
                     (to_path_ne_nil_iff (a :: b :: t) (by simp)) =
                   List.getLast (to_path (b :: t)) htp := by
-                    simpa [hpath', htp]
+                    simp [hpath', htp]
               _ = List.getLast (b :: t) hl := ih'
               _ = List.getLast (a :: b :: t) (by simp) := by
                     simp [List.getLast_cons]
 
+omit [DecidableEq X] in
 theorem drop_chain'_of_chain' {P : X → X → Prop} {l : List X} {n : ℕ} :
     List.IsChain P l → List.IsChain P (l.drop n) := by
   intro h
-  simpa using (List.IsChain.drop (l := l) (n := n) h)
+  exact (List.IsChain.drop (l := l) (n := n) h)
 
 theorem to_path_chain'_of_chain' {P : X → X → Prop} {l : List X} :
     List.IsChain P l → List.IsChain P (to_path l) := by
@@ -506,12 +512,12 @@ theorem to_path_chain'_of_chain' {P : X → X → Prop} {l : List X} :
       by_cases h' : List.idxOf a (to_path l) < (to_path l).length
       · have htail : List.IsChain P l := hchain.tail
         have hpath : List.IsChain P (to_path l) := ih htail
-        simpa [to_path, h'] using
-          (drop_chain'_of_chain' (l := to_path l)
-            (n := List.idxOf a (to_path l)) hpath)
+        have hdrop := drop_chain'_of_chain' (l := to_path l)
+          (n := List.idxOf a (to_path l)) hpath
+        simp [to_path, h', hdrop]
       · cases l with
         | nil =>
-            simpa [to_path, h'] using (List.isChain_singleton (R := P) a)
+            simp [to_path]
         | cons b t =>
             have hpath_eq :
                 to_path (a :: b :: t) =
@@ -526,14 +532,15 @@ theorem to_path_chain'_of_chain' {P : X → X → Prop} {l : List X} :
               exact to_path_ne_nil_iff (b :: t) (by simp)
             have hhead : (to_path (b :: t)).head htp = b := by
               have hfirst := to_path_first_elem (l := b :: t) (h := by simp)
-              simpa [List.head_eq_getElem_zero] using hfirst
+              simp [List.head_eq_getElem_zero, hfirst]
             have hab : P a b := by
-              simpa using (List.IsChain.rel_head hchain)
+              exact (List.IsChain.rel_head hchain)
             have hrel : P a ((to_path (b :: t)).head htp) := by
-              simpa [hhead] using hab
+              simp [hhead, hab]
             have hpath' : to_path (a :: b :: t) = a :: to_path (b :: t) := by
-              simpa [hpath_eq, h']
-            simpa [hpath'] using (List.IsChain.cons_of_ne_nil htp hpath hrel)
+              simp [hpath_eq, h']
+            have hcons := List.IsChain.cons_of_ne_nil htp hpath hrel
+            simp [hpath', hcons]
 
 theorem rotate'_eq_nil_iff (X : Type) (l : List X) (n : ℕ) : l.rotate' n = [] ↔ l = [] := by
   constructor
@@ -564,9 +571,9 @@ lemma getLast_take_idxOf {X : Type} [DecidableEq X] {l : List X} {a : X} (ha : a
         have hidx : List.idxOf a l < l.length := List.idxOf_lt_length_iff.2 ha
         have hle : List.idxOf a l + 1 ≤ l.length := Nat.succ_le_of_lt hidx
         have hlen : (l.take (List.idxOf a l + 1)).length = List.idxOf a l + 1 := by
-          simpa using (List.length_take_of_le (l := l) (i := List.idxOf a l + 1) hle)
+          exact (List.length_take_of_le (l := l) (i := List.idxOf a l + 1) hle)
         have hpos : 0 < (l.take (List.idxOf a l + 1)).length := by
-          simpa [hlen] using Nat.succ_pos (List.idxOf a l)
+          simp [hlen]
         exact List.length_pos_iff_ne_nil.mp hpos) = a := by
   classical
   have hidx : List.idxOf a l < l.length := List.idxOf_lt_length_iff.2 ha
@@ -580,20 +587,19 @@ lemma getLast_take_idxOf {X : Type} [DecidableEq X] {l : List X} {a : X} (ha : a
     List.append_ne_nil_of_right_ne_nil _ (List.cons_ne_nil _ _)
   have hne :
       l.take (List.idxOf a l + 1) ≠ [] := by
-    simpa [htake] using hne'
+    simp [htake]
   have hlast' :
       List.getLast (l.take (List.idxOf a l) ++ [l[List.idxOf a l]]) hne' =
         l[List.idxOf a l] := by
-    simpa using (List.getLast_append_singleton (l := l.take (List.idxOf a l))
-      (a := l[List.idxOf a l]))
+    simp
   have hlast :
       List.getLast (l.take (List.idxOf a l + 1)) hne = l[List.idxOf a l] := by
-    simpa [htake] using hlast'
+    simp [htake]
   have hx : l[List.idxOf a l]'hidx = a := by
-    simpa using (List.getElem_idxOf (l := l) (a := a) hidx)
+    exact (List.getElem_idxOf (xs := l) (x := a) hidx)
   have hx' : l[List.idxOf a l] = a := by
-    simpa using hx
-  simpa [hx'] using hlast
+    simp [hx]
+  simp [hx', hlast]
 
 end ToPath
 
