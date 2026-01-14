@@ -46,6 +46,7 @@ import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
+import SocialChoice.Rules.ScoringElimination.Coombs.Majority
 import SocialChoice.Rules.SplitCycle.Defs
 import SocialChoice.Rules.SplitCycle.Clones
 import SocialChoice.Rules.SplitCycle.Condorcet

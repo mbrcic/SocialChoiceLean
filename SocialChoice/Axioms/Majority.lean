@@ -8,6 +8,6 @@ def MajorityCriterion (f : VotingRule) : Prop :=
 
 def MajorityLoserCriterion (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A) (c : A),
-    StrictMajority (votersBottom P c) → c ∉ f P
+    StrictMajority (votersBottom P c) → (∃ d, d ≠ c) → c ∉ f P
 
 end SocialChoice

@@ -180,8 +180,10 @@ theorem plurality_not_majorityLoserCriterion : ¬ MajorityLoserCriterion plurali
   intro hmaj
   have hmaj' : StrictMajority (votersBottom pluralityMajorityLoserProfile 0) :=
     pluralityMajorityLoser_strictMajority_bottom0
+  have hne : ∃ d : Fin 3, d ≠ 0 := by
+    exact ⟨1, by decide⟩
   have hforbid : (0 : Fin 3) ∉ plurality pluralityMajorityLoserProfile :=
-    hmaj pluralityMajorityLoserProfile 0 hmaj'
+    hmaj pluralityMajorityLoserProfile 0 hmaj' hne
   have hwinner : (0 : Fin 3) ∈ plurality pluralityMajorityLoserProfile :=
     pluralityMajorityLoser_has_a
   exact hforbid hwinner
