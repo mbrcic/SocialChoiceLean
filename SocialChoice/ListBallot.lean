@@ -1,0 +1,580 @@
+import Mathlib.Data.Finset.Sort
+import Mathlib.Data.Finset.Card
+import Mathlib.Data.List.Nodup
+import Mathlib.Data.List.NodupEquivFin
+import Mathlib.Data.List.Sort
+import Mathlib.Data.Fin.Basic
+import Mathlib.Tactic
+import SocialChoice.Profile
+import SocialChoice.Margin
+import SocialChoice.Rank
+import SocialChoice.Axioms.Condorcet
+
+namespace SocialChoice
+
+open Finset
+
+/-!
+# List-Based Ballot Infrastructure
+
+This file provides generic (type-agnostic) bridges between linear orders and list
+representations of ballots. It is intended for proofs that reason about adjacent
+swaps or list manipulations.
+-/
+
+/-! ## LinearOrder from a List -/
+
+section LinearOrderFromList
+
+variable {A : Type} [DecidableEq A]
+
+/--
+Construct a `LinearOrder` from a nodup list that covers all elements of a type.
+The order is: `a < b` iff `a` appears before `b` in the list.
+-/
+noncomputable def linearOrderOfList (l : List A)
+    (hnodup : l.Nodup) (hcomplete : ∀ a, a ∈ l) : LinearOrder A :=
+  let e := List.Nodup.getEquivOfForallMemList l hnodup hcomplete
+  LinearOrder.lift' e.symm e.symm.injective
+
+lemma linearOrderOfList_lt (l : List A) (hnodup : l.Nodup) (hcomplete : ∀ a, a ∈ l) (a b : A) :
+    (linearOrderOfList l hnodup hcomplete).lt a b ↔
+      (List.Nodup.getEquivOfForallMemList l hnodup hcomplete).symm a <
+      (List.Nodup.getEquivOfForallMemList l hnodup hcomplete).symm b := by
+  rfl
+
+lemma linearOrderOfList_lt_iff_idxOf (l : List A) (hnodup : l.Nodup) (hcomplete : ∀ a, a ∈ l)
+    (a b : A) :
+    (linearOrderOfList l hnodup hcomplete).lt a b ↔ l.idxOf a < l.idxOf b := by
+  classical
+  have ha :=
+    List.Nodup.getEquivOfForallMemList_symm_apply_val (l := l) hnodup hcomplete a
+  have hb :=
+    List.Nodup.getEquivOfForallMemList_symm_apply_val (l := l) hnodup hcomplete b
+  constructor
+  · intro h
+    have h' :
+        ((List.Nodup.getEquivOfForallMemList l hnodup hcomplete).symm a).val <
+          ((List.Nodup.getEquivOfForallMemList l hnodup hcomplete).symm b).val :=
+      (Fin.val_fin_lt).2 h
+    simpa [ha, hb] using h'
+  · intro h
+    have h' :
+        ((List.Nodup.getEquivOfForallMemList l hnodup hcomplete).symm a).val <
+          ((List.Nodup.getEquivOfForallMemList l hnodup hcomplete).symm b).val := by
+      simpa [ha, hb] using h
+    exact (Fin.val_fin_lt).1 h'
+
+end LinearOrderFromList
+
+/-! ## ListBallot Structure -/
+
+section ListBallot
+
+/--
+A `ListBallot n` is a ranking of `Fin n` represented as a list,
+where the first element is the most preferred candidate.
+It must be a permutation of `finRange n`.
+-/
+structure ListBallot (n : ℕ) where
+  ranking : List (Fin n)
+  perm : ranking.Perm (List.finRange n)
+
+namespace ListBallot
+
+variable {n : ℕ}
+
+/-- A ListBallot has no duplicates (follows from being a permutation). -/
+lemma nodup (b : ListBallot n) : b.ranking.Nodup :=
+  b.perm.nodup_iff.mpr (List.nodup_finRange n)
+
+/-- Every element of Fin n appears in a ListBallot. -/
+lemma complete (b : ListBallot n) (a : Fin n) : a ∈ b.ranking :=
+  b.perm.mem_iff.mpr (List.mem_finRange a)
+
+/-- Convert a ListBallot to a LinearOrder. -/
+noncomputable def toLinearOrder (b : ListBallot n) : LinearOrder (Fin n) :=
+  linearOrderOfList b.ranking b.nodup b.complete
+
+/-- The lt relation of toLinearOrder corresponds to idxOf comparison. -/
+lemma lt_iff_idxOf (b : ListBallot n) (a c : Fin n) :
+    b.toLinearOrder.lt a c ↔ b.ranking.idxOf a < b.ranking.idxOf c := by
+  rfl
+
+/-- Create a ListBallot from a list with a decidable permutation proof. -/
+def mk' (l : List (Fin n)) (h : l.Perm (List.finRange n) := by decide) : ListBallot n :=
+  ⟨l, h⟩
+
+/-- The identity ballot [0, 1, 2, ..., n-1]. -/
+def identity (n : ℕ) : ListBallot n :=
+  ⟨List.finRange n, List.Perm.refl _⟩
+
+end ListBallot
+
+end ListBallot
+
+/-! ## Profile from ListBallots -/
+
+section ProfileOfListBallots
+
+variable {m n : ℕ}
+
+/-- Construct a Profile from a function assigning ListBallots to voters. -/
+noncomputable def profileOfListBallots (ballots : Fin m → ListBallot n) :
+    Profile (Fin m) (Fin n) where
+  pref := fun v => (ballots v).toLinearOrder
+
+/-- Access the underlying ranking list for a voter in a list-based profile. -/
+def profileBallotRanking (ballots : Fin m → ListBallot n) (v : Fin m) : List (Fin n) :=
+  (ballots v).ranking
+
+end ProfileOfListBallots
+
+/-! ## Computable Predicates -/
+
+section ComputablePredicates
+
+variable {α : Type} [DecidableEq α]
+
+/-- Check if candidate `c` is at the top of ballot `l`. -/
+def isTopOfList (l : List α) (c : α) : Bool :=
+  l.head? = some c
+
+/-- Check if `a` is preferred to `b` in ballot `l` (a appears before b). -/
+def prefersInList (l : List α) (a b : α) : Bool :=
+  l.idxOf a < l.idxOf b
+
+/-- Get the position (0-indexed) of candidate `c` in ballot `l`. -/
+def positionInList (l : List α) (c : α) : ℕ :=
+  l.idxOf c
+
+/-- Borda score: n - 1 - position (top candidate gets n-1 points). -/
+def bordaScoreInList (l : List α) (c : α) : ℕ :=
+  l.length - 1 - l.idxOf c
+
+end ComputablePredicates
+
+/-! ## Aggregate Computations -/
+
+section AggregateComputations
+
+variable {m n : ℕ}
+
+/-- Count how many voters rank candidate `c` on top. -/
+def countTop (ballots : Fin m → List (Fin n)) (c : Fin n) : ℕ :=
+  (Finset.univ.filter fun v => isTopOfList (ballots v) c).card
+
+/-- Count voters who prefer `a` to `b`. -/
+def countPrefers (ballots : Fin m → List (Fin n)) (a b : Fin n) : ℕ :=
+  (Finset.univ.filter fun v => prefersInList (ballots v) a b).card
+
+/-- Margin of `a` over `b`: voters preferring a minus voters preferring b. -/
+def marginList (ballots : Fin m → List (Fin n)) (a b : Fin n) : ℤ :=
+  (countPrefers ballots a b : ℤ) - (countPrefers ballots b a : ℤ)
+
+end AggregateComputations
+
+/-! ## Bridge Lemmas -/
+
+section BridgeLemmas
+
+variable {m n : ℕ}
+
+/-- Prefers in a list-based profile corresponds to prefersInList. -/
+lemma prefers_iff_prefersInList (ballots : Fin m → ListBallot n) (v : Fin m) (a b : Fin n) :
+    Prefers (profileOfListBallots ballots) v a b ↔ prefersInList (ballots v).ranking a b = true := by
+  unfold Prefers profileOfListBallots prefersInList
+  simp only
+  rw [(ballots v).lt_iff_idxOf]
+  simp only [decide_eq_true_eq]
+
+/-- Helper: the head of a nonempty list has idxOf 0. -/
+lemma idxOf_head_eq_zero {α : Type} [DecidableEq α] {l : List α} (h : l ≠ []) :
+    l.idxOf (l.head h) = 0 := by
+  cases l with
+  | nil => contradiction
+  | cons x xs => simp [List.idxOf_cons_self]
+
+/-- TopRank in a list-based profile corresponds to isTopOfList on the ranking. -/
+lemma topRank_iff_isTopOfList (ballots : Fin m → ListBallot n) (v : Fin m) (c : Fin n) :
+    TopRank (profileOfListBallots ballots) v c ↔ isTopOfList (ballots v).ranking c = true := by
+  constructor
+  · intro htop
+    unfold isTopOfList
+    simp only [decide_eq_true_eq]
+    -- c is preferred to all others, so it must be first
+    by_cases hn : n = 0
+    · exact Fin.elim0 (hn ▸ c)
+    · have hne : (ballots v).ranking ≠ [] := by
+        intro h
+        have := (ballots v).perm.length_eq
+        simp [h, List.length_finRange] at this
+        omega
+      rw [List.head?_eq_some_head hne]
+      congr 1
+      by_contra hne'
+      have hidx_head : (ballots v).ranking.idxOf ((ballots v).ranking.head hne) = 0 :=
+        idxOf_head_eq_zero hne
+      have hc_mem := (ballots v).complete c
+      have hhead_ne_c : (ballots v).ranking.head hne ≠ c := hne'
+      have := htop ((ballots v).ranking.head hne) hhead_ne_c
+      unfold Prefers profileOfListBallots at this
+      simp only at this
+      rw [(ballots v).lt_iff_idxOf] at this
+      have hidx_c := List.idxOf_lt_length_of_mem hc_mem
+      omega
+  · intro htop
+    unfold isTopOfList at htop
+    simp only [decide_eq_true_eq] at htop
+    intro d hd
+    unfold Prefers profileOfListBallots
+    simp only
+    rw [(ballots v).lt_iff_idxOf]
+    have hne : (ballots v).ranking ≠ [] := by
+      intro h
+      simp [h] at htop
+    rw [List.head?_eq_some_head hne] at htop
+    injection htop with hc_head
+    have hidx_c : (ballots v).ranking.idxOf c = 0 := by
+      rw [← hc_head]
+      exact idxOf_head_eq_zero hne
+    have hd_mem := (ballots v).complete d
+    have hidx_d := List.idxOf_lt_length_of_mem hd_mem
+    have hd_ne : (ballots v).ranking.idxOf d ≠ 0 := by
+      intro h
+      have heq : (ballots v).ranking.idxOf c = (ballots v).ranking.idxOf d := by omega
+      have h_eq := (List.idxOf_inj (l := (ballots v).ranking) (x := c) (y := d)
+        ((ballots v).complete c)).mp heq
+      exact hd h_eq.symm
+    omega
+
+/-- votersTop in a list-based profile equals the filter by isTopOfList. -/
+lemma votersTop_eq_filter_isTopOfList (ballots : Fin m → ListBallot n) (c : Fin n) :
+    votersTop (profileOfListBallots ballots) c =
+    Finset.univ.filter (fun v => isTopOfList (ballots v).ranking c) := by
+  ext v
+  simp only [votersTop, mem_filter, mem_univ, true_and]
+  exact topRank_iff_isTopOfList ballots v c
+
+/-- The cardinality of votersTop equals countTop. -/
+lemma votersTop_card_eq_countTop (ballots : Fin m → ListBallot n) (c : Fin n) :
+    (votersTop (profileOfListBallots ballots) c).card =
+    countTop (fun v => (ballots v).ranking) c := by
+  unfold countTop
+  rw [votersTop_eq_filter_isTopOfList]
+
+/-- votersPreferring in a list-based profile equals the filter by prefersInList. -/
+lemma votersPreferring_eq_filter_prefersInList (ballots : Fin m → ListBallot n) (a b : Fin n) :
+    votersPreferring (profileOfListBallots ballots) a b =
+    Finset.univ.filter (fun v => prefersInList (ballots v).ranking a b) := by
+  ext v
+  simp only [votersPreferring, mem_filter, mem_univ, true_and]
+  exact prefers_iff_prefersInList ballots v a b
+
+/-- The margin in a list-based profile equals marginList. -/
+lemma margin_eq_marginList (ballots : Fin m → ListBallot n) (a b : Fin n) :
+    margin (profileOfListBallots ballots) a b =
+    marginList (fun v => (ballots v).ranking) a b := by
+  unfold margin marginList countPrefers
+  have h1 : ∀ v, Prefers (profileOfListBallots ballots) v a b ↔
+      prefersInList (ballots v).ranking a b = true :=
+    fun v => prefers_iff_prefersInList ballots v a b
+  have h2 : ∀ v, Prefers (profileOfListBallots ballots) v b a ↔
+      prefersInList (ballots v).ranking b a = true :=
+    fun v => prefers_iff_prefersInList ballots v b a
+  simp only [h1, h2, Int.ofNat_eq_natCast]
+
+/-- margin_pos in a list-based profile corresponds to positive marginList. -/
+lemma margin_pos_iff_marginList_pos (ballots : Fin m → ListBallot n) (a b : Fin n) :
+    margin_pos (profileOfListBallots ballots) a b ↔
+    marginList (fun v => (ballots v).ranking) a b > 0 := by
+  unfold margin_pos
+  rw [margin_eq_marginList]
+
+/-- condorcet_winner in a list-based profile. -/
+lemma condorcet_winner_iff_marginList (ballots : Fin m → ListBallot n) (c : Fin n) :
+    condorcet_winner (profileOfListBallots ballots) c ↔
+    ∀ d : Fin n, c ≠ d → marginList (fun v => (ballots v).ranking) c d > 0 := by
+  unfold condorcet_winner
+  constructor
+  · intro h d hne
+    rw [← margin_pos_iff_marginList_pos]
+    exact h d hne
+  · intro h d hne
+    rw [margin_pos_iff_marginList_pos]
+    exact h d hne
+
+end BridgeLemmas
+
+/-! ## List Representation of a LinearOrder -/
+
+section ListOfLinearOrder
+
+variable {A : Type} [Fintype A]
+
+/-- A list representation of a linear order, obtained by sorting `Finset.univ`. -/
+noncomputable def listOfLinearOrder (r : LinearOrder A) : List A := by
+  classical
+  let _ := r
+  exact (Finset.univ.sort (fun a b => a ≤ b))
+
+lemma listOfLinearOrder_nodup (r : LinearOrder A) : (listOfLinearOrder r).Nodup := by
+  classical
+  let _ := r
+  unfold listOfLinearOrder
+  exact
+    (Finset.sort_nodup (s := (Finset.univ : Finset A)) (r := fun a b => a ≤ b))
+
+lemma listOfLinearOrder_complete (r : LinearOrder A) (a : A) : a ∈ listOfLinearOrder r := by
+  classical
+  let _ := r
+  have ha : a ∈ (Finset.univ : Finset A) := by simp
+  unfold listOfLinearOrder
+  exact
+    (Finset.mem_sort (s := (Finset.univ : Finset A)) (r := fun a b => a ≤ b) (a := a)).2 ha
+
+lemma listOfLinearOrder_sortedLT (r : LinearOrder A) :
+    (listOfLinearOrder r).SortedLT := by
+  classical
+  let _ := r
+  simpa [listOfLinearOrder] using
+    (Finset.sortedLT_sort (s := (Finset.univ : Finset A)))
+
+lemma listOfLinearOrder_lt_iff_idxOf (r : LinearOrder A) [DecidableEq A] (a b : A) :
+    r.lt a b ↔ (listOfLinearOrder r).idxOf a < (listOfLinearOrder r).idxOf b := by
+  classical
+  let _ := r
+  let l := listOfLinearOrder r
+  have hsorted : l.SortedLT := listOfLinearOrder_sortedLT (r := r)
+  have ha : a ∈ l := listOfLinearOrder_complete (r := r) a
+  have hb : b ∈ l := listOfLinearOrder_complete (r := r) b
+  let e := List.SortedLT.getIso l hsorted
+  have hidxa : (e.symm ⟨a, ha⟩).val = l.idxOf a := by
+    simpa [e] using
+      (List.SortedLT.coe_getIso_symm_apply (l := l) (H := hsorted) (x := ⟨a, ha⟩))
+  have hidxb : (e.symm ⟨b, hb⟩).val = l.idxOf b := by
+    simpa [e] using
+      (List.SortedLT.coe_getIso_symm_apply (l := l) (H := hsorted) (x := ⟨b, hb⟩))
+  have hlt :
+      r.lt a b ↔ (e.symm ⟨a, ha⟩ < e.symm ⟨b, hb⟩) := by
+    have h :=
+      (OrderIso.lt_iff_lt (e := e.symm) (x := ⟨a, ha⟩) (y := ⟨b, hb⟩))
+    have h' : (⟨a, ha⟩ : {x // x ∈ l}) < ⟨b, hb⟩ ↔ a < b := by simp
+    exact (h.trans h').symm
+  calc
+    r.lt a b ↔ (e.symm ⟨a, ha⟩ < e.symm ⟨b, hb⟩) := hlt
+    _ ↔ (e.symm ⟨a, ha⟩).val < (e.symm ⟨b, hb⟩).val := (Fin.val_fin_lt).symm
+    _ ↔ l.idxOf a < l.idxOf b := by simp [hidxa, hidxb]
+
+lemma linearOrderOfList_listOfLinearOrder (r : LinearOrder A) [DecidableEq A] :
+    linearOrderOfList (listOfLinearOrder r) (listOfLinearOrder_nodup r)
+      (listOfLinearOrder_complete r) = r := by
+  classical
+  apply LinearOrder.ext_lt
+  intro a b
+  have h1 :=
+    linearOrderOfList_lt_iff_idxOf (l := listOfLinearOrder r)
+      (hnodup := listOfLinearOrder_nodup r) (hcomplete := listOfLinearOrder_complete r) a b
+  have h2 := listOfLinearOrder_lt_iff_idxOf (r := r) a b
+  exact h1.trans h2.symm
+
+lemma listOfLinearOrder_linearOrderOfList_perm (l : List A) [DecidableEq A]
+    (hnodup : l.Nodup) (hcomplete : ∀ a, a ∈ l) :
+    List.Perm (listOfLinearOrder (linearOrderOfList l hnodup hcomplete)) l := by
+  classical
+  have hfinset : l.toFinset = (Finset.univ : Finset A) := by
+    ext a
+    constructor
+    · intro _
+      simp
+    · intro _
+      simpa using hcomplete a
+  have hperm_l : (Finset.univ : Finset A).toList.Perm l := by
+    simpa [hfinset] using (List.toFinset_toList (s := l) hnodup)
+  have hperm_univ :
+      List.Perm (listOfLinearOrder (linearOrderOfList l hnodup hcomplete))
+        (Finset.univ : Finset A).toList := by
+    let r := linearOrderOfList l hnodup hcomplete
+    let _ := r
+    unfold listOfLinearOrder
+    simpa using
+      (Finset.sort_perm_toList (s := (Finset.univ : Finset A)) (r := fun a b => a ≤ b))
+  exact hperm_univ.trans hperm_l
+
+end ListOfLinearOrder
+
+/-! ## Adjacency and list positions -/
+
+section AdjacentList
+
+variable {A : Type} [Fintype A] [DecidableEq A]
+
+/-- Adjacent in a list: `a` is immediately before `b`. -/
+def AdjacentInList (l : List A) (a b : A) : Prop :=
+  l.idxOf a + 1 = l.idxOf b
+
+/-- Adjacent in a linear order: no alternative strictly between `a` and `b`. -/
+def AdjacentInOrder (r : LinearOrder A) (a b : A) : Prop :=
+  r.lt a b ∧ ∀ z : A, ¬(r.lt a z ∧ r.lt z b)
+
+lemma adjacentInOrder_iff_adjacentInList (r : LinearOrder A) (a b : A) :
+    AdjacentInOrder r a b ↔ AdjacentInList (listOfLinearOrder r) a b := by
+  classical
+  let _ := r
+  let l := listOfLinearOrder r
+  constructor
+  · intro h
+    rcases h with ⟨hab, hno⟩
+    have hlt : l.idxOf a < l.idxOf b :=
+      (listOfLinearOrder_lt_iff_idxOf (r := r) a b).1 hab
+    by_contra hneq
+    have hle : l.idxOf a + 1 ≤ l.idxOf b := Nat.succ_le_of_lt hlt
+    have hlt' : l.idxOf a + 1 < l.idxOf b := lt_of_le_of_ne hle hneq
+    have hb_len : l.idxOf b < l.length :=
+      List.idxOf_lt_length_of_mem (listOfLinearOrder_complete (r := r) b)
+    have ha1_len : l.idxOf a + 1 < l.length := lt_trans hlt' hb_len
+    have hnodup : l.Nodup := listOfLinearOrder_nodup (r := r)
+    set z := l[l.idxOf a + 1]'ha1_len with hzdef
+    have hz_idx : l.idxOf z = l.idxOf a + 1 := by
+      subst z
+      simpa using (List.Nodup.idxOf_getElem hnodup (l.idxOf a + 1) ha1_len)
+    have hidx_az : l.idxOf a < l.idxOf z := by
+      simpa [hz_idx] using (Nat.lt_succ_self (l.idxOf a))
+    have hidx_zb : l.idxOf z < l.idxOf b := by      simpa [hz_idx] using hlt'
+    have haz : r.lt a z := (listOfLinearOrder_lt_iff_idxOf (r := r) a z).2 hidx_az
+    have hzb : r.lt z b := (listOfLinearOrder_lt_iff_idxOf (r := r) z b).2 hidx_zb
+    exact hno z ⟨haz, hzb⟩
+  · intro h
+    refine ⟨?_, ?_⟩
+    · have hidx : l.idxOf a < l.idxOf b := by
+        rw [← h]
+        exact Nat.lt_succ_self (l.idxOf a)
+      exact (listOfLinearOrder_lt_iff_idxOf (r := r) a b).2 hidx
+    · intro z hz
+      have hidx_az : l.idxOf a < l.idxOf z :=
+        (listOfLinearOrder_lt_iff_idxOf (r := r) a z).1 hz.1
+      have hidx_zb : l.idxOf z < l.idxOf b :=
+        (listOfLinearOrder_lt_iff_idxOf (r := r) z b).1 hz.2
+      have hle : l.idxOf a + 1 ≤ l.idxOf z := Nat.succ_le_of_lt hidx_az
+      have hlt' : l.idxOf z < l.idxOf a + 1 := by
+        have hlt'' := hidx_zb
+        rw [← h] at hlt''
+        exact hlt''
+      exact (lt_irrefl _ (lt_of_lt_of_le hlt' hle))
+
+lemma adjacentInList_idxOf_succ (l : List A) (hnodup : l.Nodup) (x : A)
+    (hx : l.idxOf x + 1 < l.length) :
+    AdjacentInList l x (l[l.idxOf x + 1]'hx) := by
+  have hidx : l.idxOf (l[l.idxOf x + 1]'hx) = l.idxOf x + 1 := by
+    simp only [List.Nodup.idxOf_getElem hnodup (l.idxOf x + 1) hx]
+  simp [AdjacentInList, hidx]
+
+end AdjacentList
+
+/-! ## Rank and list indices -/
+
+section RankIdxOf
+
+variable {A : Type} [Fintype A] [DecidableEq A]
+
+lemma rank_eq_idxOf_listOfLinearOrder (r : LinearOrder A) (a : A) :
+    rank r a = (listOfLinearOrder r).idxOf a := by
+  classical
+  let _ := r
+  let l := listOfLinearOrder r
+  have hsorted : l.SortedLT := listOfLinearOrder_sortedLT (r := r)
+  have ha : a ∈ l := listOfLinearOrder_complete (r := r) a
+  let e := List.SortedLT.getIso l hsorted
+  let idx : Fin l.length := e.symm ⟨a, ha⟩
+  have hrank : rank r a = Fintype.card {x : A // r.lt x a} := by
+    simpa [rank] using (Fintype.card_subtype (p := fun x => r.lt x a)).symm
+  have hcard :
+      Fintype.card {x : A // r.lt x a} = Fintype.card {i : Fin l.length // i < idx} := by
+    refine Fintype.card_congr ?_
+    refine
+      { toFun := fun x =>
+          ⟨e.symm ⟨x.1, by
+              simpa [l] using (listOfLinearOrder_complete (r := r) x.1)⟩, ?_⟩
+        invFun := fun i =>
+          ⟨(e i.1).1, ?_⟩
+        left_inv := ?_
+        right_inv := ?_ }
+    · have hlt :
+        e.symm ⟨x.1, by
+            simpa [l] using (listOfLinearOrder_complete (r := r) x.1)⟩ < idx ↔
+          (⟨x.1, by
+              simpa [l] using (listOfLinearOrder_complete (r := r) x.1)⟩ : {y // y ∈ l}) <
+            ⟨a, ha⟩ := by
+        have h :=
+          (OrderIso.lt_iff_lt (e := e)
+            (x := e.symm ⟨x.1, by
+              simpa [l] using (listOfLinearOrder_complete (r := r) x.1)⟩) (y := idx))
+        simpa [idx] using h.symm
+      have hsub : (⟨x.1, by
+            simpa [l] using (listOfLinearOrder_complete (r := r) x.1)⟩ : {y // y ∈ l}) <
+          ⟨a, ha⟩ := by
+        simpa using x.2
+      exact hlt.mpr hsub
+    · have hlt : e i.1 < ⟨a, ha⟩ := by
+        have h' := (OrderIso.lt_iff_lt (e := e) (x := i.1) (y := idx)).2 i.2
+        simpa [idx] using h'
+      simpa using hlt
+    · intro x
+      apply Subtype.ext
+      have h := e.apply_symm_apply
+        (⟨x.1, by
+          simpa [l] using (listOfLinearOrder_complete (r := r) x.1)⟩ : {y // y ∈ l})
+      simpa using congrArg Subtype.val h
+    · intro i
+      apply Subtype.ext
+      have h := e.symm_apply_apply i.1
+      simp only [h]
+  have hfin :
+      Fintype.card {i : Fin l.length // i < idx} = idx.val := by
+    have hcard' :
+        Fintype.card {i : Fin l.length // i < idx} =
+          Fintype.card (Fin idx.val) := by
+      refine Fintype.card_congr ?_
+      refine
+        { toFun := fun i =>
+            ⟨i.1.1, by
+              exact (Fin.lt_def.mp i.2)⟩
+          invFun := fun i =>
+            ⟨⟨i.1, lt_trans i.2 idx.isLt⟩, by
+              exact (Fin.lt_def.mpr i.2)⟩
+          left_inv := ?_
+          right_inv := ?_ }
+      · intro i
+        apply Subtype.ext
+        apply Fin.ext
+        rfl
+      · intro i
+        ext
+        rfl
+    simpa using (hcard'.trans (by simp))
+  have hidx : idx.val = (listOfLinearOrder r).idxOf a := by
+    simpa [idx, e, l] using
+      (List.SortedLT.coe_getIso_symm_apply (l := l) (H := hsorted) (x := ⟨a, ha⟩))
+  calc
+    rank r a = Fintype.card {x : A // r.lt x a} := hrank
+    _ = Fintype.card {i : Fin l.length // i < idx} := hcard
+    _ = idx.val := hfin
+    _ = (listOfLinearOrder r).idxOf a := by simp only [hidx]
+
+end RankIdxOf
+
+/-! ## Preferences via list indices -/
+
+section PrefersIdxOf
+
+variable {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+
+lemma prefers_iff_idxOf_listOfLinearOrder (P : Profile V A) (v : V) (a b : A) :
+    Prefers P v a b ↔
+      (listOfLinearOrder (P.pref v)).idxOf a < (listOfLinearOrder (P.pref v)).idxOf b := by
+  classical
+  exact listOfLinearOrder_lt_iff_idxOf (r := P.pref v) a b
+
+end PrefersIdxOf
+
+end SocialChoice
