@@ -10,6 +10,8 @@ namespace SocialChoice
 
 open Finset
 
+namespace CondorcetReinforcement
+
 /-- Successor in the 3-cycle 0→1→2→0. -/
 def nextCandidate : Fin 3 → Fin 3
   | 0 => 1
@@ -138,6 +140,12 @@ lemma union_condorcet_prev (w : Fin 3) :
       profileAll, fullProfile, restrictElectorate, ballots9, voters6, voters3,
       prevCandidate, nextCandidate, ListBallot.lt_iff_idxOf]
     decide
+
+/-! ### Main result -/
+
+end CondorcetReinforcement
+
+open CondorcetReinforcement
 
 /-- No Condorcet-consistent rule satisfying subset reinforcement on 9 voters. -/
 theorem no_condorcet_subset_reinforcement_9

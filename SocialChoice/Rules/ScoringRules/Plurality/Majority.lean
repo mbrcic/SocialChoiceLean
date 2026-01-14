@@ -88,9 +88,9 @@ namespace SocialChoice
 
 open Finset
 
-def listBallot210 : ListBallot 3 := ListBallot.mk' [2, 1, 0]
+private def listBallot210 : ListBallot 3 := ListBallot.mk' [2, 1, 0]
 
-def pluralityMajorityLoserBallots : Fin 7 → ListBallot 3
+private def pluralityMajorityLoserBallots : Fin 7 → ListBallot 3
   | 0 => Examples.listBallot012
   | 1 => Examples.listBallot012
   | 2 => Examples.listBallot012
@@ -99,10 +99,10 @@ def pluralityMajorityLoserBallots : Fin 7 → ListBallot 3
   | 5 => listBallot210
   | 6 => listBallot210
 
-noncomputable def pluralityMajorityLoserProfile : Profile (Fin 7) (Fin 3) :=
+private noncomputable def pluralityMajorityLoserProfile : Profile (Fin 7) (Fin 3) :=
   profileOfListBallots pluralityMajorityLoserBallots
 
-lemma bottomRank_iff_prefersInList {m n : ℕ} (ballots : Fin m → ListBallot n)
+private lemma bottomRank_iff_prefersInList {m n : ℕ} (ballots : Fin m → ListBallot n)
     (v : Fin m) (c : Fin n) :
     BottomRank (profileOfListBallots ballots) v c ↔
       ∀ d : Fin n, d ≠ c → prefersInList (ballots v).ranking d c = true := by
@@ -112,7 +112,7 @@ lemma bottomRank_iff_prefersInList {m n : ℕ} (ballots : Fin m → ListBallot n
   · intro h d hd
     exact (prefers_iff_prefersInList ballots v d c).2 (h d hd)
 
-lemma pluralityMajorityLoser_votersBottom :
+private lemma pluralityMajorityLoser_votersBottom :
     votersBottom pluralityMajorityLoserProfile 0 =
       ({3, 4, 5, 6} : Finset (Fin 7)) := by
   classical
@@ -122,46 +122,47 @@ lemma pluralityMajorityLoser_votersBottom :
       bottomRank_iff_prefersInList, prefersInList] <;>
     decide
 
-lemma pluralityMajorityLoser_votersBottom_card :
+private lemma pluralityMajorityLoser_votersBottom_card :
     (votersBottom pluralityMajorityLoserProfile 0).card = 4 := by
   simp [pluralityMajorityLoser_votersBottom]
 
-lemma strictMajority_fin7 {S : Finset (Fin 7)} (hcard : S.card = 4) :
+private lemma strictMajority_fin7 {S : Finset (Fin 7)} (hcard : S.card = 4) :
     StrictMajority S := by
   unfold StrictMajority
   simp [hcard]
 
-lemma pluralityMajorityLoser_strictMajority_bottom0 :
+private lemma pluralityMajorityLoser_strictMajority_bottom0 :
     StrictMajority (votersBottom pluralityMajorityLoserProfile 0) := by
   have hcard : (votersBottom pluralityMajorityLoserProfile 0).card = 4 :=
     pluralityMajorityLoser_votersBottom_card
   exact strictMajority_fin7 hcard
 
-lemma pluralityMajorityLoser_topCount0 : topCount pluralityMajorityLoserProfile 0 = 3 := by
+private lemma pluralityMajorityLoser_topCount0 : topCount pluralityMajorityLoserProfile 0 = 3 := by
   have hcount : countTop (fun v => (pluralityMajorityLoserBallots v).ranking) 0 = 3 := rfl
   have hcard : (votersTop pluralityMajorityLoserProfile 0).card = 3 := by
     simpa [pluralityMajorityLoserProfile, votersTop_card_eq_countTop] using hcount
   simpa [topCount] using hcard
 
-lemma pluralityMajorityLoser_topCount1 : topCount pluralityMajorityLoserProfile 1 = 2 := by
+private lemma pluralityMajorityLoser_topCount1 : topCount pluralityMajorityLoserProfile 1 = 2 := by
   have hcount : countTop (fun v => (pluralityMajorityLoserBallots v).ranking) 1 = 2 := rfl
   have hcard : (votersTop pluralityMajorityLoserProfile 1).card = 2 := by
     simpa [pluralityMajorityLoserProfile, votersTop_card_eq_countTop] using hcount
   simpa [topCount] using hcard
 
-lemma pluralityMajorityLoser_topCount2 : topCount pluralityMajorityLoserProfile 2 = 2 := by
+private lemma pluralityMajorityLoser_topCount2 : topCount pluralityMajorityLoserProfile 2 = 2 := by
   have hcount : countTop (fun v => (pluralityMajorityLoserBallots v).ranking) 2 = 2 := rfl
   have hcard : (votersTop pluralityMajorityLoserProfile 2).card = 2 := by
     simpa [pluralityMajorityLoserProfile, votersTop_card_eq_countTop] using hcount
   simpa [topCount] using hcard
 
-lemma pluralityMajorityLoser_topCount_le (d : Fin 3) :
+private lemma pluralityMajorityLoser_topCount_le (d : Fin 3) :
     topCount pluralityMajorityLoserProfile d ≤ topCount pluralityMajorityLoserProfile 0 := by
   fin_cases d <;>
     simp [pluralityMajorityLoser_topCount0, pluralityMajorityLoser_topCount1,
       pluralityMajorityLoser_topCount2]
 
-lemma pluralityMajorityLoser_has_a : (0 : Fin 3) ∈ plurality pluralityMajorityLoserProfile := by
+private lemma pluralityMajorityLoser_has_a :
+    (0 : Fin 3) ∈ plurality pluralityMajorityLoserProfile := by
   classical
   have hmax :
       ∀ d : Fin 3,

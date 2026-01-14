@@ -19,6 +19,8 @@ namespace SocialChoice
 
 open Finset
 
+namespace CondorcetParticipation
+
 -- Ballots used in the proof
 def ballotABCD : ListBallot 4 := ListBallot.mk' [0, 1, 2, 3]
 def ballotABDC : ListBallot 4 := ListBallot.mk' [0, 1, 3, 2]
@@ -468,7 +470,11 @@ lemma P8_condorcet_winner_d : CondorcetWinner P8ProfileSub 3 := by
   intro y hy
   fin_cases y <;> first | cases hy rfl | simp
 
--- Main Theorem
+/-! ### Main theorem -/
+
+end CondorcetParticipation
+
+open CondorcetParticipation
 
 theorem no_resolute_condorcet_participation_m4_n12 :
     ¬ ∃ (f : VotingRule) (hf : Resolute f), CondorcetConsistency f ∧ ResoluteParticipation f hf := by
@@ -497,8 +503,8 @@ theorem no_resolute_condorcet_participation_m4_n12 :
       have h_cw : f P2ProfileSub = {2} := hcond P2ProfileSub 2 P2_condorcet_winner_c
       rw [hz] at h_cw
       have : (0 : Fin 4) = 2 := by
-         have : 0 ∈ ({2} : Finset (Fin 4)) := by rw [← h_cw]; simp
-         simpa
+        have : 0 ∈ ({2} : Finset (Fin 4)) := by rw [← h_cw]; simp
+        simpa
       contradiction
     · -- y = 1 (b)
       -- Path to P3, then P4

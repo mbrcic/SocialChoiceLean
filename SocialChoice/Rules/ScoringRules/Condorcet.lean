@@ -15,34 +15,34 @@ namespace SocialChoice
 abbrev Voters5 := Fin 5
 abbrev A3 := Fin 3
 
-def ballot012 : ListBallot 3 := ListBallot.identity 3
-def ballot102 : ListBallot 3 := ListBallot.mk' [1, 0, 2]
-def ballot120 : ListBallot 3 := ListBallot.mk' [1, 2, 0]
-def ballot201 : ListBallot 3 := ListBallot.mk' [2, 0, 1]
+private def ballot012 : ListBallot 3 := ListBallot.identity 3
+private def ballot102 : ListBallot 3 := ListBallot.mk' [1, 0, 2]
+private def ballot120 : ListBallot 3 := ListBallot.mk' [1, 2, 0]
+private def ballot201 : ListBallot 3 := ListBallot.mk' [2, 0, 1]
 
-lemma rank_ballot012_0 : rank ballot012.toLinearOrder (0 : Fin 3) = 0 := by decide
-lemma rank_ballot012_1 : rank ballot012.toLinearOrder (1 : Fin 3) = 1 := by decide
-lemma rank_ballot102_0 : rank ballot102.toLinearOrder (0 : Fin 3) = 1 := by decide
-lemma rank_ballot102_1 : rank ballot102.toLinearOrder (1 : Fin 3) = 0 := by decide
-lemma rank_ballot120_0 : rank ballot120.toLinearOrder (0 : Fin 3) = 2 := by decide
-lemma rank_ballot120_1 : rank ballot120.toLinearOrder (1 : Fin 3) = 0 := by decide
-lemma rank_ballot201_0 : rank ballot201.toLinearOrder (0 : Fin 3) = 1 := by decide
-lemma rank_ballot201_1 : rank ballot201.toLinearOrder (1 : Fin 3) = 2 := by decide
+private lemma rank_ballot012_0 : rank ballot012.toLinearOrder (0 : Fin 3) = 0 := by decide
+private lemma rank_ballot012_1 : rank ballot012.toLinearOrder (1 : Fin 3) = 1 := by decide
+private lemma rank_ballot102_0 : rank ballot102.toLinearOrder (0 : Fin 3) = 1 := by decide
+private lemma rank_ballot102_1 : rank ballot102.toLinearOrder (1 : Fin 3) = 0 := by decide
+private lemma rank_ballot120_0 : rank ballot120.toLinearOrder (0 : Fin 3) = 2 := by decide
+private lemma rank_ballot120_1 : rank ballot120.toLinearOrder (1 : Fin 3) = 0 := by decide
+private lemma rank_ballot201_0 : rank ballot201.toLinearOrder (0 : Fin 3) = 1 := by decide
+private lemma rank_ballot201_1 : rank ballot201.toLinearOrder (1 : Fin 3) = 2 := by decide
 
-def scoringCondorcetBallots : Voters5 → ListBallot 3
+private def scoringCondorcetBallots : Voters5 → ListBallot 3
   | 0 => ballot012
   | 1 => ballot012
   | 2 => ballot102
   | 3 => ballot120
   | 4 => ballot201
 
-noncomputable def scoringCondorcetProfile : Profile Voters5 A3 :=
+private noncomputable def scoringCondorcetProfile : Profile Voters5 A3 :=
   profileOfListBallots scoringCondorcetBallots
 
-lemma scoringCondorcetProfile_eq :
+private lemma scoringCondorcetProfile_eq :
     scoringCondorcetProfile = profileOfListBallots scoringCondorcetBallots := rfl
 
-lemma scoringCondorcet_winner_list :
+private lemma scoringCondorcet_winner_list :
     ∀ d : Fin 3, (0 : Fin 3) ≠ d →
       marginList (fun v => (scoringCondorcetBallots v).ranking) 0 d > 0 := by
   intro d hne
@@ -51,12 +51,12 @@ lemma scoringCondorcet_winner_list :
   · decide
   · decide
 
-theorem scoringCondorcet_winner :
+private theorem scoringCondorcet_winner :
     condorcet_winner scoringCondorcetProfile (0 : Fin 3) := by
   rw [scoringCondorcetProfile_eq, condorcet_winner_iff_marginList]
   exact scoringCondorcet_winner_list
 
-lemma scoreCandidate_scoringCondorcet_eq (score : Nat → Int) :
+private lemma scoreCandidate_scoringCondorcet_eq (score : Nat → Int) :
     scoreCandidate scoringCondorcetProfile score (0 : Fin 3) =
       scoreCandidate scoringCondorcetProfile score 1 := by
   calc
