@@ -1,7 +1,7 @@
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Finset.Card
 import Mathlib.Tactic
-import SocialChoice.Profile
+import SocialChoice.Axioms.Clones
 import SocialChoice.Rules.ScoringElimination.Defs
 import SocialChoice.Rules.ScoringElimination.Basic
 import SocialChoice.Rules.ScoringElimination.Neutrality
@@ -21,60 +21,7 @@ This proof follows the proof from the paper
 
 variable {V A : Type} [Fintype V] [Fintype A]
 
-noncomputable instance instDecidablePredClone {A : Type} (X : Set A) (x : A) :
-    DecidablePred (fun a : A => a ∉ X ∨ a = x) := by
-  classical
-  infer_instance
-
-def clonePred (X : Set A) (x : A) : A → Prop := fun a => a ∉ X ∨ a = x
-
-noncomputable instance instDecidablePredClonePred {A : Type} (X : Set A) (x : A) :
-    DecidablePred (clonePred X x) := by
-  classical
-  simpa [clonePred] using (instDecidablePredClone (A := A) X x)
-
-noncomputable instance instFintypeClonePred {A : Type} [Fintype A] (X : Set A) (x : A) :
-    Fintype {a : A // clonePred X x a} := by
-  classical
-  infer_instance
-
-noncomputable instance instDecidableEqCloneSubtype {A : Type} (X : Set A) (x : A) :
-    DecidableEq {a : A // clonePred X x a} := by
-  classical
-  exact Classical.decEq _
-
 /-! ## Clone sets and restriction helpers -/
-
-/-- A clone set `X` (subset of candidates). -/
-def CloneSet (P : Profile V A) (X : Set A) : Prop :=
-  X.Nonempty ∧
-    ∀ v c, c ∉ X →
-      (∀ x ∈ X, Prefers P v x c) ∨ (∀ x ∈ X, Prefers P v c x)
-
-/-- Remove all clones in `X` except for the representative `x`. -/
-noncomputable def removeClonesExcept (P : Profile V A) (X : Set A) (x : A) :
-    Profile V {a : A // clonePred X x a} :=
-  restrictCandidates P (clonePred X x)
-
-lemma clonePred_swap {A : Type} [DecidableEq A] (X : Set A) (x x' a : A)
-    (hx : x ∈ X) (hx' : x' ∈ X) (hxx' : x ≠ x') :
-    clonePred X x a ↔ clonePred X x' ((Equiv.swap x x') a) := by
-  classical
-  by_cases hax : a = x
-  · subst hax
-    simp [clonePred, Equiv.swap_apply_left]
-  · by_cases hax' : a = x'
-    · subst hax'
-      simp [clonePred, Equiv.swap_apply_right, hxx', hx, hx', hax]
-    · have hswap : (Equiv.swap x x') a = a := by
-        simp [Equiv.swap_apply_def, hax, hax']
-      simp [clonePred, hswap, hax, hax']
-
-noncomputable def cloneSwapEquiv {A : Type} [DecidableEq A]
-    (X : Set A) (x x' : A) (hx : x ∈ X) (hx' : x' ∈ X) (hxx' : x ≠ x') :
-    {a : A // clonePred X x a} ≃ {a : A // clonePred X x' a} :=
-  (Equiv.swap x x').subtypeEquiv (clonePred_swap (X := X) (x := x) (x' := x')
-    (hx := hx) (hx' := hx') (hxx' := hxx'))
 
 lemma relabelProfile_removeClonesExcept_swap_rep
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
@@ -190,82 +137,12 @@ lemma relabelProfile_removeClonesExcept_swap_rep
           · intro h
             exact (hright h).elim
 
-lemma cloneSwapEquiv_apply_nonclone {A : Type} [DecidableEq A]
-    {X : Set A} {x x' c : A} (hc : c ∉ X)
-    (hx : x ∈ X) (hx' : x' ∈ X) (hxx' : x ≠ x') :
-    cloneSwapEquiv X x x' hx hx' hxx' ⟨c, Or.inl hc⟩ = ⟨c, Or.inl hc⟩ := by
-  classical
-  have hcx : c ≠ x := by
-    intro h
-    apply hc
-    simpa [h] using hx
-  have hcx' : c ≠ x' := by
-    intro h
-    apply hc
-    simpa [h] using hx'
-  have hswap : (Equiv.swap x x') c = c := by
-    simp [Equiv.swap_apply_def, hcx, hcx']
-  ext
-  simp [cloneSwapEquiv, hswap]
-
-lemma cloneSwapEquiv_symm_apply_nonclone {A : Type} [DecidableEq A]
-    {X : Set A} {x x' c : A} (hc : c ∉ X)
-    (hx : x ∈ X) (hx' : x' ∈ X) (hxx' : x ≠ x') :
-    (cloneSwapEquiv X x x' hx hx' hxx').symm ⟨c, Or.inl hc⟩ = ⟨c, Or.inl hc⟩ := by
-  classical
-  have hcx : c ≠ x := by
-    intro h
-    apply hc
-    simpa [h] using hx
-  have hcx' : c ≠ x' := by
-    intro h
-    apply hc
-    simpa [h] using hx'
-  apply Subtype.ext
-  simp [cloneSwapEquiv, Equiv.swap_apply_def, hcx, hcx']
-
-lemma cloneSwapEquiv_apply_rep {A : Type} [DecidableEq A]
-    {X : Set A} {x x' : A} (hx : x ∈ X) (hx' : x' ∈ X) (hxx' : x ≠ x') :
-    cloneSwapEquiv X x x' hx hx' hxx' ⟨x, Or.inr rfl⟩ = ⟨x', Or.inr rfl⟩ := by
-  classical
-  ext
-  simp [cloneSwapEquiv, Equiv.swap_apply_left]
-
-lemma cloneSwapEquiv_symm_apply_rep {A : Type} [DecidableEq A]
-    {X : Set A} {x x' : A} (hx : x ∈ X) (hx' : x' ∈ X) (hxx' : x ≠ x') :
-    (cloneSwapEquiv X x x' hx hx' hxx').symm ⟨x', Or.inr rfl⟩ = ⟨x, Or.inr rfl⟩ := by
-  classical
-  apply Subtype.ext
-  simp [cloneSwapEquiv, Equiv.swap_apply_right]
-
-/-- Clone set on a restricted candidate type. -/
-def restrictCloneSet (X : Set A) (ℓ : A) : Set {a : A // a ≠ ℓ} :=
-  {a | (a : A) ∈ X}
-
-omit [Fintype A] in
-@[simp] lemma mem_restrictCloneSet {X : Set A} {ℓ : A} {a : {a : A // a ≠ ℓ}} :
-    a ∈ restrictCloneSet X ℓ ↔ (a : A) ∈ X := by
-  rfl
-
-@[simp] lemma prefers_removeClonesExcept_iff {V A : Type} [Fintype V] [Fintype A]
-    (P : Profile V A) (X : Set A) (x : A) (v : V)
-    (a b : {a : A // clonePred X x a}) :
-    Prefers (removeClonesExcept P X x) v a b ↔ Prefers P v a b := by
-  rfl
-
 lemma mem_liftWinners_iff {A : Type} [DecidableEq A] {p : A → Prop} [DecidablePred p]
     {s : Finset {a : A // p a}} {a : A} (ha : p a) :
     a ∈ liftWinners s ↔ (⟨a, ha⟩ : {a : A // p a}) ∈ s := by
   classical
   -- `liftWinners` is `image Subtype.val`.
   simp [liftWinners, Finset.mem_image, ha]
-
-omit [Fintype A] in
-lemma restrictCloneSet_nonempty {X : Set A} {ℓ : A}
-    (h : ∃ x ∈ X, x ≠ ℓ) : (restrictCloneSet X ℓ).Nonempty := by
-  rcases h with ⟨x, hx, hxne⟩
-  refine ⟨⟨x, hxne⟩, ?_⟩
-  simpa [restrictCloneSet] using hx
 
 lemma cloneSet_restrictProfile
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
@@ -428,42 +305,6 @@ lemma clone_winner_swap
 
 noncomputable def pluralityScoreVec : Nat → Int :=
   fun r => if r = 0 then 1 else 0
-
-lemma cloneSet_prefers_equiv
-    {V A : Type} [Fintype V] [Fintype A]
-    (P : Profile V A) (X : Set A) (hX : CloneSet P X)
-    {x x' y : A} (hx : x ∈ X) (hx' : x' ∈ X) (hy : y ∉ X) (v : V) :
-    (Prefers P v x y ↔ Prefers P v x' y) ∧
-      (Prefers P v y x ↔ Prefers P v y x') := by
-  classical
-  rcases hX with ⟨_, hclone⟩
-  let _ := P.pref v
-  have hcase := hclone v y hy
-  cases hcase with
-  | inl hall =>
-    have hxpref : Prefers P v x y := hall x hx
-    have hx'pref : Prefers P v x' y := hall x' hx'
-    have hxfalse : ¬ Prefers P v y x := by
-      intro h
-      exact lt_asymm (hall x hx) h
-    have hx'false : ¬ Prefers P v y x' := by
-      intro h
-      exact lt_asymm (hall x' hx') h
-    refine ⟨?_, ?_⟩
-    · exact ⟨(fun _ => hx'pref), (fun _ => hxpref)⟩
-    · exact ⟨(fun h => (hxfalse h).elim), (fun h => (hx'false h).elim)⟩
-  | inr hall =>
-    have hxpref : Prefers P v y x := hall x hx
-    have hx'pref : Prefers P v y x' := hall x' hx'
-    have hxfalse : ¬ Prefers P v x y := by
-      intro h
-      exact lt_asymm h (hall x hx)
-    have hx'false : ¬ Prefers P v x' y := by
-      intro h
-      exact lt_asymm h (hall x' hx')
-    refine ⟨?_, ?_⟩
-    · exact ⟨(fun h => (hxfalse h).elim), (fun h => (hx'false h).elim)⟩
-    · exact ⟨(fun _ => hx'pref), (fun _ => hxpref)⟩
 
 lemma topRank_removeClonesExcept_iff_of_nonclone
     {V A : Type} [Fintype V] [Fintype A]
@@ -798,44 +639,7 @@ def irv_clone_prop
     (⟨x, Or.inr rfl⟩ : {a : A // clonePred X x a}) ∈
       scoringEliminationAux pluralityScore _ (removeClonesExcept P X x)
 
-def independence_of_clones (f : VotingRule) : Prop :=
-  ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-      (P : Profile V A) (X : Set A) (x : A),
-    CloneSet P X → x ∈ X →
-      (∀ c (hc : c ∉ X),
-        (c ∈ f P ↔
-          (⟨c, Or.inl hc⟩ : {a : A // clonePred X x a}) ∈ f (removeClonesExcept P X x))) ∧
-      ((∃ y, y ∈ X ∧ y ∈ f P) ↔
-        (⟨x, Or.inr rfl⟩ : {a : A // clonePred X x a}) ∈ f (removeClonesExcept P X x))
-
 /-! ## Restriction commutation helpers (up to relabeling) -/
-
-@[simp] lemma clonePred_restrictCloneSet_eq
-  {A : Type} (X : Set A) (x ℓ : A) (hxℓ : x ≠ ℓ) :
-  clonePred (restrictCloneSet (A := A) X ℓ) (⟨x, hxℓ⟩ : {a : A // a ≠ ℓ}) =
-    (fun a : {a : A // a ≠ ℓ} => clonePred X x a.1) := by
-  funext a
-  apply propext
-  constructor
-  · intro h
-    rcases h with h | h
-    · left
-      intro haX
-      apply h
-      simpa [restrictCloneSet] using haX
-    · right
-      -- equality in a subtype is equality of values
-      exact congrArg Subtype.val h
-  · intro h
-    rcases h with h | h
-    · left
-      intro haX
-      apply h
-      simpa [restrictCloneSet] using haX
-    · right
-      -- build equality in the subtype
-      ext
-      simpa using h
 
 /-- Deleting a non-clone candidate commutes with clone-removal (up to relabeling). -/
 lemma relabelProfile_restrictProfile_removeClonesExcept_of_nonclone
