@@ -59,7 +59,7 @@ noncomputable def fullProfile (w : Fin 3) :
 
 /-- Restrict the full profile to the first 6 voters. -/
 noncomputable def profile6 (w : Fin 3) : Profile (Electorate (Fin 9) voters6) (Fin 3) :=
-  restrictProfile (fullProfile w) voters6 (by
+  restrictElectorate (fullProfile w) voters6 (by
     intro x hx; exact (Finset.mem_univ x))
 
 /-- The 6-voter cycle profile does not depend on `w`. -/
@@ -69,28 +69,28 @@ lemma profile6_const (w : Fin 3) : profile6 w = profile6 0 := by
   | mk val hmem =>
       -- Split on the concrete voter index; impossible cases (≥ 6) close by contradiction.
       fin_cases val <;>
-        simp [profile6, fullProfile, restrictProfile, ballots9, voters6] at hmem ⊢
+        simp [profile6, fullProfile, restrictElectorate, ballots9, voters6] at hmem ⊢
 
 /-- Restrict the full profile to the last 3 voters. -/
 noncomputable def profile3 (w : Fin 3) : Profile (Electorate (Fin 9) voters3) (Fin 3) :=
-  restrictProfile (fullProfile w) voters3 (by
+  restrictElectorate (fullProfile w) voters3 (by
     intro x hx; exact (Finset.mem_univ x))
 
 /-- Restrict to the union (all voters). -/
 noncomputable def profileAll (w : Fin 3) : Profile (Electorate (Fin 9) (voters6 ∪ voters3)) (Fin 3) :=
-  restrictProfile (fullProfile w) (voters6 ∪ voters3) (by
+  restrictElectorate (fullProfile w) (voters6 ∪ voters3) (by
     intro x hx; exact (Finset.mem_univ x))
 
-lemma restrictProfile_nested {U A : Type} [DecidableEq U] [Fintype A]
+lemma restrictElectorate_nested {U A : Type} [DecidableEq U] [Fintype A]
     {S T W : Finset U} (hST : S ⊆ T) (hTW : T ⊆ W)
     (Q : Profile (Electorate U W) A) :
-    restrictProfile (restrictProfile Q T hTW) S hST =
-      restrictProfile Q S (by intro x hx; exact hTW (hST hx)) := by
+    restrictElectorate (restrictElectorate Q T hTW) S hST =
+      restrictElectorate Q S (by intro x hx; exact hTW (hST hx)) := by
   cases Q
   rfl
 
 lemma restrict_profileAll_v6 (w : Fin 3) :
-    restrictProfile (profileAll w) voters6
+    restrictElectorate (profileAll w) voters6
         (by intro x hx; exact Finset.mem_union.mpr (Or.inl hx)) =
       profile6 w := by
   unfold profileAll profile6
@@ -99,11 +99,11 @@ lemma restrict_profileAll_v6 (w : Fin 3) :
   have hTW : voters6 ∪ voters3 ⊆ (Finset.univ : Finset (Fin 9)) := by
     intro x hx; exact Finset.mem_univ x
   simpa [hST, hTW] using
-    (restrictProfile_nested (U := Fin 9) (A := Fin 3)
+    (restrictElectorate_nested (U := Fin 9) (A := Fin 3)
       (S := voters6) (T := voters6 ∪ voters3) (W := Finset.univ) hST hTW (fullProfile w))
 
 lemma restrict_profileAll_v3 (w : Fin 3) :
-    restrictProfile (profileAll w) voters3
+    restrictElectorate (profileAll w) voters3
         (by intro x hx; exact Finset.mem_union.mpr (Or.inr hx)) =
       profile3 w := by
   unfold profileAll profile3
@@ -112,7 +112,7 @@ lemma restrict_profileAll_v3 (w : Fin 3) :
   have hTW : voters6 ∪ voters3 ⊆ (Finset.univ : Finset (Fin 9)) := by
     intro x hx; exact Finset.mem_univ x
   simpa [hST, hTW] using
-    (restrictProfile_nested (U := Fin 9) (A := Fin 3)
+    (restrictElectorate_nested (U := Fin 9) (A := Fin 3)
       (S := voters3) (T := voters6 ∪ voters3) (W := Finset.univ) hST hTW (fullProfile w))
 
 lemma reinforcement_block_condorcet (w : Fin 3) :
@@ -123,7 +123,7 @@ lemma reinforcement_block_condorcet (w : Fin 3) :
   all_goals
     -- Finite computation on the explicit 3-voter block.
     simp [StrictMajority, votersPreferring, Prefers,
-      profile3, fullProfile, restrictProfile, ballots9, voters3,
+      profile3, fullProfile, restrictElectorate, ballots9, voters3,
       prevCandidate, nextCandidate, ListBallot.lt_iff_idxOf]
     decide
 
@@ -135,7 +135,7 @@ lemma union_condorcet_prev (w : Fin 3) :
   all_goals
     -- Finite computation on the explicit 9-voter profile.
     simp [StrictMajority, votersPreferring, Prefers,
-      profileAll, fullProfile, restrictProfile, ballots9, voters6, voters3,
+      profileAll, fullProfile, restrictElectorate, ballots9, voters6, voters3,
       prevCandidate, nextCandidate, ListBallot.lt_iff_idxOf]
     decide
 

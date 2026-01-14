@@ -10,8 +10,8 @@ def Reinforcement (f : VotingRule) : Prop :=
       (P : Profile (Electorate U V) A)
       (Q : Profile (Electorate U W) A)
       (R : Profile (Electorate U (V ∪ W)) A),
-    restrictProfile R V (by intro x hx; exact Finset.mem_union.mpr (Or.inl hx)) = P →
-    restrictProfile R W (by intro x hx; exact Finset.mem_union.mpr (Or.inr hx)) = Q →
+    restrictElectorate R V (by intro x hx; exact Finset.mem_union.mpr (Or.inl hx)) = P →
+    restrictElectorate R W (by intro x hx; exact Finset.mem_union.mpr (Or.inr hx)) = Q →
     (f P ∩ f Q).Nonempty →
       f R = f P ∩ f Q
 
@@ -21,8 +21,8 @@ def SubsetReinforcement (f : VotingRule) : Prop :=
       (P : Profile (Electorate U V) A)
       (Q : Profile (Electorate U W) A)
       (R : Profile (Electorate U (V ∪ W)) A),
-    restrictProfile R V (by intro x hx; exact Finset.mem_union.mpr (Or.inl hx)) = P →
-    restrictProfile R W (by intro x hx; exact Finset.mem_union.mpr (Or.inr hx)) = Q →
+    restrictElectorate R V (by intro x hx; exact Finset.mem_union.mpr (Or.inl hx)) = P →
+    restrictElectorate R W (by intro x hx; exact Finset.mem_union.mpr (Or.inr hx)) = Q →
     f P ∩ f Q ⊆ f R
 
 lemma reinforcement_subset {f : VotingRule} :

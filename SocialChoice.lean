@@ -37,6 +37,7 @@ import SocialChoice.Rules.ScoringRules.Plurality.Majority
 import SocialChoice.Rules.ScoringRules.Plurality.Pareto
 import SocialChoice.Rules.ScoringRules.Veto.Defs
 import SocialChoice.Rules.ScoringElimination.Defs
+import SocialChoice.Rules.ScoringElimination.Basic
 import SocialChoice.Rules.ScoringElimination.Neutrality
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Clones

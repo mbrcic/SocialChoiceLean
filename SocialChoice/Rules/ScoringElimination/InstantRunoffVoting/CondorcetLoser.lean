@@ -3,7 +3,7 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Data.Finset.Max
 import Mathlib.Data.Fintype.EquivFin
 import Mathlib.Tactic
-import SocialChoice.Rules.ScoringElimination.Defs
+import SocialChoice.Rules.ScoringElimination.Basic
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
 import SocialChoice.Axioms.Condorcet
 
@@ -33,65 +33,6 @@ Therefore `c` has higher plurality score, contradicting that `c` was eliminated.
 -/
 
 variable {V A : Type} [Fintype V] [Fintype A]
-
-/-! ### Restriction preserves pairwise relations -/
-
-/-! ### A light recursion equation for scoring elimination
-
-We avoid `simp [scoringEliminationAux, ...]` in large proofs because it tends to
-unfold recursive calls and can hit heartbeat limits. The lemma below unfolds only
-the *head* occurrence using `unfold1` and then selects the recursive branch.
--/
-
-lemma scoringEliminationAux_eq_biUnion_of_not_card_le_one
-    {V : Type} [Fintype V]
-    (score : Nat → Nat → Int)
-    {A : Type} [Fintype A] [DecidableEq A]
-    (P : Profile V A) (hcard : ¬ Fintype.card A ≤ 1) :
-    scoringEliminationAux score A P =
-      let m := Fintype.card A
-      let scoreVec : Nat → Int := fun r => score m r
-      let L : Finset A := lowestScoring P scoreVec
-      L.biUnion (fun c => liftFinset (scoringEliminationAux score _ (restrictProfile P c))) := by
-  classical
-  -- Avoid unfolding recursive calls: keep the RHS as a local definition.
-  let rhs : Finset A :=
-    let m := Fintype.card A
-    let scoreVec : Nat → Int := fun r => score m r
-    let L : Finset A := lowestScoring P scoreVec
-    L.biUnion (fun c => liftFinset (scoringEliminationAux score _ (restrictProfile P c)))
-  -- Unfold only the head `scoringEliminationAux` (not the recursive calls inside `rhs`).
-  change scoringEliminationAux score A P = rhs
-  conv_lhs =>
-    unfold SocialChoice.scoringEliminationAux
-  -- Now we just select the recursive branch of the `by_cases`.
-  simp [hcard, rhs]
-
-@[simp] lemma prefers_restrictProfile_iff {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P : Profile V A) (c : A) (v : V) (a b : {x : A // x ≠ c}) :
-    Prefers (restrictProfile P c) v a b ↔ Prefers P v a b := by
-  rfl
-
-lemma margin_eq_margin_restrictProfile {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    {P : Profile V A} {c : A} {a b : {x : A // x ≠ c}} :
-    margin P a b = margin (restrictProfile P c) a b := by
-  classical
-  have h1 :
-      (Finset.univ.filter (fun v => Prefers P v a b)).card =
-        (Finset.univ.filter (fun v => Prefers (restrictProfile P c) v a b)).card := by
-    refine cardinality_lemma2 (p := fun v => Prefers P v a b)
-      (q := fun v => Prefers (restrictProfile P c) v a b) ?_
-    intro v
-    simp
-  have h2 :
-      (Finset.univ.filter (fun v => Prefers P v b a)).card =
-        (Finset.univ.filter (fun v => Prefers (restrictProfile P c) v b a)).card := by
-    refine cardinality_lemma2 (p := fun v => Prefers P v b a)
-      (q := fun v => Prefers (restrictProfile P c) v b a) ?_
-    intro v
-    simp
-  dsimp [margin]
-  simp [h1, h2]
 
 lemma one_lt_card_subtype_ne {A : Type} [Fintype A] [DecidableEq A] {c : A}
     (h : 2 < Fintype.card A) : 1 < Fintype.card {x : A // x ≠ c} := by

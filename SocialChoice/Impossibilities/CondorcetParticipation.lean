@@ -109,20 +109,20 @@ noncomputable def P7ProfileSub : Profile (Electorate (Fin 12) V7) (Fin 4) :=
 noncomputable def P8ProfileSub : Profile (Electorate (Fin 12) V8) (Fin 4) :=
   profileOnSubsetP5 V8
 
--- Lemma for restrictProfile equality for P5
-lemma restrictProfile_eq_profileOnSubsetP5 {S T : Finset (Fin 12)} (hST : S ⊆ T) :
-    restrictProfile (profileOnSubsetP5 T) S hST = profileOnSubsetP5 S := by
-  simp [restrictProfile, profileOnSubsetP5]
+-- Lemma for restrictElectorate equality for P5
+lemma restrictElectorate_eq_profileOnSubsetP5 {S T : Finset (Fin 12)} (hST : S ⊆ T) :
+    restrictElectorate (profileOnSubsetP5 T) S hST = profileOnSubsetP5 S := by
+  simp [restrictElectorate, profileOnSubsetP5]
 
 lemma P0_P5_coincide : P0ProfileSub = P0ProfileSubP5 := by
   simp [P0ProfileSub, P0ProfileSubP5, profileOnSubset, profileOnSubsetP5]
   ext v
   fin_cases v <;> simp [P1Ballots, P5Ballots]
 
--- Lemma for restrictProfile equality
-lemma restrictProfile_eq_profileOnSubset {S T : Finset (Fin 12)} (hST : S ⊆ T) :
-    restrictProfile (profileOnSubset T) S hST = profileOnSubset S := by
-  simp [restrictProfile, profileOnSubset]
+-- Lemma for restrictElectorate equality
+lemma restrictElectorate_eq_profileOnSubset {S T : Finset (Fin 12)} (hST : S ⊆ T) :
+    restrictElectorate (profileOnSubset T) S hST = profileOnSubset S := by
+  simp [restrictElectorate, profileOnSubset]
 
 -- UpperSet properties for the ballots
 
@@ -176,7 +176,7 @@ lemma P0_to_P1_preserve_ab {f : VotingRule} (hf : Resolute f)
   let S : Finset (Fin 4) := {0, 1}
   have hsubset : f P1ProfileSub ⊆ S := by
     apply resoluteParticipation_superset hf hpart V0 V1 (by simp [V0, V1]) P1ProfileSub S x
-    · erw [restrictProfile_eq_profileOnSubset (hST := by simp [V0, V1])]
+    · erw [restrictElectorate_eq_profileOnSubset (hST := by simp [V0, V1])]
       exact hP0
     · exact hx
     · intro w hw
@@ -199,7 +199,7 @@ lemma P1_to_P2_preserve_a {f : VotingRule} (hf : Resolute f)
     fin_cases y <;> simp [S] at *
   have hsubset : f P1ProfileSub ⊆ S := by
     apply resoluteParticipation_superset hf hpart V2 V1 (by simp [V2, V1]; intro x hx; simp_all) P1ProfileSub S y
-    · erw [restrictProfile_eq_profileOnSubset (hST := by simp [V2, V1]; intro x hx; simp_all)]
+    · erw [restrictElectorate_eq_profileOnSubset (hST := by simp [V2, V1]; intro x hx; simp_all)]
       exact hP2
     · exact hyS
     · intro w hw
@@ -223,7 +223,7 @@ lemma P1_to_P3_preserve_b {f : VotingRule} (hf : Resolute f)
     fin_cases y <;> simp [S] at *
   have hsubset : f P1ProfileSub ⊆ S := by
     apply resoluteParticipation_superset hf hpart V3 V1 (by simp [V3, V1]; intro x hx; simp_all) P1ProfileSub S y
-    · erw [restrictProfile_eq_profileOnSubset (hST := by simp [V3, V1]; intro x hx; simp_all)]
+    · erw [restrictElectorate_eq_profileOnSubset (hST := by simp [V3, V1]; intro x hx; simp_all)]
       exact hP3
     · exact hyS
     · intro w hw
@@ -251,7 +251,7 @@ lemma P3_to_P4_preserve_bd {f : VotingRule} (hf : Resolute f)
     contradiction
   have hsubset : f P3ProfileSub ⊆ S := by
     apply resoluteParticipation_superset hf hpart V4 V3 (by simp [V3, V4]; intro x hx; simp_all) P3ProfileSub S y
-    · erw [restrictProfile_eq_profileOnSubset (hST := by simp [V3, V4]; intro x hx; simp_all)]
+    · erw [restrictElectorate_eq_profileOnSubset (hST := by simp [V3, V4]; intro x hx; simp_all)]
       exact hP4
     · exact hyS
     · intro w hw
@@ -277,7 +277,7 @@ lemma P0_to_P5_preserve_cd {f : VotingRule} (hf : Resolute f)
     tauto
   have hsubset : f P5ProfileSub ⊆ S := by
     refine resoluteParticipation_superset hf hpart V0 V5 hVW P5ProfileSub S x ?hx ?hxS ?hUpper
-    · erw [restrictProfile_eq_profileOnSubsetP5 (hST := hVW)]
+    · erw [restrictElectorate_eq_profileOnSubsetP5 (hST := hVW)]
       exact hP0
     · simpa [S] using hx
     · intro w hw
@@ -300,7 +300,7 @@ lemma P5_to_P6_preserve_d {f : VotingRule} (hf : Resolute f)
     fin_cases y <;> simp [S] at *
   have hsubset : f P5ProfileSub ⊆ S := by
     apply resoluteParticipation_superset hf hpart V6 V5 (by simp [V6, V5]; intro x hx; simp_all) P5ProfileSub S y
-    · erw [restrictProfile_eq_profileOnSubsetP5 (hST := by simp [V6, V5]; intro x hx; simp_all)]
+    · erw [restrictElectorate_eq_profileOnSubsetP5 (hST := by simp [V6, V5]; intro x hx; simp_all)]
       exact hP6
     · exact hyS
     · intro w hw
@@ -324,7 +324,7 @@ lemma P5_to_P7_preserve_c {f : VotingRule} (hf : Resolute f)
     fin_cases y <;> simp [S] at *
   have hsubset : f P5ProfileSub ⊆ S := by
     apply resoluteParticipation_superset hf hpart V7 V5 (by simp [V7, V5]; intro x hx; simp_all) P5ProfileSub S y
-    · erw [restrictProfile_eq_profileOnSubsetP5 (hST := by simp [V7, V5]; intro x hx; simp_all)]
+    · erw [restrictElectorate_eq_profileOnSubsetP5 (hST := by simp [V7, V5]; intro x hx; simp_all)]
       exact hP7
     · exact hyS
     · intro w hw
@@ -352,7 +352,7 @@ lemma P7_to_P8_preserve_ac {f : VotingRule} (hf : Resolute f)
     contradiction
   have hsubset : f P7ProfileSub ⊆ S := by
     apply resoluteParticipation_superset hf hpart V8 V7 (by simp [V7, V8]; intro x hx; simp_all) P7ProfileSub S y
-    · erw [restrictProfile_eq_profileOnSubsetP5 (hST := by simp [V7, V8]; intro x hx; simp_all)]
+    · erw [restrictElectorate_eq_profileOnSubsetP5 (hST := by simp [V7, V8]; intro x hx; simp_all)]
       exact hP8
     · exact hyS
     · intro w hw

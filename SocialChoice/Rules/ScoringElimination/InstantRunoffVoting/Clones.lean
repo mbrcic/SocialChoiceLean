@@ -3,6 +3,7 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Tactic
 import SocialChoice.Profile
 import SocialChoice.Rules.ScoringElimination.Defs
+import SocialChoice.Rules.ScoringElimination.Basic
 import SocialChoice.Rules.ScoringElimination.Neutrality
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.CondorcetLoser
@@ -14,91 +15,8 @@ open Finset
 /-!
 # IRV Satisfies Independence of Clones
 
-This is a proof that IRV satisfies independence of clones, taken from the paper
+This proof follows the proof from the paper
 "Generalizing Instant Runoff Voting to Allow Indifferences" by Théo Delemazure and Dominik Peters
-
-This proof actually applies to a more general rule defined for weak order input, called Approval-IRV, which reduces to IRV on linear order input. (In Approval-IRV, each voter approves all alternatives in their top indifference class, i.e. gives 1 full point to each of those alternatives. For linear orders, there is always only one such alternative. The proof also works for the linear order case.)
-
-\begin{restatable}{theorem}{AVIRVclones} \label{thm:AVIRVclones}
-    Approval-IRV is independent of clones.
-\end{restatable}
-
-
-\begin{proof}
-We show that Approval-IRV satisfies independence of clones. Write $f$ for Approval-IRV.
-
-For a profile $P$, we will use the following shorthand notation: For $\ell \in C$, we write $P - \ell$ for the profile $P_{C \setminus \{\ell\}}$ with $\ell$ deleted. For a set $X \subseteq C$, we write $P - X$ for the profile $P|_{C\setminus X}$ with the alternatives in $X$ deleted. Similarly, for $x \in X$, we write $P - X + x$ for the profile $P|_{(C \setminus X) \cup \{x\}}$ with all alternatives in $X$ except for $x$ deleted.
-
-The following lemma connects the scores of the alternatives in the profile $P$ and in the profile $P - X + x$, where $X$ is a clone set. It is the key to the proof working, and other rules like Split-IRV do not have the same property, explaining why the proof does not work for them.
-
-\begin{lemma} \label{lem:clone-scores}
-	Let $P$ be a profile defined on alternative set $C$ with clone set $X\subseteq C$. Let $x \in X$. Then
-	\begin{itemize}
-		\item every $c \in C \setminus X$ has the same approval score in $P$ and $P - X + x$, and
-		\item the approval score of $x$ in $P -X +x$ is at least as high as the approval score of every clone alternative $x' \in X$ in $P$.
-	\end{itemize}
-\end{lemma}
-\begin{proof}
-
-	For the first point, observe that for $c \in C \setminus X$, $c$ is ranked in the top indifference class of a voter $i$ in $P$ iff $c \pref_i d$ for all $d \in C$ iff (by definition of clone set) $c \pref_i d$ for all $d \in (C \setminus X) \cup \{x\}$ iff it is ranked in the top indifference class of $i$ in $P - X + x$.
-
-	For the second point, fix $x \in X$ and let $x' \in X$. Then if $x'$ is ranked in the top indifference class of a voter $i$ in $P$, then $x' \pref_i d$ for all $d \in C$ and in particular for all $d \in C \setminus X$. Thus, by definition of clone set, we also have $x \pref_i d$ for all $d \in C \setminus X$, and hence $x$ is ranked in the top indifference class of $i$ in $P - X + x$. So the number of voters with $x'$ in their top indifference class in $P$ is weakly lower than the number with $x$ in their top indifference class in $P - X + x$.
-\end{proof}
-
-By induction on $m$, we prove the following statement:
-
-\begin{quote}
-	For every profile $P$ defined on a set $C$ of $m$ alternative including a non-empty clone set $X \subseteq C$, the following hold: [$H$ stands for hypothesis]
-	\begin{enumerate}
-		\item[\quad$H_1(P,X)$:] for all $c \in C \setminus X$, $c \in f(P)$ if and only if $c \in f(P - X + x)$ for all $x \in X$.
-		\item[\quad$H_2(P,X)$:] we have $f(P) \cap X \neq \emptyset$ if and only if $x \in f(P - X + x)$ for all $x \in X$.
-	\end{enumerate}
-\end{quote}
-
-Note that the statement is trivially true if $|X| = 1$ since then $P - X + x = P$. The statement is also obvious when $|X| = |C|$ since then $P - X + x$ is a profile in which only 1 alternative exists. Now, the base case $m = 2$ is easy to see, since then either $|X| = 1$ or $|X| = 2 = |C|$.
-
-So let $m \ge 3$, assume we have shown the statement for $m - 1$, and let $P$ be a profile with $m$ alternatives $C$ including clone set $X \subseteq C$ with $2 \le |X| \le m - 1$.
-
-Let us first note a simple fact that follows because Approval-IRV is a neutral rule (invariant under renaming alternatives). For every non-clone alternative $c \in C \setminus X$, we have
-\[
-c \in f(P - X + x) \text{ for some $x \in X$} \iff c \in f(P - X + x) \text{ for all $x \in X$},
-\]
-and we have that
-\[
-x \in f(P - X + x) \text{ for some $x \in X$} \iff x \in f(P - X + x) \text{ for all $x \in X$}.
-\]
-This just follows because for two clones $x, x' \in X$, by definition of clone sets, the profiles $P - X + x$ and $P - X + x'$ are identical up to the permutation that exchanges $x$ and $x'$. These equivalences mean that we can use the inductive hypotheses in the ``all $x$'' version but only need to prove them in the ``some $x$'' version.
-
-We first prove $H_1(P, X)$. Let $c \in f(P	) \setminus X$ be a non-clone alternative that wins in $P$. We need to show that $c \in f(P - X + x)$ for some $x \in X$.
-Note that by definition of elimination scoring rules, $c \in f(P)$ means that there is an alternative $\ell$ with lowest score in $P$ such that $c \in f(P - \ell)$.
-\begin{itemize}
-	\item Consider first the case that $\ell$ is not a clone alternative, $\ell \not \in X$. Take any $x \in X$. By \Cref{lem:clone-scores}, $\ell$ is also a lowest-scoring alternative in $P - X + x$. Thus by definition of elimination scoring rules, $f((P - X + x) - \ell) \subseteq f(P - X + x)$, and hence it suffices to show that $c \in f((P - X + x)- \ell) = f((P - \ell) - X + x)$. But this follows from $H_1(P-\ell, X)$ because $c \in f(P - \ell)$.
-	\item Consider next the case that $\ell \in X$, and take any $x \in X \setminus \{\ell\}$, which exists since $|X| \ge 2$. Then applying $H_1(P - \ell, X \setminus \{\ell\})$ to $c \in f(P - \ell)$, we get that $c \in f((P - \ell) - (X \setminus \{\ell\}) + x) = f(P - X + x)$ where the last equality follows because the two profiles are the same since $\ell \in X$.
-\end{itemize}
-
-Conversely, suppose that $c \in f(P - X + x)$ for all $x \in X$.
-\begin{itemize}
-	\item Suppose that there exists a clone alternative $x' \in X$ which is a lowest-scoring alternative in $P$. Noting that $|X| \ge 2$, choose any other clone $x \in X \setminus \{x'\}$ and note that $c \in f(P - X + x)$ by assumption. Since $x'$ is lowest-scoring in $P$, by definition of elimination scoring rules, $f(P - x') \subseteq f(P)$. By $H_1(P - x', X \setminus \{x'\})$, it follows from $c \in f(P - X + x) = f((P - x') - (X \setminus \{x'\}) + x)$ that $c \in f(P - x')$ and hence $c \in f(P)$.
-	\item Otherwise, only non-clone alternatives are lowest-scoring in $P$. Then by \Cref{lem:clone-scores}, the same is true in $f(P - X + x)$. Since $c \in f(P - X + x)$ and $|X| \le m - 1$, there must be a lowest-scoring alternative $\ell \not \in X$ such that $c \in f((P - X + x) - \ell) = f((P - \ell) - X + x)$. By $H_1(P - \ell, X)$, it follows that $c \in f(P - \ell)$. Because $\ell$ must also be lowest-scoring in $P$ (due to \Cref{lem:clone-scores}), we have $f(P - \ell) \subseteq f(P)$, and hence $c \in f(P)$.
-\end{itemize}
-
-We next prove $H_2(P, X)$, using analogous reasoning. Suppose that $f(P) \cap X \neq \emptyset$. Let $x \in f(P) \cap X$ be a winning clone alternative. By definition of elimination scoring rules, $x \in f(P)$ means that there is an alternative $\ell$ with lowest score in $P$ such that $x\in f(P - \ell)$.
-We show that $x \in f(P - X + x)$.
-\begin{itemize}
-	\item Consider first the case that $\ell$ is not a clone alternative, $\ell \not \in X$.
-	By \Cref{lem:clone-scores}, $\ell$ is also a lowest-scoring alternative in $P - X + x$. Thus by definition of elimination scoring rules, $f((P - X + x) - \ell) \subseteq f(P - X + x)$, and hence it suffices to show that $x \in f((P - X + x)- \ell) = f((P - \ell) - X + x)$. But this follows from $H_2(P-\ell, X)$ because $x \in f(P - \ell)$.
-	\item Consider next the case that $\ell \in X$. Clearly $\ell \neq x$ since $x \in f(P - \ell)$.
-	By $H_2(P - \ell, X \setminus \{\ell\})$, since $x \in f(P - \ell)$, we get that $x \in f((P - \ell) - (X \setminus \{\ell\}) + x) = f(P - X + x)$ where the last equality follows because the two profiles are the same since $\ell \in X$.
-\end{itemize}
-
-Conversely, suppose that $x \in f(P - X + x)$ for all $x \in X$. We need to show that $f(P) \cap X \neq \emptyset$.
-\begin{itemize}
-	\item Suppose that there exists a clone alternative $x' \in X$ which is a lowest-scoring alternative in $P$.
-	Noting that $|X| \ge 2$, choose any other clone $x \in X \setminus \{x'\}$ and note that $x \in f(P - X + x)$ by assumption.
-	Since $x'$ is lowest-scoring in $P$, by definition of elimination scoring rules, $f(P - x') \subseteq f(P)$. By $H_2(P - x', X \setminus \{x'\})$, it follows from $x \in f(P - X + x) = f((P - x') - (X \setminus \{x'\}) + x)$ that $f(P - x') \cap (X \setminus \{x'\}) \neq \emptyset$ and hence also $f(P) \cap X \neq \emptyset$.
-	\item Otherwise, only non-clone alternatives are lowest-scoring in $P$. Then by \Cref{lem:clone-scores}, the same is true in $f(P - X + x)$. Since $x \in f(P - X + x)$ and $|X| \le m - 1$, there must be a lowest-scoring alternative $\ell \not \in X$ such that $x \in f((P - X + x) - \ell) = f((P - \ell) - X + x)$. By $H_2(P - \ell, X)$, it follows that $f(P - \ell) \cap X \neq \emptyset$. Because $\ell$ must also be lowest-scoring in $P$ (due to \Cref{lem:clone-scores}), we have $f(P - \ell) \subseteq f(P)$, and hence also $f(P) \cap X \neq \emptyset$. \qedhere
-\end{itemize}
-\end{proof}
 -/
 
 variable {V A : Type} [Fintype V] [Fintype A]
@@ -890,255 +808,175 @@ def independence_of_clones (f : VotingRule) : Prop :=
       ((∃ y, y ∈ X ∧ y ∈ f P) ↔
         (⟨x, Or.inr rfl⟩ : {a : A // clonePred X x a}) ∈ f (removeClonesExcept P X x))
 
-/-! ## Basic nonemptiness of IRV winners -/
+/-! ## Restriction commutation helpers (up to relabeling) -/
 
-lemma scoringEliminationAux_nonempty
-    (score : Nat → Nat → Int)
-    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty A]
-    (P : Profile V A) :
-    (scoringEliminationAux score A P).Nonempty := by
+@[simp] lemma clonePred_restrictCloneSet_eq
+  {A : Type} (X : Set A) (x ℓ : A) (hxℓ : x ≠ ℓ) :
+  clonePred (restrictCloneSet (A := A) X ℓ) (⟨x, hxℓ⟩ : {a : A // a ≠ ℓ}) =
+    (fun a : {a : A // a ≠ ℓ} => clonePred X x a.1) := by
+  funext a
+  apply propext
+  constructor
+  · intro h
+    rcases h with h | h
+    · left
+      intro haX
+      apply h
+      simpa [restrictCloneSet] using haX
+    · right
+      -- equality in a subtype is equality of values
+      exact congrArg Subtype.val h
+  · intro h
+    rcases h with h | h
+    · left
+      intro haX
+      apply h
+      simpa [restrictCloneSet] using haX
+    · right
+      -- build equality in the subtype
+      ext
+      simpa using h
+
+/-- Deleting a non-clone candidate commutes with clone-removal (up to relabeling). -/
+lemma relabelProfile_restrictProfile_removeClonesExcept_of_nonclone
+  {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+  (P : Profile V A) (X : Set A) (x ℓ : A)
+  (hxℓ : x ≠ ℓ) (hℓ : ℓ ∉ X) :
+  ∃ e,
+    (∀ t,
+      ((e t).1 : {a : A // a ≠ ℓ}).1 = ((t.1 : {a : A // clonePred X x a}).1)) ∧
+    (∀ b,
+      ((e.symm b).1 : {a : A // clonePred X x a}).1 = ((b.1 : {a : A // a ≠ ℓ}).1)) ∧
+    relabelProfile
+        (restrictProfile (removeClonesExcept P X x)
+          (⟨ℓ, Or.inl hℓ⟩ : {a : A // clonePred X x a}))
+        e =
+      removeClonesExcept (restrictProfile P ℓ) (restrictCloneSet X ℓ)
+        (⟨x, hxℓ⟩ : {a : A // a ≠ ℓ}) := by
   classical
-  -- Strong induction on the number of candidates.
-  set n := Fintype.card A with hn
-  -- Motive generalized over candidate types of a given cardinality.
-  let Motive : Nat → Prop := fun k =>
-    ∀ {A' : Type} [Fintype A'] [DecidableEq A'] [Nonempty A']
-      {V' : Type} [Fintype V']
-      (P' : Profile V' A'),
-        Fintype.card A' = k → (scoringEliminationAux score A' P').Nonempty
-  have hStrong : Motive n := by
-    classical
-    refine Nat.strongRecOn (motive := Motive) n ?_
-    intro k ih A' _ _ _ V' _ P' hk
-    by_cases hle : Fintype.card A' ≤ 1
-    · -- Base case: definition returns `univ`.
-      have hdef : scoringEliminationAux score A' P' = (Finset.univ : Finset A') := by
-        simp [scoringEliminationAux, hle]
-      rw [hdef]
-      exact (Finset.univ_nonempty : (Finset.univ : Finset A').Nonempty)
-    · -- Recursive case: pick a lowest-scoring candidate and recurse.
-      have haux :=
-        scoringEliminationAux_eq_biUnion_of_not_card_le_one
-          (score := score) (P := P') (hcard := hle)
-      -- Unpack the RHS.
-      classical
-      let m := Fintype.card A'
-      let scoreVec : Nat → Int := fun r => score m r
-      let L : Finset A' := lowestScoring P' scoreVec
-      have hLne : L.Nonempty := by
-        apply lowestScoring_nonempty
-        exact (Finset.univ_nonempty : (Finset.univ : Finset A').Nonempty)
-      rcases hLne with ⟨ℓ, hℓL⟩
-      -- Apply IH on the restricted candidate type.
-      have hcard_sub_lt : Fintype.card {x : A' // x ≠ ℓ} < Fintype.card A' :=
-        card_restrict_lt ℓ
-      have hrec : (scoringEliminationAux score {x : A' // x ≠ ℓ} (restrictProfile P' ℓ)).Nonempty := by
-        -- IH expects a strict smaller cardinality.
-        have hklt : Fintype.card {x : A' // x ≠ ℓ} < k := by
-          -- `card {x // x ≠ ℓ} < card A' = k`.
-          simpa [hk] using hcard_sub_lt
-        haveI : Nonempty {x : A' // x ≠ ℓ} := by
-          -- Since `card A' > 1` in this branch, removing one element leaves something.
-          have : 0 < Fintype.card {x : A' // x ≠ ℓ} := by
-            have hposA : 1 < Fintype.card A' := by omega
-            have hsub := card_subtype_ne_eq ℓ
-            -- card subtype = card A' - 1
-            have : Fintype.card {x : A' // x ≠ ℓ} = Fintype.card A' - 1 := hsub
-            -- hence positive
-            omega
-          exact Fintype.card_pos_iff.mp this
-        exact ih (Fintype.card {x : A' // x ≠ ℓ}) hklt (P' := restrictProfile P' ℓ) rfl
-      rcases hrec with ⟨w, hw⟩
-      -- Build an element in the biUnion.
-      refine ⟨(w : A'), ?_⟩
-      -- Rewrite using `haux` and show membership in the RHS.
-      -- (We avoid `simp` over the `let`s by unfolding them locally.)
-      have hw_lift : (w : A') ∈ liftFinset (scoringEliminationAux score _ (restrictProfile P' ℓ)) := by
-        -- `liftFinset` is `image Subtype.val`.
-        refine Finset.mem_image.mpr ?_
-        exact ⟨w, hw, rfl⟩
-      -- Now place it into the biUnion.
-      have : (w : A') ∈
-          (lowestScoring P' scoreVec).biUnion
-            (fun c => liftFinset (scoringEliminationAux score _ (restrictProfile P' c))) := by
-        refine Finset.mem_biUnion.mpr ?_
-        refine ⟨ℓ, ?_, ?_⟩
-        · simpa [L, scoreVec, m] using hℓL
-        · simpa [scoreVec, m] using hw_lift
-      -- Convert back to the LHS using `haux`.
-      simpa [haux, m, scoreVec, L] using this
-  -- Specialize the strong induction result.
-  simpa [hn] using (hStrong (P' := P) rfl)
-
-  /-! ## Restriction commutation helpers (up to relabeling) -/
-
-  @[simp] lemma clonePred_restrictCloneSet_eq
-    {A : Type} (X : Set A) (x ℓ : A) (hxℓ : x ≠ ℓ) :
-    clonePred (restrictCloneSet (A := A) X ℓ) (⟨x, hxℓ⟩ : {a : A // a ≠ ℓ}) =
-      (fun a : {a : A // a ≠ ℓ} => clonePred X x a.1) := by
-    funext a
-    apply propext
-    constructor
-    · intro h
-      rcases h with h | h
-      · left
-        intro haX
-        apply h
-        simpa [restrictCloneSet] using haX
-      · right
-        -- equality in a subtype is equality of values
-        exact congrArg Subtype.val h
-    · intro h
-      rcases h with h | h
-      · left
-        intro haX
-        apply h
-        simpa [restrictCloneSet] using haX
-      · right
-        -- build equality in the subtype
-        ext
-        simpa using h
-
-  /-- Deleting a non-clone candidate commutes with clone-removal (up to relabeling). -/
-  lemma relabelProfile_restrictProfile_removeClonesExcept_of_nonclone
-    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P : Profile V A) (X : Set A) (x ℓ : A)
-    (hxℓ : x ≠ ℓ) (hℓ : ℓ ∉ X) :
-    ∃ e,
-      (∀ t,
-        ((e t).1 : {a : A // a ≠ ℓ}).1 = ((t.1 : {a : A // clonePred X x a}).1)) ∧
-      (∀ b,
-        ((e.symm b).1 : {a : A // clonePred X x a}).1 = ((b.1 : {a : A // a ≠ ℓ}).1)) ∧
-      relabelProfile
-          (restrictProfile (removeClonesExcept P X x)
-            (⟨ℓ, Or.inl hℓ⟩ : {a : A // clonePred X x a}))
-          e =
-        removeClonesExcept (restrictProfile P ℓ) (restrictCloneSet X ℓ)
-          (⟨x, hxℓ⟩ : {a : A // a ≠ ℓ}) := by
-    classical
-    let p : A → Prop := clonePred X x
-    let q : A → Prop := fun a => a ≠ ℓ
-    let ℓ' : {a : A // p a} := ⟨ℓ, Or.inl hℓ⟩
-    let xℓ' : {a : A // q a} := ⟨x, hxℓ⟩
-    let e_val : {t : {a : A // p a} // t ≠ ℓ'} ≃ {t : {a : A // p a} // q t.1} :=
-      Equiv.subtypeEquivRight (fun t => by
-        constructor
-        · intro ht
-          have : t.1 ≠ ℓ := by
-            intro hEq
-            apply ht
-            ext
-            simp [ℓ', hEq]
-          exact this
-        · intro ht hEq
+  let p : A → Prop := clonePred X x
+  let q : A → Prop := fun a => a ≠ ℓ
+  let ℓ' : {a : A // p a} := ⟨ℓ, Or.inl hℓ⟩
+  let xℓ' : {a : A // q a} := ⟨x, hxℓ⟩
+  let e_val : {t : {a : A // p a} // t ≠ ℓ'} ≃ {t : {a : A // p a} // q t.1} :=
+    Equiv.subtypeEquivRight (fun t => by
+      constructor
+      · intro ht
+        have : t.1 ≠ ℓ := by
+          intro hEq
           apply ht
-          simpa using congrArg Subtype.val hEq)
-    let e1 : {t : {a : A // p a} // q t.1} ≃ {a : A // p a ∧ q a} :=
-      Equiv.subtypeSubtypeEquivSubtypeInter p q
-    let ecomm : {a : A // p a ∧ q a} ≃ {a : A // q a ∧ p a} :=
-      Equiv.subtypeEquivRight (fun a => by
-        constructor <;> intro h <;> simpa [And.comm] using h)
-    let e2 : {t : {a : A // q a} // p t.1} ≃ {a : A // q a ∧ p a} :=
-      Equiv.subtypeSubtypeEquivSubtypeInter q p
-    let e_mid : {t : {a : A // p a} // t ≠ ℓ'} ≃ {t : {a : A // q a} // p t.1} :=
-      e_val.trans (e1.trans (ecomm.trans e2.symm))
-    let e_right :
-        {t : {a : A // q a} // p t.1} ≃
-          {t : {a : A // q a} // clonePred (restrictCloneSet X ℓ) xℓ' t} :=
-      Equiv.subtypeEquivRight (fun t => by
-        have hpred :
-            clonePred (restrictCloneSet X ℓ) xℓ' t ↔ clonePred X x t.1 := by
-          have := congrArg (fun f => f t)
-            (clonePred_restrictCloneSet_eq (X := X) (x := x) (ℓ := ℓ) (hxℓ := hxℓ))
-          exact (Iff.of_eq this)
-        simpa [p] using hpred.symm)
-    let e : {t : {a : A // p a} // t ≠ ℓ'} ≃
+          ext
+          simp [ℓ', hEq]
+        exact this
+      · intro ht hEq
+        apply ht
+        simpa using congrArg Subtype.val hEq)
+  let e1 : {t : {a : A // p a} // q t.1} ≃ {a : A // p a ∧ q a} :=
+    Equiv.subtypeSubtypeEquivSubtypeInter p q
+  let ecomm : {a : A // p a ∧ q a} ≃ {a : A // q a ∧ p a} :=
+    Equiv.subtypeEquivRight (fun a => by
+      constructor <;> intro h <;> simpa [And.comm] using h)
+  let e2 : {t : {a : A // q a} // p t.1} ≃ {a : A // q a ∧ p a} :=
+    Equiv.subtypeSubtypeEquivSubtypeInter q p
+  let e_mid : {t : {a : A // p a} // t ≠ ℓ'} ≃ {t : {a : A // q a} // p t.1} :=
+    e_val.trans (e1.trans (ecomm.trans e2.symm))
+  let e_right :
+      {t : {a : A // q a} // p t.1} ≃
         {t : {a : A // q a} // clonePred (restrictCloneSet X ℓ) xℓ' t} :=
-      e_mid.trans e_right
-    refine ⟨e, ?_, ?_, ?_⟩
-    · intro t
-      rfl
-    · intro b
-      rfl
-    -- Unfold both sides; the induced restricted orders coincide definitionally.
-    ext v
+    Equiv.subtypeEquivRight (fun t => by
+      have hpred :
+          clonePred (restrictCloneSet X ℓ) xℓ' t ↔ clonePred X x t.1 := by
+        have := congrArg (fun f => f t)
+          (clonePred_restrictCloneSet_eq (X := X) (x := x) (ℓ := ℓ) (hxℓ := hxℓ))
+        exact (Iff.of_eq this)
+      simpa [p] using hpred.symm)
+  let e : {t : {a : A // p a} // t ≠ ℓ'} ≃
+      {t : {a : A // q a} // clonePred (restrictCloneSet X ℓ) xℓ' t} :=
+    e_mid.trans e_right
+  refine ⟨e, ?_, ?_, ?_⟩
+  · intro t
     rfl
+  · intro b
+    rfl
+  -- Unfold both sides; the induced restricted orders coincide definitionally.
+  ext v
+  rfl
 
-  /-- If `ℓ` is a clone different from the representative `x`, then deleting `ℓ` before
-  removing clones is redundant (up to relabeling). -/
-  lemma relabelProfile_removeClonesExcept_restrictProfile_of_clone
-    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P : Profile V A) (X : Set A) (x ℓ : A)
-    (hℓ : ℓ ∈ X) (hxℓ : x ≠ ℓ) :
-    ∃ e,
-      (∀ t,
-        (((e t).1 : {a : A // a ≠ ℓ}).1) = t.1) ∧
-      (∀ b,
-        (e.symm b).1 = b.1.1) ∧
-      relabelProfile (removeClonesExcept P X x) e =
-        removeClonesExcept (restrictProfile P ℓ) (restrictCloneSet X ℓ)
-          (⟨x, hxℓ⟩ : {a : A // a ≠ ℓ}) := by
-    classical
-    -- Build an explicit equivalence between the two restricted candidate types.
-    let xℓ' : {a : A // a ≠ ℓ} := ⟨x, hxℓ⟩
-    let e : {a : A // clonePred X x a} ≃
-      {a : {a : A // a ≠ ℓ} // clonePred (restrictCloneSet X ℓ) xℓ' a} :=
-      { toFun := fun t =>
-          -- `t.1` cannot be `ℓ`, since `ℓ ∈ X` and `x ≠ ℓ`.
-          let hne : (t.1 : A) ≠ ℓ := by
-            intro hEq
-            have htX : clonePred X x ℓ := by
-              simpa [hEq] using t.2
-            -- But `clonePred X x ℓ` would imply `ℓ ∉ X` or `ℓ = x`.
-            rcases htX with htX | htX
-            · exact htX hℓ
-            · exact hxℓ (htX.symm)
-          have hp' : clonePred (restrictCloneSet X ℓ) xℓ' (⟨t.1, hne⟩ : {a : A // a ≠ ℓ}) := by
-            -- Convert the predicate using the simp lemma.
-            have hpred :
-                clonePred (restrictCloneSet X ℓ) xℓ' (⟨t.1, hne⟩ : {a : A // a ≠ ℓ}) ↔
-                  clonePred X x (t.1 : A) := by
-              have := congrArg (fun f => f (⟨t.1, hne⟩ : {a : A // a ≠ ℓ}))
-                (clonePred_restrictCloneSet_eq (X := X) (x := x) (ℓ := ℓ) (hxℓ := hxℓ))
-              exact Iff.of_eq this
-            exact (hpred.mpr t.2)
-          ⟨⟨t.1, hne⟩, hp'⟩
-        invFun := fun s =>
-          -- Forget the extra `≠ ℓ` packaging.
-          let hpred : clonePred X x (s.1.1 : A) := by
-            have hpred' :
-                clonePred (restrictCloneSet X ℓ) xℓ' (s.1 : {a : A // a ≠ ℓ}) ↔
-                  clonePred X x (s.1.1 : A) := by
-              have := congrArg (fun f => f (s.1 : {a : A // a ≠ ℓ}))
-                (clonePred_restrictCloneSet_eq (X := X) (x := x) (ℓ := ℓ) (hxℓ := hxℓ))
-              exact Iff.of_eq this
-            exact (hpred'.1 s.2)
-          ⟨s.1.1, hpred⟩
-        left_inv := by
-          intro t
-          ext
-          rfl
-        right_inv := by
-          intro s
-          ext
-          rfl }
-    refine ⟨e, ?_, ?_, ?_⟩
-    · intro t
-      rfl
-    · intro b
-      rfl
-    ext v
+/-- If `ℓ` is a clone different from the representative `x`, then deleting `ℓ` before
+removing clones is redundant (up to relabeling). -/
+lemma relabelProfile_removeClonesExcept_restrictProfile_of_clone
+  {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+  (P : Profile V A) (X : Set A) (x ℓ : A)
+  (hℓ : ℓ ∈ X) (hxℓ : x ≠ ℓ) :
+  ∃ e,
+    (∀ t,
+      (((e t).1 : {a : A // a ≠ ℓ}).1) = t.1) ∧
+    (∀ b,
+      (e.symm b).1 = b.1.1) ∧
+    relabelProfile (removeClonesExcept P X x) e =
+      removeClonesExcept (restrictProfile P ℓ) (restrictCloneSet X ℓ)
+        (⟨x, hxℓ⟩ : {a : A // a ≠ ℓ}) := by
+  classical
+  -- Build an explicit equivalence between the two restricted candidate types.
+  let xℓ' : {a : A // a ≠ ℓ} := ⟨x, hxℓ⟩
+  let e : {a : A // clonePred X x a} ≃
+    {a : {a : A // a ≠ ℓ} // clonePred (restrictCloneSet X ℓ) xℓ' a} :=
+    { toFun := fun t =>
+        -- `t.1` cannot be `ℓ`, since `ℓ ∈ X` and `x ≠ ℓ`.
+        let hne : (t.1 : A) ≠ ℓ := by
+          intro hEq
+          have htX : clonePred X x ℓ := by
+            simpa [hEq] using t.2
+          -- But `clonePred X x ℓ` would imply `ℓ ∉ X` or `ℓ = x`.
+          rcases htX with htX | htX
+          · exact htX hℓ
+          · exact hxℓ (htX.symm)
+        have hp' : clonePred (restrictCloneSet X ℓ) xℓ' (⟨t.1, hne⟩ : {a : A // a ≠ ℓ}) := by
+          -- Convert the predicate using the simp lemma.
+          have hpred :
+              clonePred (restrictCloneSet X ℓ) xℓ' (⟨t.1, hne⟩ : {a : A // a ≠ ℓ}) ↔
+                clonePred X x (t.1 : A) := by
+            have := congrArg (fun f => f (⟨t.1, hne⟩ : {a : A // a ≠ ℓ}))
+              (clonePred_restrictCloneSet_eq (X := X) (x := x) (ℓ := ℓ) (hxℓ := hxℓ))
+            exact Iff.of_eq this
+          exact (hpred.mpr t.2)
+        ⟨⟨t.1, hne⟩, hp'⟩
+      invFun := fun s =>
+        -- Forget the extra `≠ ℓ` packaging.
+        let hpred : clonePred X x (s.1.1 : A) := by
+          have hpred' :
+              clonePred (restrictCloneSet X ℓ) xℓ' (s.1 : {a : A // a ≠ ℓ}) ↔
+                clonePred X x (s.1.1 : A) := by
+            have := congrArg (fun f => f (s.1 : {a : A // a ≠ ℓ}))
+              (clonePred_restrictCloneSet_eq (X := X) (x := x) (ℓ := ℓ) (hxℓ := hxℓ))
+            exact Iff.of_eq this
+          exact (hpred'.1 s.2)
+        ⟨s.1.1, hpred⟩
+      left_inv := by
+        intro t
+        ext
+        rfl
+      right_inv := by
+        intro s
+        ext
+        rfl }
+  refine ⟨e, ?_, ?_, ?_⟩
+  · intro t
     rfl
+  · intro b
+    rfl
+  ext v
+  rfl
 
-  lemma relabelProfile_restrictCandidates_subtypeSubtypeEquivSubtypeInter
-    {V A : Type} [Fintype V] [Fintype A]
-    (P : Profile V A)
-    (p q : A → Prop) [DecidablePred p] [DecidablePred q] :
-    relabelProfile (restrictCandidates (restrictCandidates P p) (fun x : {a : A // p a} => q x.1))
-      (Equiv.subtypeSubtypeEquivSubtypeInter p q) =
-      restrictCandidates P (fun a : A => p a ∧ q a) := by
-    ext v
-    rfl
+lemma relabelProfile_restrictCandidates_subtypeSubtypeEquivSubtypeInter
+  {V A : Type} [Fintype V] [Fintype A]
+  (P : Profile V A)
+  (p q : A → Prop) [DecidablePred p] [DecidablePred q] :
+  relabelProfile (restrictCandidates (restrictCandidates P p) (fun x : {a : A // p a} => q x.1))
+    (Equiv.subtypeSubtypeEquivSubtypeInter p q) =
+    restrictCandidates P (fun a : A => p a ∧ q a) := by
+  ext v
+  rfl
 
 /-! ## Main induction proof -/
 

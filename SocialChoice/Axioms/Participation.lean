@@ -27,29 +27,29 @@ def newVoter {U : Type} [DecidableEq U] {V : Finset U} (u : U) (hu : u ∉ V) :
     Electorate U (insert u V) :=
   ⟨u, by simp [hu]⟩
 
-noncomputable def restrictProfile {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
+noncomputable def restrictElectorate {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
     (Q : Profile (Electorate U W) A) (S : Finset U) (hS : S ⊆ W) :
     Profile (Electorate U S) A :=
   { pref := fun v => Q.pref ⟨v.1, hS v.2⟩ }
 
-lemma restrictProfile_agrees {U A : Type} [DecidableEq U] [Fintype A] {W S : Finset U}
+lemma restrictElectorate_agrees {U A : Type} [DecidableEq U] [Fintype A] {W S : Finset U}
     (Q : Profile (Electorate U W) A) (hS : S ⊆ W) (u : U)
     (hSu : insert u S ⊆ W) :
     ∀ v : Electorate U S,
-      (restrictProfile Q (insert u S) hSu).pref (liftVoter (u := u) v) =
-        (restrictProfile Q S hS).pref v := by
+      (restrictElectorate Q (insert u S) hSu).pref (liftVoter (u := u) v) =
+        (restrictElectorate Q S hS).pref v := by
   intro v
   rfl
 
-lemma restrictProfile_self {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
+lemma restrictElectorate_self {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
     (Q : Profile (Electorate U W) A) :
-    restrictProfile Q W (by intro x hx; exact hx) = Q := by
+    restrictElectorate Q W (by intro x hx; exact hx) = Q := by
   cases Q
   rfl
 
-lemma restrictProfile_eq_of_subset_proof {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
+lemma restrictElectorate_eq_of_subset_proof {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
     (Q : Profile (Electorate U W) A) {S : Finset U} (h₁ h₂ : S ⊆ W) :
-    restrictProfile Q S h₁ = restrictProfile Q S h₂ := by
+    restrictElectorate Q S h₁ = restrictElectorate Q S h₂ := by
   cases Q with
   | mk pref =>
       apply congrArg (fun f => Profile.mk f)
@@ -103,7 +103,7 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
     ∀ {U A : Type} [DecidableEq U] [Fintype A] [DecidableEq A]
         (V W : Finset U) (hVW : V ⊆ W)
         (Q : Profile (Electorate U W) A) (S : Finset A) (x : A),
-      f (restrictProfile Q V hVW) = {x} →
+      f (restrictElectorate Q V hVW) = {x} →
       x ∈ S →
       (∀ w (hw : w ∈ W \ V),
         UpperSet (Q.pref ⟨w, (Finset.mem_sdiff.mp hw).1⟩) S) →
@@ -115,7 +115,7 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
   have hVW' : V ∪ (∅ : Finset U) ⊆ W := by
     intro z hz
     exact hVW (by simpa using hz)
-  have hx0 : f (restrictProfile Q (V ∪ (∅ : Finset U)) hVW') = {x} := by
+  have hx0 : f (restrictElectorate Q (V ∪ (∅ : Finset U)) hVW') = {x} := by
     convert hx
   have hTsub : T ⊆ W := by
     simpa [T] using (Finset.sdiff_subset : W \ V ⊆ W)
@@ -124,17 +124,17 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
     exact Finset.union_subset hVW (Finset.Subset.trans hs hTsub)
   have hprop :
       ∀ s : Finset U, ∀ hs : s ⊆ T,
-        ∀ y, f (restrictProfile Q (V ∪ s) (hVunion s hs)) = {y} → y ∈ S := by
+        ∀ y, f (restrictElectorate Q (V ∪ s) (hVunion s hs)) = {y} → y ∈ S := by
     intro s hs
     revert hs
     refine Finset.induction_on s ?base ?step
     · intro _ y hy
       have hx1 :
-          f (restrictProfile Q (V ∪ (∅ : Finset U)) (hVunion ∅ (by simp [T]))) = {x} := by
+          f (restrictElectorate Q (V ∪ (∅ : Finset U)) (hVunion ∅ (by simp [T]))) = {x} := by
         have hEqprof :
-            restrictProfile Q (V ∪ (∅ : Finset U)) hVW' =
-              restrictProfile Q (V ∪ (∅ : Finset U)) (hVunion ∅ (by simp [T])) := by
-          exact restrictProfile_eq_of_subset_proof Q _ _
+            restrictElectorate Q (V ∪ (∅ : Finset U)) hVW' =
+              restrictElectorate Q (V ∪ (∅ : Finset U)) (hVunion ∅ (by simp [T])) := by
+          exact restrictElectorate_eq_of_subset_proof Q _ _
         simpa [hEqprof] using hx0
       have hxy : x = y := by
         have hxy' : ({x} : Finset A) = {y} := by simpa [hx1] using hy
@@ -153,28 +153,28 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
       let Sbig : Finset U := insert a Ssmall
       have haW : a ∈ W := hTsub haT
       have hSbig : Sbig ⊆ W := Finset.insert_subset haW hSsmall
-      have hcard_small : (f (restrictProfile Q Ssmall hSsmall)).card = 1 := by
-        simpa using (hf (restrictProfile Q Ssmall hSsmall))
+      have hcard_small : (f (restrictElectorate Q Ssmall hSsmall)).card = 1 := by
+        simpa using (hf (restrictElectorate Q Ssmall hSsmall))
       rcases Finset.card_eq_one.mp hcard_small with ⟨x', hx'⟩
       have hx'_mem : x' ∈ S := by
         apply ih hsT x' hx'
       have hagree :
           ∀ v : Electorate U Ssmall,
-            (restrictProfile Q Sbig hSbig).pref (liftVoter (u := a) v) =
-              (restrictProfile Q Ssmall hSsmall).pref v := by
+            (restrictElectorate Q Sbig hSbig).pref (liftVoter (u := a) v) =
+              (restrictElectorate Q Ssmall hSsmall).pref v := by
         intro v
         rfl
-      have hy' : f (restrictProfile Q Sbig hSbig) = {y} := by
+      have hy' : f (restrictElectorate Q Sbig hSbig) = {y} := by
         convert hy
         · simpa [Sbig, Ssmall] using (Finset.union_insert (a := a) (s := V) (t := s)).symm
         · simpa [Sbig, Ssmall] using (Finset.union_insert (a := a) (s := V) (t := s)).symm
       have hnot :
-          ¬ ((restrictProfile Q Sbig hSbig).pref
+          ¬ ((restrictElectorate Q Sbig hSbig).pref
               (newVoter (u := a) (V := Ssmall) (by
                 have haV : a ∉ V := (Finset.mem_sdiff.mp (by simpa [T] using haT)).2
                 simp [Ssmall, haV, ha]))).lt x' y := by
-        apply hpart (V := Ssmall) (u := a) ?_ (restrictProfile Q Ssmall hSsmall)
-            (restrictProfile Q Sbig hSbig) x' y
+        apply hpart (V := Ssmall) (u := a) ?_ (restrictElectorate Q Ssmall hSsmall)
+            (restrictElectorate Q Sbig hSbig) x' y
         · exact hagree
         · exact hx'
         · exact hy'
@@ -185,24 +185,24 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
         exact hUpper a (by simpa [T] using haT)
       have hnot' :
           ¬ (Q.pref ⟨a, haW⟩).lt x' y := by
-        simpa [restrictProfile, newVoter, Ssmall] using hnot
+        simpa [restrictElectorate, newVoter, Ssmall] using hnot
       exact upperSet_mem_of_not_lt hUpper_a hx'_mem hnot'
   have hW : V ∪ T = W := by
     simpa [T] using (Finset.union_sdiff_of_subset hVW)
   have hWT : V ∪ T ⊆ W := by
     simpa [hW] using (Finset.subset_refl W)
-  have hsubset : f (restrictProfile Q (V ∪ T) hWT) ⊆ S := by
+  have hsubset : f (restrictElectorate Q (V ∪ T) hWT) ⊆ S := by
     intro y hy
-    have hcard : (f (restrictProfile Q (V ∪ T) hWT)).card = 1 := by
-      simpa using (hf (restrictProfile Q (V ∪ T) hWT))
+    have hcard : (f (restrictElectorate Q (V ∪ T) hWT)).card = 1 := by
+      simpa using (hf (restrictElectorate Q (V ∪ T) hWT))
     rcases Finset.card_eq_one.mp hcard with ⟨z, hz⟩
-    have hy' : f (restrictProfile Q (V ∪ T) hWT) = {y} := by
+    have hy' : f (restrictElectorate Q (V ∪ T) hWT) = {y} := by
       have hy'' : y ∈ ({z} : Finset A) := by simpa [hz] using hy
       have hyz : y = z := by simpa using hy''
       simpa [hz, hyz]
     exact hprop T (by simp [T]) y hy'
-  have hQeq : f (restrictProfile Q (V ∪ T) hWT) = f Q := by
-    rw [← restrictProfile_self Q]
+  have hQeq : f (restrictElectorate Q (V ∪ T) hWT) = f Q := by
+    rw [← restrictElectorate_self Q]
     convert rfl
     · exact hW.symm
     · exact hW.symm
