@@ -41,8 +41,7 @@ theorem scoringRule_monotonicity (score : Nat → Nat → Int)
   let scoreSet : Finset Int :=
     (Finset.univ.image (fun c => scoreCandidate P scoreFun c))
   let maxScore : Int :=
-    scoreSet.max' (by
-      simpa [scoreSet, Finset.Nonempty] using hA)
+    scoreSet.max' (hA.image _)
   have hx' : x ∈ scoringWinners P scoreFun := by
     simpa [scoringRule, scoreFun] using hx
   have hx_eq : scoreCandidate P scoreFun x = maxScore := by
@@ -81,11 +80,9 @@ theorem scoringRule_monotonicity (score : Nat → Nat → Int)
   let scoreSet' : Finset Int :=
     (Finset.univ.image (fun c => scoreCandidate P' scoreFun c))
   let maxScore' : Int :=
-    scoreSet'.max' (by
-      simpa [scoreSet', Finset.Nonempty] using hA)
+    scoreSet'.max' (hA.image _)
   have hmax_le : maxScore' ≤ scoreCandidate P' scoreFun x := by
-    have hscoreSet_nonempty : scoreSet'.Nonempty := by
-      simpa [scoreSet', Finset.Nonempty] using hA
+    have hscoreSet_nonempty : scoreSet'.Nonempty := hA.image _
     refine (Finset.max'_le_iff scoreSet' hscoreSet_nonempty).2 ?_
     intro y hy
     rcases Finset.mem_image.mp hy with ⟨c, _hc, rfl⟩

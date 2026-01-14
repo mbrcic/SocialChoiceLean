@@ -90,7 +90,7 @@ lemma lowestScoring_relabelProfile {V A B : Type} [Fintype V] [Fintype A] [Finty
   ·
     have hB : (Finset.univ : Finset B).Nonempty := by
       rcases hA with ⟨a, ha⟩
-      exact ⟨e a, by simpa using ha⟩
+      exact ⟨e a, by simp⟩
     -- Compare score sets.
     let scoreSetA : Finset Int :=
       (Finset.univ.image (fun c => scoreCandidate P score c))
@@ -118,7 +118,7 @@ lemma lowestScoring_relabelProfile {V A B : Type} [Fintype V] [Fintype A] [Finty
         scoreSetB.min' (by
           simpa [scoreSetB, Finset.Nonempty] using hB.image
             (fun c => scoreCandidate (relabelProfile P e) score c)) = minScore := by
-      simpa [scoreSetA, scoreSetB, minScore, hscoreSet]
+      simp [scoreSetA, scoreSetB, minScore, hscoreSet]
     -- Set equality via membership characterization.
     apply Finset.ext
     intro b
@@ -160,7 +160,7 @@ lemma lowestScoring_relabelProfile {V A B : Type} [Fintype V] [Fintype A] [Finty
       intro hB
       apply hA
       rcases hB with ⟨b, hb⟩
-      exact ⟨e.symm b, by simpa using hb⟩
+      exact ⟨e.symm b, by simp⟩
     simp [lowestScoring, hA, hB]
 
 def subtypeEquiv {A B : Type} (e : A ≃ B) (a : A) :
@@ -248,7 +248,7 @@ theorem scoringEliminationAux_equiv_card (score : Nat → Nat → Int) :
   induction n with
   | zero =>
       intro V A B _ _ _ _ _ hcard P e
-      have hcard_le : Fintype.card A ≤ 1 := by simpa [hcard]
+      have hcard_le : Fintype.card A ≤ 1 := by simp [hcard]
       have hcard_le' : Fintype.card B ≤ 1 := by
         simpa [Fintype.card_congr e] using hcard_le
       simp [scoringEliminationAux, hcard_le, hcard_le', relabelProfile]
@@ -263,7 +263,9 @@ theorem scoringEliminationAux_equiv_card (score : Nat → Nat → Int) :
         have hcard_le' : ¬ Fintype.card B ≤ 1 := by
           intro hle
           apply hcard_le
-          simpa [Fintype.card_congr e] using hle
+          have hle' : Fintype.card A ≤ 1 := by
+            simpa [Fintype.card_congr e] using hle
+          exact hle'
         -- Unfold the head of the recursion on both sides.
         have hA :=
           scoringEliminationAux_eq_biUnion_of_not_card_le_one
@@ -297,8 +299,14 @@ theorem scoringEliminationAux_equiv_card (score : Nat → Nat → Int) :
           -- Use IH on the restricted profile.
           have hcard_sub :
               Fintype.card {x : A // x ≠ e.symm c} = n := by
-            have := card_subtype_ne_eq (e.symm c)
-            simpa [hcard, Nat.succ_eq_add_one] using this
+            have hcardA : Fintype.card A = Nat.succ n := hcard
+            have hsub := card_subtype_ne_eq (e.symm c)
+            -- hsub : card subtype = card A - 1
+            have hsub' : Fintype.card {x : A // x ≠ e.symm c} = Nat.succ n - 1 := by
+              rw [hcardA] at hsub
+              exact hsub
+            -- simplify Nat.succ n - 1 to n
+            simpa using hsub'
           have hrec0 :=
             ih (A := {x : A // x ≠ e.symm c})
               (B := {y : B // y ≠ e (e.symm c)})
@@ -348,8 +356,12 @@ theorem scoringEliminationAux_equiv_card (score : Nat → Nat → Int) :
           -- IH on restricted profile.
           have hcard_sub :
               Fintype.card {x : A // x ≠ c} = n := by
-            have := card_subtype_ne_eq c
-            simpa [hcard, Nat.succ_eq_add_one] using this
+            have hcardA : Fintype.card A = Nat.succ n := hcard
+            have hsub := card_subtype_ne_eq c
+            have hsub' : Fintype.card {x : A // x ≠ c} = Nat.succ n - 1 := by
+              rw [hcardA] at hsub
+              exact hsub
+            simpa using hsub'
           have hrec :=
             ih (A := {x : A // x ≠ c})
               (B := {y : B // y ≠ e c})

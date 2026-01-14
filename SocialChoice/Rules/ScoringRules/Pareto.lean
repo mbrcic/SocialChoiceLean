@@ -86,8 +86,7 @@ theorem scoringRule_pareto_nonempty (score : Nat → Nat → Int)
   let scoreSet : Finset Int :=
     (Finset.univ.image (fun c => scoreCandidate P scoreFun c))
   let maxScore : Int :=
-    scoreSet.max' (by
-      simpa [scoreSet, Finset.Nonempty] using hA)
+    scoreSet.max' (hA.image _)
   have hle_max : scoreCandidate P scoreFun c ≤ maxScore := by
     have hmem : scoreCandidate P scoreFun c ∈ scoreSet := by
       exact Finset.mem_image.mpr ⟨c, by simp, rfl⟩

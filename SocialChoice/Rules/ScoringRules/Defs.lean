@@ -18,8 +18,7 @@ noncomputable def scoringWinners {V A : Type} [Fintype V] [Fintype A]
   classical
   by_cases h : (Finset.univ : Finset A).Nonempty
   · let maxScore : Int :=
-      (Finset.univ.image (fun c => scoreCandidate P score c)).max' (by
-        simpa [Finset.Nonempty] using h)
+      (Finset.univ.image (fun c => scoreCandidate P score c)).max' (h.image _)
     exact
       (Finset.univ.filter (fun c => scoreCandidate P score c = maxScore))
   · exact ∅
@@ -32,9 +31,7 @@ lemma scoringWinners_iff_forall_le {V A : Type} [Fintype V] [Fintype A] [Decidab
   let scoreSet : Finset Int :=
     (Finset.univ.image (fun x => scoreCandidate P score x))
   let maxScore : Int :=
-    scoreSet.max' (by
-      simpa [scoreSet, Finset.Nonempty] using hA.image
-        (fun x => scoreCandidate P score x))
+    scoreSet.max' (hA.image _)
   constructor
   · intro hc
     have hc' : scoreCandidate P score c = maxScore := by

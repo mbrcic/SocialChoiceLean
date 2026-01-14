@@ -75,9 +75,9 @@ lemma scoringWinners_unionProfiles_inter_of_mem {V W A : Type} [Fintype V] [Fint
   classical
   -- Max scores on each part.
   let scoreSet₁ : Finset Int := (Finset.univ.image (fun c => scoreCandidate P score c))
-  let max₁ : Int := scoreSet₁.max' (by simpa [scoreSet₁, Finset.Nonempty] using hA)
+  let max₁ : Int := scoreSet₁.max' (hA.image _)
   let scoreSet₂ : Finset Int := (Finset.univ.image (fun c => scoreCandidate Q score c))
-  let max₂ : Int := scoreSet₂.max' (by simpa [scoreSet₂, Finset.Nonempty] using hA)
+  let max₂ : Int := scoreSet₂.max' (hA.image _)
   have hx1' : scoreCandidate P score x = max₁ := by
     simpa [scoringWinners, hA, scoreSet₁, max₁] using hx1
   have hx2' : scoreCandidate Q score x = max₂ := by
@@ -103,10 +103,9 @@ lemma scoringWinners_unionProfiles_inter_of_mem {V W A : Type} [Fintype V] [Fint
       _ = max₁ + max₂ := by simp [hx1', hx2']
   let scoreSet : Finset Int :=
     (Finset.univ.image (fun c => scoreCandidate (unionProfiles P Q) score c))
-  let maxScore : Int := scoreSet.max' (by simpa [scoreSet, Finset.Nonempty] using hA)
+  let maxScore : Int := scoreSet.max' (hA.image _)
   have hmax_le : maxScore ≤ max₁ + max₂ := by
-    have hscoreSet_nonempty : scoreSet.Nonempty := by
-      simpa [scoreSet, Finset.Nonempty] using hA
+    have hscoreSet_nonempty : scoreSet.Nonempty := hA.image _
     refine (Finset.max'_le_iff scoreSet hscoreSet_nonempty).2 ?_
     intro y hy
     rcases Finset.mem_image.mp hy with ⟨c, _hc, rfl⟩

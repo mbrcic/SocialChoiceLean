@@ -56,7 +56,7 @@ lemma margin_eq_clone_non_clone {V A : Type} [Fintype V] [Fintype A]
       (q := fun v => Prefers (minusCandidate P c) v e b) ?_
     intro v
     have hrel := (hclone e H b v Hb).1
-    simpa using hrel
+    exact hrel
   have h2 :
       (Finset.univ.filter (fun v => Prefers P v b c)).card =
         (Finset.univ.filter (fun v => Prefers (minusCandidate P c) v b e)).card := by
@@ -64,7 +64,7 @@ lemma margin_eq_clone_non_clone {V A : Type} [Fintype V] [Fintype A]
       (q := fun v => Prefers (minusCandidate P c) v b e) ?_
     intro v
     have hrel := (hclone e H b v Hb).2
-    simpa using hrel
+    exact hrel
   dsimp [margin]
   simp [h1, h2]
 
@@ -75,11 +75,11 @@ lemma margin_eq_clone_non_clone' {V A : Type} [Fintype V] [Fintype A]
   classical
   intro clone
   have h := margin_eq_clone_non_clone P c D b e H Hb clone
-  have hskewP : margin P b c = - margin P c b := by
-    simpa [skew_symmetric] using (margin_antisymmetric (P := P) b c)
+  have hskewP : margin P b c = - margin P c b :=
+    margin_antisymmetric P b c
   have hskewP' : margin (minusCandidate P c) b e =
-      - margin (minusCandidate P c) e b := by
-    simpa [skew_symmetric] using (margin_antisymmetric (P := minusCandidate P c) b e)
+      - margin (minusCandidate P c) e b :=
+    margin_antisymmetric (minusCandidate P c) b e
   calc
     margin P b c = - margin P c b := hskewP
     _ = - margin (minusCandidate P c) e b := by simp [h]
@@ -95,7 +95,7 @@ lemma clone_mem_iff {A : Type} [Fintype A] (c : A) (D : Set {x : A // x ≠ c})
   · intro h
     exact h ha
   · intro h p
-    simpa using h
+    exact h
 
 lemma margin_eq_clone_left {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c})
@@ -104,8 +104,8 @@ lemma margin_eq_clone_left {V A : Type} [Fintype V] [Fintype A]
     margin P a b = margin P c b := by
   have h1 := margin_eq_clone_non_clone P c D b ⟨a, ha⟩ haD hb clone
   have h2 := margin_eq_margin_minusCandidate (P := P) (c := c) (a := ⟨a, ha⟩) (b := b)
-  have hcb : margin P c b = margin P a b := by
-    simpa using (h1.trans h2.symm)
+  have hcb : margin P c b = margin P a b :=
+    h1.trans h2.symm
   exact hcb.symm
 
 lemma margin_eq_clone_right {V A : Type} [Fintype V] [Fintype A]
@@ -115,12 +115,12 @@ lemma margin_eq_clone_right {V A : Type} [Fintype V] [Fintype A]
     margin P a e = margin P a c := by
   have h1 := margin_eq_clone_non_clone P c D a e he ha clone
   have h2 := margin_eq_margin_minusCandidate (P := P) (c := c) (a := e) (b := a)
-  have hce : margin P c a = margin P e a := by
-    simpa using (h1.trans h2.symm)
-  have hskewP : margin P a e = - margin P e a := by
-    simpa [skew_symmetric] using (margin_antisymmetric (P := P) a e)
-  have hskewP' : margin P a c = - margin P c a := by
-    simpa [skew_symmetric] using (margin_antisymmetric (P := P) a c)
+  have hce : margin P c a = margin P e a :=
+    h1.trans h2.symm
+  have hskewP : margin P a e = - margin P e a :=
+    margin_antisymmetric P a e
+  have hskewP' : margin P a c = - margin P c a :=
+    margin_antisymmetric P a c
   calc
     margin P a e = - margin P e a := hskewP
     _ = - margin P c a := by simp [hce]
@@ -176,8 +176,8 @@ lemma removeClones_nil_iff {A : Type} [Fintype A]
     have h' : l.map (fun x =>
         if (∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D) then c else x) = [] := by
       have : to_path (l.map (fun x =>
-          if (∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D) then c else x)) = [] := by
-        simpa [removeClones] using h
+          if (∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D) then c else x)) = [] :=
+        h
       exact (to_path_eq_nil_iff _).1 this
     exact (List.map_eq_nil_iff.mp h')
 
@@ -190,9 +190,7 @@ lemma removeClones_nodup {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List A) :
     (removeClones c D l).Nodup := by
   classical
-  simpa [removeClones] using
-    (to_path_nodup (l.map (fun x =>
-      if (∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D) then c else x)))
+  simp [removeClones, to_path_nodup]
 
 lemma removeClones_first_elem {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List A) (a : A)
@@ -213,14 +211,13 @@ lemma removeClones_first_elem {A : Type} [Fintype A]
   have hfirst' :
       (removeClones c D l)[0]'(List.length_pos_of_ne_nil
         ((removeClones_ne_nil_iff c D l).mp hne)) =
-        (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := by
-    simpa [removeClones, f] using hfirst
+        (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) :=
+    hfirst
   have hmap0 :
       (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) =
-        f (l[0]'(List.length_pos_of_ne_nil hne)) := by
-    simpa using
-      (List.getElem_map (f := f) (l := l) (i := 0)
-        (h := List.length_pos_of_ne_nil hmap_ne))
+        f (l[0]'(List.length_pos_of_ne_nil hne)) :=
+    List.getElem_map (f := f) (l := l) (i := 0)
+        (h := List.length_pos_of_ne_nil hmap_ne)
   have hf : f a = a := by
     by_cases hac : a = c
     · subst hac
@@ -235,7 +232,7 @@ lemma removeClones_first_elem {A : Type} [Fintype A]
         ((removeClones_ne_nil_iff c D l).mp hne)) =
         (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := hfirst'
     _ = f (l[0]'(List.length_pos_of_ne_nil hne)) := hmap0
-    _ = f a := by simpa [h0]
+    _ = f a := by simp [h0]
     _ = a := hf
 
 lemma removeClones_last_elem {A : Type} [Fintype A]
@@ -255,11 +252,11 @@ lemma removeClones_last_elem {A : Type} [Fintype A]
     to_path_last_elem (l := l.map f) (h := hmap_ne)
   have hlast'' :
       (removeClones c D l).getLast ((removeClones_ne_nil_iff c D l).mp hne) =
-        (l.map f).getLast hmap_ne := by
-    simpa [removeClones, f] using hlast'
+        (l.map f).getLast hmap_ne :=
+    hlast'
   have hmap_last :
-      (l.map f).getLast hmap_ne = f (l.getLast hne) := by
-    simpa using (List.getLast_map (f := f) (l := l) (h := hne))
+      (l.map f).getLast hmap_ne = f (l.getLast hne) :=
+    List.getLast_map (f := f) (l := l) (h := hmap_ne)
   have hf : f a = a := by
     by_cases hac : a = c
     · subst hac
@@ -273,7 +270,7 @@ lemma removeClones_last_elem {A : Type} [Fintype A]
     (removeClones c D l).getLast ((removeClones_ne_nil_iff c D l).mp hne) =
         (l.map f).getLast hmap_ne := hlast''
     _ = f (l.getLast hne) := hmap_last
-    _ = f a := by simpa [hlast]
+    _ = f a := by simp [hlast]
     _ = a := hf
 
 lemma removeClones_last_c {A : Type} [Fintype A]
@@ -292,11 +289,11 @@ lemma removeClones_last_c {A : Type} [Fintype A]
     to_path_last_elem (l := l.map f) (h := hmap_ne)
   have hlast'' :
       (removeClones c D l).getLast ((removeClones_ne_nil_iff c D l).mp hne) =
-        (l.map f).getLast hmap_ne := by
-    simpa [removeClones, f] using hlast'
+        (l.map f).getLast hmap_ne :=
+    hlast'
   have hmap_last :
-      (l.map f).getLast hmap_ne = f (l.getLast hne) := by
-    simpa using (List.getLast_map (f := f) (l := l) (h := hne))
+      (l.map f).getLast hmap_ne = f (l.getLast hne) :=
+    List.getLast_map (f := f) (l := l) (h := hmap_ne)
   have hall :
       ∀ p : (d : A) ≠ c, (⟨(d : A), p⟩ : {x : A // x ≠ c}) ∈ D :=
     (clone_mem_iff (c := c) (D := D) (a := (d : A)) (ha := d.property)).2 hd
@@ -306,7 +303,7 @@ lemma removeClones_last_c {A : Type} [Fintype A]
     (removeClones c D l).getLast ((removeClones_ne_nil_iff c D l).mp hne) =
         (l.map f).getLast hmap_ne := hlast''
     _ = f (l.getLast hne) := hmap_last
-    _ = f d := by simpa [hlast]
+    _ = f d := by simp [hlast]
     _ = c := hf
 
 lemma removeClones'_nil_iff {A : Type} [Fintype A]
@@ -319,8 +316,8 @@ lemma removeClones'_nil_iff {A : Type} [Fintype A]
     simp [removeClones', to_path]
   · intro h
     have h' : l.map (fun x => if x ∈ D then c else (x : A)) = [] := by
-      have : to_path (l.map (fun x => if x ∈ D then c else (x : A))) = [] := by
-        simpa [removeClones'] using h
+      have : to_path (l.map (fun x => if x ∈ D then c else (x : A))) = [] :=
+        h
       exact (to_path_eq_nil_iff _).1 this
     exact (List.map_eq_nil_iff.mp h')
 
@@ -333,8 +330,7 @@ lemma removeClones'_nodup {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List {x : A // x ≠ c}) :
     (removeClones' c D l).Nodup := by
   classical
-  simpa [removeClones'] using
-    (to_path_nodup (l.map (fun x => if x ∈ D then c else (x : A))))
+  simp [removeClones', to_path_nodup]
 
 lemma removeClones'_first_elem {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (l : List {x : A // x ≠ c})
@@ -353,14 +349,13 @@ lemma removeClones'_first_elem {A : Type} [Fintype A]
   have hfirst' :
       (removeClones' c D l)[0]'(List.length_pos_of_ne_nil
         ((removeClones'_ne_nil_iff c D l).mp hne)) =
-        (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := by
-    simpa [removeClones', f] using hfirst
+        (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) :=
+    hfirst
   have hmap0 :
       (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) =
-        f (l[0]'(List.length_pos_of_ne_nil hne)) := by
-    simpa using
-      (List.getElem_map (f := f) (l := l) (i := 0)
-        (h := List.length_pos_of_ne_nil hmap_ne))
+        f (l[0]'(List.length_pos_of_ne_nil hne)) :=
+    List.getElem_map (f := f) (l := l) (i := 0)
+        (h := List.length_pos_of_ne_nil hmap_ne)
   have hf : f a = a := by
     have hnot' : ¬a ∈ D := hnot
     simp [f, hnot']
@@ -369,7 +364,7 @@ lemma removeClones'_first_elem {A : Type} [Fintype A]
         ((removeClones'_ne_nil_iff c D l).mp hne)) =
         (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := hfirst'
     _ = f (l[0]'(List.length_pos_of_ne_nil hne)) := hmap0
-    _ = f a := by simpa [h0]
+    _ = f a := by simp [h0]
     _ = a := hf
 
 lemma removeClones'_last_elem {A : Type} [Fintype A]
@@ -387,11 +382,11 @@ lemma removeClones'_last_elem {A : Type} [Fintype A]
     to_path_last_elem (l := l.map f) (h := hmap_ne)
   have hlast'' :
       (removeClones' c D l).getLast ((removeClones'_ne_nil_iff c D l).mp hne) =
-        (l.map f).getLast hmap_ne := by
-    simpa [removeClones', f] using hlast'
+        (l.map f).getLast hmap_ne :=
+    hlast'
   have hmap_last :
-      (l.map f).getLast hmap_ne = f (l.getLast hne) := by
-    simpa using (List.getLast_map (f := f) (l := l) (h := hne))
+      (l.map f).getLast hmap_ne = f (l.getLast hne) :=
+    List.getLast_map (f := f) (l := l) (h := hmap_ne)
   have hf : f a = a := by
     have hnot' : ¬a ∈ D := hnot
     simp [f, hnot']
@@ -399,7 +394,7 @@ lemma removeClones'_last_elem {A : Type} [Fintype A]
     (removeClones' c D l).getLast ((removeClones'_ne_nil_iff c D l).mp hne) =
         (l.map f).getLast hmap_ne := hlast''
     _ = f (l.getLast hne) := hmap_last
-    _ = f a := by simpa [hlast]
+    _ = f a := by simp [hlast]
     _ = a := hf
 
 lemma replaceClones_nil_iff {A : Type} [Fintype A]
@@ -418,8 +413,8 @@ lemma replaceClones_nil_iff {A : Type} [Fintype A]
       have : to_path (l.map (fun x =>
           dite (∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D)
             (fun _ => d)
-            (fun h => ⟨x, replaceClonesHelper c D h⟩))) = [] := by
-        simpa [replaceClones] using h
+            (fun h => ⟨x, replaceClonesHelper c D h⟩))) = [] :=
+        h
       exact (to_path_eq_nil_iff _).1 this
     exact (List.map_eq_nil_iff.mp h')
 
@@ -432,11 +427,7 @@ lemma replaceClones_nodup {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (d : {x : A // x ≠ c}) (hd : d ∈ D) (l : List A) :
     (replaceClones c D d hd l).Nodup := by
   classical
-  simpa [replaceClones] using
-    (to_path_nodup (l.map (fun x =>
-      dite (∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D)
-        (fun _ => d)
-        (fun h => ⟨x, replaceClonesHelper c D h⟩))))
+  simp [replaceClones, to_path_nodup]
 
 lemma replaceClones_first_elem {A : Type} [Fintype A]
     (c : A) (D : Set {x : A // x ≠ c}) (d : {x : A // x ≠ c}) (hd : d ∈ D)
@@ -460,14 +451,13 @@ lemma replaceClones_first_elem {A : Type} [Fintype A]
   have hfirst' :
       (replaceClones c D d hd l)[0]'(List.length_pos_of_ne_nil
         ((replaceClones_ne_nil_iff c D d hd l).mp hne)) =
-        (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := by
-    simpa [replaceClones, f] using hfirst
+        (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) :=
+    hfirst
   have hmap0 :
       (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) =
-        f (l[0]'(List.length_pos_of_ne_nil hne)) := by
-    simpa using
-      (List.getElem_map (f := f) (l := l) (i := 0)
-        (h := List.length_pos_of_ne_nil hmap_ne))
+        f (l[0]'(List.length_pos_of_ne_nil hne)) :=
+    List.getElem_map (f := f) (l := l) (i := 0)
+        (h := List.length_pos_of_ne_nil hmap_ne)
   have hf : f a = ⟨a, replaceClonesHelper c D hnot⟩ := by
     simp [f, hnot]
   calc
@@ -475,7 +465,7 @@ lemma replaceClones_first_elem {A : Type} [Fintype A]
         ((replaceClones_ne_nil_iff c D d hd l).mp hne)) =
         (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := hfirst'
     _ = f (l[0]'(List.length_pos_of_ne_nil hne)) := hmap0
-    _ = f a := by simpa [h0]
+    _ = f a := by simp [h0]
     _ = ⟨a, replaceClonesHelper c D hnot⟩ := hf
 
 lemma replaceClones_last_elem {A : Type} [Fintype A]
@@ -499,18 +489,18 @@ lemma replaceClones_last_elem {A : Type} [Fintype A]
     to_path_last_elem (l := l.map f) (h := hmap_ne)
   have hlast'' :
       (replaceClones c D d hd l).getLast ((replaceClones_ne_nil_iff c D d hd l).mp hne) =
-        (l.map f).getLast hmap_ne := by
-    simpa [replaceClones, f] using hlast'
+        (l.map f).getLast hmap_ne :=
+    hlast'
   have hmap_last :
-      (l.map f).getLast hmap_ne = f (l.getLast hne) := by
-    simpa using (List.getLast_map (f := f) (l := l) (h := hne))
+      (l.map f).getLast hmap_ne = f (l.getLast hne) :=
+    List.getLast_map (f := f) (l := l) (h := hmap_ne)
   have hf : f a = ⟨a, replaceClonesHelper c D hnot⟩ := by
     simp [f, hnot]
   calc
     (replaceClones c D d hd l).getLast ((replaceClones_ne_nil_iff c D d hd l).mp hne) =
         (l.map f).getLast hmap_ne := hlast''
     _ = f (l.getLast hne) := hmap_last
-    _ = f a := by simpa [hlast]
+    _ = f a := by simp [hlast]
     _ = ⟨a, replaceClonesHelper c D hnot⟩ := hf
 
 lemma replaceClones_last_c {A : Type} [Fintype A]
@@ -531,11 +521,11 @@ lemma replaceClones_last_c {A : Type} [Fintype A]
     to_path_last_elem (l := l.map f) (h := hmap_ne)
   have hlast'' :
       (replaceClones c D d hd l).getLast ((replaceClones_ne_nil_iff c D d hd l).mp hne) =
-        (l.map f).getLast hmap_ne := by
-    simpa [replaceClones, f] using hlast'
+        (l.map f).getLast hmap_ne :=
+    hlast'
   have hmap_last :
-      (l.map f).getLast hmap_ne = f (l.getLast hne) := by
-    simpa using (List.getLast_map (f := f) (l := l) (h := hne))
+      (l.map f).getLast hmap_ne = f (l.getLast hne) :=
+    List.getLast_map (f := f) (l := l) (h := hmap_ne)
   have hf : f c = d := by
     have hclone : ∀ p : c ≠ c, (⟨c, p⟩ : {x : A // x ≠ c}) ∈ D := by
       intro p
@@ -545,7 +535,7 @@ lemma replaceClones_last_c {A : Type} [Fintype A]
     (replaceClones c D d hd l).getLast ((replaceClones_ne_nil_iff c D d hd l).mp hne) =
         (l.map f).getLast hmap_ne := hlast''
     _ = f (l.getLast hne) := hmap_last
-    _ = f c := by simpa [hlast]
+    _ = f c := by simp [hlast]
     _ = d := hf
 
 section ChainTransport
@@ -907,9 +897,9 @@ lemma A5_chain (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c})
             have hxy3 :
                 margin P x y =
                   margin P (⟨x, replaceClonesHelper c D hxClone⟩ : {x : A // x ≠ c})
-                    (⟨y, replaceClonesHelper c D hyClone⟩ : {x : A // x ≠ c}) := by
+                    (⟨y, replaceClonesHelper c D hyClone⟩ : {x : A // x ≠ c}) :=
               rfl
-            simpa [hfx, hfy] using hxy3
+            simp [hfx, hfy, hxy3]
       exact Or.inr (by simpa [hxy''] using hxy')
   have hchain_map :
       List.IsChain
@@ -981,7 +971,7 @@ lemma removeClones'_cycle1 (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c}
             have hcl :=
               margin_eq_margin_minusCandidate (P := P) (c := c) (a := x) (b := y)
             simpa [hfx, hfy] using hcl.symm
-      exact Or.inr (by simpa [hxy1] using hxy0)
+      exact Or.inr (hxy1 ▸ hxy0)
   have hchain_map :
       List.IsChain
           (fun a b => a = b ∨ margin P a' c ≤ margin P a b) (l.map f) := by
@@ -1116,7 +1106,7 @@ lemma removeClones'_cycle2 (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c}
                 (a := ⟨x, replaceClonesHelper c D hxClone⟩)
                 (b := ⟨y, replaceClonesHelper c D hyClone⟩))
             simpa [hfx, hfy] using hxy3
-      exact Or.inr (by simpa [hxy1] using hxy0)
+      exact Or.inr (hxy1 ▸ hxy0)
   have hchain_map :
       List.IsChain
           (fun a b_1 : {x : A // x ≠ c} =>
@@ -1202,8 +1192,8 @@ lemma path_of_cycle {X : Type} [DecidableEq X] {R : X → X → Prop}
         l3.length = List.idxOf x crot + 1 := by
       simpa [l3] using
         (List.length_take_of_le (l := crot) (i := List.idxOf x crot + 1) hle)
-    have hpos : 0 < l3.length := by
-      simpa [hlen] using Nat.succ_pos (List.idxOf x crot)
+    have hpos : 0 < l3.length :=
+      hlen.symm ▸ Nat.succ_pos (List.idxOf x crot)
     exact List.length_pos_iff_ne_nil.mp hpos
   set l : List X := to_path l3
   have hne_l : l ≠ [] := by
@@ -1332,11 +1322,11 @@ lemma clone_maintains_defeat (P : Profile V A) (c : A) (D : Set {x : A // x ≠ 
         have hb' : (⟨b, replaceClonesHelper c D b_not⟩ : {x : A // x ≠ c}) = b := by
           ext
           rfl
-        simpa [hb'] using hfirst''
+        simp [hb', hfirst'']
       have hlast' :
           (replaceClones c D d hd l).getLast hne' = a := by
         by_cases ha : a ∈ D
-        · have hd' : d = a := by simpa [d, ha]
+        · have hd' : d = a := by simp [d, ha]
           set f : A → {x : A // x ≠ c} := fun x =>
             dite (∀ p : x ≠ c, (⟨x, p⟩ : {x : A // x ≠ c}) ∈ D)
               (fun _ => d)
@@ -1345,8 +1335,8 @@ lemma clone_maintains_defeat (P : Profile V A) (c : A) (D : Set {x : A // x ≠ 
             intro hmap
             exact hne (List.map_eq_nil_iff.mp hmap)
           have hlast_map :
-              (l.map f).getLast hmap_ne = f (l.getLast hne) := by
-            simpa using (List.getLast_map (f := f) (l := l) (h := hne))
+              (l.map f).getLast hmap_ne = f (l.getLast hne) :=
+            List.getLast_map (f := f) (l := l) (h := hmap_ne)
           have hlast_path :
               (replaceClones c D d hd l).getLast hne' = f (l.getLast hne) := by
             have hlast :=
@@ -1450,14 +1440,13 @@ lemma clone_maintains_defeat' (P : Profile V A) (c : A) (D : Set {x : A // x ≠
           to_path_first_elem (l := l.map f) (h := hmap_ne)
         have hfirst' :
             (replaceClones c D b Hb l)[0]'(List.length_pos_of_ne_nil hne') =
-              (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := by
-          simpa [replaceClones, f] using hfirst_path
+              (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) :=
+          hfirst_path
         have hmap0 :
             (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) =
-              f (l[0]'(List.length_pos_of_ne_nil hne)) := by
-          simpa using
-            (List.getElem_map (f := f) (l := l) (i := 0)
-              (h := List.length_pos_of_ne_nil hmap_ne))
+              f (l[0]'(List.length_pos_of_ne_nil hne)) :=
+          List.getElem_map (f := f) (l := l) (i := 0)
+            (h := List.length_pos_of_ne_nil hmap_ne)
         have hall :
             ∀ p : (b : A) ≠ c, (⟨(b : A), p⟩ : {x : A // x ≠ c}) ∈ D :=
           (clone_mem_iff (c := c) (D := D) (a := (b : A)) (ha := b.property)).2 Hb
@@ -1467,7 +1456,7 @@ lemma clone_maintains_defeat' (P : Profile V A) (c : A) (D : Set {x : A // x ≠
           (replaceClones c D b Hb l)[0]'(List.length_pos_of_ne_nil hne') =
               (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := hfirst'
           _ = f (l[0]'(List.length_pos_of_ne_nil hne)) := hmap0
-          _ = f b := by simpa [hfirst]
+          _ = f b := by simp [hfirst]
           _ = b := hfb
       have hnota :
           ¬∀ p : (a : A) ≠ c, (⟨(a : A), p⟩ : {x : A // x ≠ c}) ∈ D := by
@@ -1673,21 +1662,20 @@ lemma every_clone_defeated' (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c
           to_path_first_elem (l := l.map f) (h := hmap_ne)
         have hfirst' :
             (removeClones' c D l)[0]'(List.length_pos_of_ne_nil hne') =
-              (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := by
-          simpa [removeClones', f] using hfirst_path
+              (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) :=
+          hfirst_path
         have hmap0 :
             (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) =
-              f (l[0]'(List.length_pos_of_ne_nil hne)) := by
-          simpa using
-            (List.getElem_map (f := f) (l := l) (i := 0)
-              (h := List.length_pos_of_ne_nil hmap_ne))
+              f (l[0]'(List.length_pos_of_ne_nil hne)) :=
+          List.getElem_map (f := f) (l := l) (i := 0)
+            (h := List.length_pos_of_ne_nil hmap_ne)
         have hf : f d = c := by
           simp [f, Hd]
         calc
           (removeClones' c D l)[0]'(List.length_pos_of_ne_nil hne') =
               (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := hfirst'
           _ = f (l[0]'(List.length_pos_of_ne_nil hne)) := hmap0
-          _ = f d := by simpa [hfirst]
+          _ = f d := by simp [hfirst]
           _ = c := hf
       have hlast' :
           (removeClones' c D l).getLast hne' = a := by
@@ -1729,14 +1717,13 @@ lemma every_clone_defeated' (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c
           to_path_first_elem (l := l.map f) (h := hmap_ne)
         have hfirst'' :
             (replaceClones c D d Hd l)[0]'(List.length_pos_of_ne_nil hne') =
-              (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := by
-          simpa [replaceClones, f] using hfirst_path
+              (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) :=
+          hfirst_path
         have hmap0 :
             (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) =
-              f (l[0]'(List.length_pos_of_ne_nil hne)) := by
-          simpa using
-            (List.getElem_map (f := f) (l := l) (i := 0)
-              (h := List.length_pos_of_ne_nil hmap_ne))
+              f (l[0]'(List.length_pos_of_ne_nil hne)) :=
+          List.getElem_map (f := f) (l := l) (i := 0)
+            (h := List.length_pos_of_ne_nil hmap_ne)
         have hfc : f c = d := by
           have hclone : ∀ p : c ≠ c, (⟨c, p⟩ : {x : A // x ≠ c}) ∈ D := by
             intro p
@@ -1746,7 +1733,7 @@ lemma every_clone_defeated' (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c
           (replaceClones c D d Hd l)[0]'(List.length_pos_of_ne_nil hne') =
               (l.map f)[0]'(List.length_pos_of_ne_nil hmap_ne) := hfirst''
           _ = f (l[0]'(List.length_pos_of_ne_nil hne)) := hmap0
-          _ = f c := by simpa [hfirst]
+          _ = f c := by simp [hfirst]
           _ = d := hfc
       have hlast' :
           (replaceClones c D d Hd l).getLast hne' = a := by
@@ -1799,7 +1786,7 @@ lemma cycle_of_forall_defeater {X : Type} [Fintype X]
           simpa [a0, seq] using (Function.iterate_add_apply s m i x0).symm
         calc
           Nat.iterate s m a0 = Nat.iterate s (m + i) x0 := hiter'
-          _ = Nat.iterate s (i + m) x0 := by simpa [Nat.add_comm]
+          _ = Nat.iterate s (i + m) x0 := by simp [Nat.add_comm]
           _ = Nat.iterate s i x0 := hiter
           _ = a0 := by simp [a0, seq]
       have hmne : m ≠ 0 := Nat.ne_of_gt hmpos
@@ -1833,7 +1820,7 @@ lemma cycle_of_forall_defeater {X : Type} [Fintype X]
       have hchain_append :
           (l ++ [a0]).IsChain (reverse_rel R) := by
         refine List.IsChain.append hchain_l ?_ hrel
-        simpa using (List.isChain_singleton (R := reverse_rel R) a0)
+        exact List.isChain_singleton a0
       have hchain_cycle :
           (a0 :: l.reverse).IsChain R := by
         have hchain_rev :
@@ -1848,7 +1835,7 @@ lemma cycle_of_forall_defeater {X : Type} [Fintype X]
         have hlast' := getLast_reverse_eq_head (c := l) (hne := hlne)
         have hhead : l.head hlne = a0 := by
           simp [l]
-        simpa [cS, hhead] using hlast'
+        simp [cS, hhead, hlast']
       have hcycleS : cycle R cS := by
         refine ⟨hne, ?_⟩
         simpa [cS, hlast] using hchain_cycle
@@ -1869,7 +1856,7 @@ lemma cycle_of_forall_defeater {X : Type} [Fintype X]
           simpa [a0, seq] using (Function.iterate_add_apply s m j x0).symm
         calc
           Nat.iterate s m a0 = Nat.iterate s (m + j) x0 := hiter'
-          _ = Nat.iterate s (j + m) x0 := by simpa [Nat.add_comm]
+          _ = Nat.iterate s (j + m) x0 := by simp [Nat.add_comm]
           _ = Nat.iterate s j x0 := hiter
           _ = a0 := by simp [a0, seq]
       have hmne : m ≠ 0 := Nat.ne_of_gt hmpos
@@ -1903,7 +1890,7 @@ lemma cycle_of_forall_defeater {X : Type} [Fintype X]
       have hchain_append :
           (l ++ [a0]).IsChain (reverse_rel R) := by
         refine List.IsChain.append hchain_l ?_ hrel
-        simpa using (List.isChain_singleton (R := reverse_rel R) a0)
+        exact List.isChain_singleton a0
       have hchain_cycle :
           (a0 :: l.reverse).IsChain R := by
         have hchain_rev :
@@ -1918,7 +1905,7 @@ lemma cycle_of_forall_defeater {X : Type} [Fintype X]
         have hlast' := getLast_reverse_eq_head (c := l) (hne := hlne)
         have hhead : l.head hlne = a0 := by
           simp [l]
-        simpa [cS, hhead] using hlast'
+        simp [cS, hhead, hlast']
       have hcycleS : cycle R cS := by
         refine ⟨hne, ?_⟩
         simpa [cS, hlast] using hchain_cycle

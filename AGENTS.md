@@ -42,6 +42,8 @@ The user prefers that agents read files directly from the file system using thei
 
 For most other tasks, the user prefers that agents use tools provided by the lean-lsp mcp plugin.
 
+When using lean-lsp for the first time, it is useful to call the `lean_diagnostics` tool to make sure that the Lean server is fully initialized and ready to respond to further requests. Occasionally a second call to `lean_diagnostics` may be needed if the first call returns `[]`. Agents should be suspicious of empty diagnostics results, especially if we expect the linter to complain about warnings that have not yet been fixed.
+
 ### Searching mathlib4
 
 When searching for definitions, the user prefers that agents use the `lean_loogle`, `lean_leansearch`, and `lean_leanfinder` tools provided by the lean-lsp mcp plugin. These tools should be used liberally as they can speed up exploration significantly. There are rate limits of several requests per 30 seconds. Given how agents are implemented, this means that for *every* turn, these rate limits will be available, so can be used. (e.g. if the user entered a message, this will have taken >30s so the rate limits will have reset; if the agent requested diagnostics, this also takes sufficient time to reset limits).

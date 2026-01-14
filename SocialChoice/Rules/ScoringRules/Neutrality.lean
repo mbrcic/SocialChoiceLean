@@ -63,8 +63,7 @@ theorem scoringRule_neutral (score : Nat → Nat → Int) : Neutrality (scoringR
       let scoreSet : Finset Int :=
         (Finset.univ.image (fun c => scoreCandidate P' scoreFun c))
       let maxScore : Int :=
-        scoreSet.max' (by
-          simpa [scoreSet, Finset.Nonempty] using h)
+        scoreSet.max' (h.image _)
       constructor
       · intro hc
         have hc' : scoreCandidate P' scoreFun c = maxScore := by
@@ -80,8 +79,7 @@ theorem scoringRule_neutral (score : Nat → Nat → Int) : Neutrality (scoringR
           exact Finset.mem_image.mpr ⟨c, by simp, rfl⟩
         have hle : scoreCandidate P' scoreFun c ≤ maxScore :=
           Finset.le_max' scoreSet _ hmem
-        have hscoreSet_nonempty : scoreSet.Nonempty := by
-          simpa [scoreSet, Finset.Nonempty] using h
+        have hscoreSet_nonempty : scoreSet.Nonempty := h.image _
         have hge : maxScore ≤ scoreCandidate P' scoreFun c := by
           refine (Finset.max'_le_iff scoreSet hscoreSet_nonempty).2 ?_
           intro y hy

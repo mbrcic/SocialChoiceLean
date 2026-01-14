@@ -19,8 +19,7 @@ noncomputable def c2BordaRule : VotingRule :=
     classical
     by_cases h : (Finset.univ : Finset A).Nonempty
     · let maxScore : Int :=
-        (Finset.univ.image (fun c => c2BordaScore P c)).max' (by
-          simpa [Finset.Nonempty] using h)
+        (Finset.univ.image (fun c => c2BordaScore P c)).max' (h.image _)
       exact (Finset.univ.filter (fun c => c2BordaScore P c = maxScore))
     · exact ∅
 
@@ -79,7 +78,7 @@ lemma prefers_partition_card {A : Type} [Fintype A] (r : LinearOrder A) (x : A) 
     simpa [hunion] using hcard_union'
   have hx : x ∈ (Finset.univ : Finset A) := by simp
   have herase : (Finset.univ.erase x).card = Fintype.card A - 1 := by
-    simpa using (Finset.card_erase_of_mem (s := (Finset.univ : Finset A)) hx)
+    simp [Finset.card_erase_of_mem (s := (Finset.univ : Finset A)) hx]
   exact hsum.trans herase
 
 lemma bordaScore_eq_card_prefers {A : Type} [Fintype A] (r : LinearOrder A) (x : A) :
@@ -137,9 +136,7 @@ lemma c2BordaScore_eq_affine {V A : Type} [Fintype V] [Fintype A]
           Int.ofNat ((Finset.univ.filter (fun y => (P.pref v).lt x y)).card)) := by
       refine Finset.sum_congr rfl ?_
       intro v hv
-      simpa using
-        (Finset.sum_boole (s := (Finset.univ : Finset A))
-          (p := fun y => (P.pref v).lt x y))
+      simp [Finset.sum_boole (p := fun y => (P.pref v).lt x y)]
     have hsum_right :
         (Finset.univ : Finset A).sum (fun y =>
           (Finset.univ : Finset V).sum (fun v => ite ((P.pref v).lt x y) (1 : Int) 0)) =
@@ -147,9 +144,7 @@ lemma c2BordaScore_eq_affine {V A : Type} [Fintype V] [Fintype A]
           Int.ofNat ((Finset.univ.filter (fun v => (P.pref v).lt x y)).card)) := by
       refine Finset.sum_congr rfl ?_
       intro y hy
-      simpa using
-        (Finset.sum_boole (s := (Finset.univ : Finset V))
-          (p := fun v => (P.pref v).lt x y))
+      simp [Finset.sum_boole (p := fun v => (P.pref v).lt x y)]
     calc
       (Finset.univ : Finset A).sum (fun y =>
           Int.ofNat ((Finset.univ.filter (fun v => (P.pref v).lt x y)).card)) =
@@ -184,9 +179,7 @@ lemma c2BordaScore_eq_affine {V A : Type} [Fintype V] [Fintype A]
           Int.ofNat ((Finset.univ.filter (fun y => (P.pref v).lt y x)).card)) := by
       refine Finset.sum_congr rfl ?_
       intro v hv
-      simpa using
-        (Finset.sum_boole (s := (Finset.univ : Finset A))
-          (p := fun y => (P.pref v).lt y x))
+      simp [Finset.sum_boole (p := fun y => (P.pref v).lt y x)]
     have hsum_right :
         (Finset.univ : Finset A).sum (fun y =>
           (Finset.univ : Finset V).sum (fun v => ite ((P.pref v).lt y x) (1 : Int) 0)) =
@@ -194,9 +187,7 @@ lemma c2BordaScore_eq_affine {V A : Type} [Fintype V] [Fintype A]
           Int.ofNat ((Finset.univ.filter (fun v => (P.pref v).lt y x)).card)) := by
       refine Finset.sum_congr rfl ?_
       intro y hy
-      simpa using
-        (Finset.sum_boole (s := (Finset.univ : Finset V))
-          (p := fun v => (P.pref v).lt y x))
+      simp [Finset.sum_boole (p := fun v => (P.pref v).lt y x)]
     calc
       (Finset.univ : Finset A).sum (fun y =>
           Int.ofNat ((Finset.univ.filter (fun v => (P.pref v).lt y x)).card)) =
@@ -262,7 +253,7 @@ lemma c2BordaScore_eq_affine {V A : Type} [Fintype V] [Fintype A]
         (Finset.univ : Finset V).sum (fun _v => (Fintype.card A : Int) - 1) -
           (Finset.univ : Finset V).sum (fun v =>
             Int.ofNat ((Finset.univ.filter (fun y => (P.pref v).lt x y)).card)) := by
-          simpa [Finset.sum_sub_distrib]
+          simp [Finset.sum_sub_distrib]
       _ =
         (Fintype.card V : Int) * ((Fintype.card A : Int) - 1) -
           (Finset.univ : Finset V).sum (fun v =>
@@ -337,7 +328,7 @@ lemma c2BordaScore_eq_affine {V A : Type} [Fintype V] [Fintype A]
     _ =
       2 * scoreCandidate P (fun r => bordaScore (Fintype.card A) r) x -
         (Fintype.card V : Int) * ((Fintype.card A : Int) - 1) := by
-        simpa [hscore]
+        simp [hscore]
 
 theorem borda_eq_c2BordaRule {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) : borda P = c2BordaRule P := by
@@ -385,14 +376,14 @@ theorem borda_eq_c2BordaRule {V A : Type} [Fintype V] [Fintype A]
         refine Finset.mem_image.mpr ?_
         refine ⟨scoreCandidate P (fun r => bordaScore (Fintype.card A) r) c, ?_, ?_⟩
         · exact Finset.mem_image.mpr ⟨c, hc, rfl⟩
-        · simpa [hmarginScore c]
+        · simp [hmarginScore c]
       · intro hz
         rcases Finset.mem_image.mp hz with ⟨z0, hz0, rfl⟩
         rcases Finset.mem_image.mp hz0 with ⟨c, hc, rfl⟩
         refine Finset.mem_image.mpr ?_
         refine ⟨c, hc, ?_⟩
         symm
-        simpa [hmarginScore c]
+        simp [hmarginScore c]
     ext c
     constructor <;> intro hc
     · have hc' :
@@ -400,7 +391,7 @@ theorem borda_eq_c2BordaRule {V A : Type} [Fintype V] [Fintype A]
           simpa [borda, scoringRule, scoringWinners, h, scoreSet, maxScore] using hc
       have :
           c2BordaScore P c = maxMargin := by
-        simpa [hmarginScore c, hmaxMargin, hc'] using (rfl : f maxScore = f maxScore)
+        simp [hmarginScore c, hmaxMargin, hc']
       simpa [c2BordaRule, h, scoreSet, maxMargin, himage] using this
     · have hc' :
           c2BordaScore P c = maxMargin := by
@@ -439,8 +430,10 @@ lemma c2BordaScore_pos_of_condorcet_winner {V A : Type} [Fintype V] [Fintype A]
       (Finset.sum_erase_add (s := (Finset.univ : Finset A))
         (f := fun y => margin P x y) (a := x) (by simp)).symm
     have hx0 : margin P x x = 0 := self_margin_zero (P := P) (a := x)
-    simpa [c2BordaScore, hx0] using hsum'
-  simpa [hsum] using hpos
+    rw [c2BordaScore, hsum', hx0]
+    simp
+  rw [hsum]
+  exact hpos
 
 lemma c2BordaScore_neg_of_condorcet_loser {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x : A) (hlose : condorcet_loser P x) :
@@ -466,7 +459,8 @@ lemma c2BordaScore_neg_of_condorcet_loser {V A : Type} [Fintype V] [Fintype A]
       (Finset.sum_erase_add (s := (Finset.univ : Finset A))
         (f := fun y => margin P x y) (a := x) (by simp)).symm
     have hx0 : margin P x x = 0 := self_margin_zero (P := P) (a := x)
-    simpa [c2BordaScore, hx0] using hsum'
+    rw [c2BordaScore, hsum', hx0]
+    simp
   have hskew : ∀ y, margin P x y = - margin P y x := by
     intro y
     simpa [skew_symmetric] using (margin_antisymmetric (P := P) x y)
@@ -563,11 +557,12 @@ lemma c2BordaRule_score_nonneg {V A : Type} [Fintype V] [Fintype A]
         exact hscore_neg c hc
       have hsum_zero := c2BordaScore_sum_zero (P := P)
       have : (0 : Int) < 0 := by
-        simpa [hsum_zero] using hsum_neg
+        simp [hsum_zero] at hsum_neg
       exact (lt_irrefl 0 this)
-    simpa [hx'] using hmax_nonneg
+    rw [hx']
+    exact hmax_nonneg
   · have : False := by
-      simpa [c2BordaRule, h] using hx
+      simp [c2BordaRule, h] at hx
     exact this.elim
 
 end SocialChoice
