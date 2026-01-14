@@ -122,6 +122,29 @@ lemma liftFinset_subset_of_prop {A : Type} [DecidableEq A] {p : A → Prop}
   rcases hx with ⟨y, _, rfl⟩
   exact y.property
 
+lemma mem_liftFinset_iff {A : Type} [DecidableEq A] {p : A → Prop}
+    (s : Finset {x : A // p x}) (x : A) :
+    x ∈ liftFinset s ↔ ∃ y : {x : A // p x}, y ∈ s ∧ y.1 = x := by
+  classical
+  simp [liftFinset]
+
+lemma mem_liftFinset_iff_subtype {A : Type} [DecidableEq A] {p : A → Prop}
+    (s : Finset {x : A // p x}) (x : A) :
+    x ∈ liftFinset s ↔ ∃ hx : p x, (⟨x, hx⟩ : {x : A // p x}) ∈ s := by
+  classical
+  constructor
+  · intro hx
+    rcases (mem_liftFinset_iff (s := s) (x := x)).1 hx with ⟨y, hy, hyx⟩
+    have hx' : p x := by
+      simpa [hyx] using y.property
+    refine ⟨hx', ?_⟩
+    have hy' : y = ⟨x, hx'⟩ := by
+      apply Subtype.ext
+      simp [hyx]
+    simpa [hy'] using hy
+  · rintro ⟨hx, hxmem⟩
+    exact (mem_liftFinset_iff (s := s) (x := x)).2 ⟨⟨x, hx⟩, hxmem, rfl⟩
+
 lemma not_mem_liftFinset_removed {A : Type} [DecidableEq A] {c : A}
     (s : Finset {x : A // x ≠ c}) : c ∉ liftFinset s := by
   classical

@@ -261,9 +261,9 @@ lemma relabelProfile_removeClonesExcept_swap_rep
         | inr hb_eq =>
           subst hb_eq
           have hleft : ¬ Prefers P v x x := by
-            simpa [Prefers] using (lt_irrefl (a := x))
+            simp [Prefers]
           have hright : ¬ Prefers P v b b := by
-            simpa [Prefers] using (lt_irrefl (a := b))
+            simp [Prefers]
           constructor
           · intro h
             have h' : Prefers P v x x := by
@@ -290,12 +290,35 @@ lemma cloneSwapEquiv_apply_nonclone {A : Type} [DecidableEq A]
   ext
   simp [cloneSwapEquiv, hswap]
 
+lemma cloneSwapEquiv_symm_apply_nonclone {A : Type} [DecidableEq A]
+    {X : Set A} {x x' c : A} (hc : c ∉ X)
+    (hx : x ∈ X) (hx' : x' ∈ X) (hxx' : x ≠ x') :
+    (cloneSwapEquiv X x x' hx hx' hxx').symm ⟨c, Or.inl hc⟩ = ⟨c, Or.inl hc⟩ := by
+  classical
+  have hcx : c ≠ x := by
+    intro h
+    apply hc
+    simpa [h] using hx
+  have hcx' : c ≠ x' := by
+    intro h
+    apply hc
+    simpa [h] using hx'
+  apply Subtype.ext
+  simp [cloneSwapEquiv, Equiv.swap_apply_def, hcx, hcx']
+
 lemma cloneSwapEquiv_apply_rep {A : Type} [DecidableEq A]
     {X : Set A} {x x' : A} (hx : x ∈ X) (hx' : x' ∈ X) (hxx' : x ≠ x') :
     cloneSwapEquiv X x x' hx hx' hxx' ⟨x, Or.inr rfl⟩ = ⟨x', Or.inr rfl⟩ := by
   classical
   ext
   simp [cloneSwapEquiv, Equiv.swap_apply_left]
+
+lemma cloneSwapEquiv_symm_apply_rep {A : Type} [DecidableEq A]
+    {X : Set A} {x x' : A} (hx : x ∈ X) (hx' : x' ∈ X) (hxx' : x ≠ x') :
+    (cloneSwapEquiv X x x' hx hx' hxx').symm ⟨x', Or.inr rfl⟩ = ⟨x, Or.inr rfl⟩ := by
+  classical
+  apply Subtype.ext
+  simp [cloneSwapEquiv, Equiv.swap_apply_right]
 
 /-- Clone set on a restricted candidate type. -/
 def restrictCloneSet (X : Set A) (ℓ : A) : Set {a : A // a ≠ ℓ} :=
@@ -369,6 +392,37 @@ lemma scoringEliminationAux_swap_rep
       (P := removeClonesExcept P X x) (e := cloneSwapEquiv X x x' hx hx' hxx')
   simpa using h
 
+lemma mem_scoringEliminationAux_relabel_iff
+    {V A B : Type} [Fintype V] [Fintype A] [Fintype B]
+    [DecidableEq A] [DecidableEq B]
+    (score : Nat → Nat → Int) (P : Profile V A) (e : A ≃ B) (b : B) :
+    b ∈ scoringEliminationAux score B (relabelProfile P e) ↔
+      e.symm b ∈ scoringEliminationAux score A P := by
+  classical
+  have heq := scoringEliminationAux_equiv (score := score) (P := P) (e := e)
+  constructor
+  · intro hb
+    have hb_map : b ∈ (scoringEliminationAux score A P).map e.toEmbedding := by
+      simpa [heq] using hb
+    exact (mem_relabelWinners (e := e) (s := scoringEliminationAux score A P) (b := b)).1 hb_map
+  · intro hb
+    have hb_map : b ∈ (scoringEliminationAux score A P).map e.toEmbedding := by
+      exact (mem_relabelWinners (e := e) (s := scoringEliminationAux score A P) (b := b)).2 hb
+    simpa [heq] using hb_map
+
+lemma mem_scoringEliminationAux_of_mem_liftFinset
+    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) {ℓ c : A}
+    (haux :
+      scoringEliminationAux pluralityScore A P =
+        (lowestScoring P pluralityScoreVec).biUnion
+          (fun c => liftFinset (scoringEliminationAux pluralityScore _ (restrictProfile P c))))
+    (hℓ_low : ℓ ∈ lowestScoring P pluralityScoreVec)
+    (hc : c ∈ liftFinset (scoringEliminationAux pluralityScore _ (restrictProfile P ℓ))) :
+    c ∈ scoringEliminationAux pluralityScore A P := by
+  rw [haux]
+  exact Finset.mem_biUnion.mpr ⟨ℓ, hℓ_low, by simpa using hc⟩
+
 lemma nonclone_winner_swap
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
     (P : Profile V A) (X : Set A) (x x' c : A)
@@ -381,37 +435,34 @@ lemma nonclone_winner_swap
             (cloneSwapEquiv X x x' hx hx' hxx')) := by
     classical
   let e := cloneSwapEquiv X x x' hx hx' hxx'
-  have hswap := scoringEliminationAux_swap_rep (P := P) (X := X) (x := x) (x' := x')
-    (hx := hx) (hx' := hx') (hxx' := hxx')
-  have hmem :
-      (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}) ∈
-        (scoringEliminationAux pluralityScore _ (removeClonesExcept P X x)).map
-          e.toEmbedding ↔
-      e.symm
-          (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}) ∈
-        scoringEliminationAux pluralityScore _ (removeClonesExcept P X x) :=
-    mem_relabelWinners (e := e) _ _
   have hfix :
       e.symm (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}) =
         (⟨c, Or.inl hc⟩ : {a : A // clonePred X x a}) := by
-    have hfix' := cloneSwapEquiv_apply_nonclone (X := X) (x := x) (x' := x')
-      (c := c) (hc := hc) (hx := hx) (hx' := hx') (hxx' := hxx')
-    have hleft := e.left_inv ⟨c, Or.inl hc⟩
-    simpa [e, hfix'] using hleft
+    simpa [e] using
+      (cloneSwapEquiv_symm_apply_nonclone (X := X) (x := x) (x' := x')
+        (c := c) (hc := hc) (hx := hx) (hx' := hx') (hxx' := hxx'))
+  have hrel :
+      (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}) ∈
+          scoringEliminationAux pluralityScore _
+            (relabelProfile (removeClonesExcept P X x) e) ↔
+        e.symm (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}) ∈
+          scoringEliminationAux pluralityScore _ (removeClonesExcept P X x) :=
+    mem_scoringEliminationAux_relabel_iff (score := pluralityScore)
+      (P := removeClonesExcept P X x) (e := e)
+      (b := (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}))
   constructor
   · intro hcwin
-    have hcwin_map : (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}) ∈
-        (scoringEliminationAux pluralityScore _ (removeClonesExcept P X x)).map
-          e.toEmbedding :=
-      hmem.mpr (by simpa [hfix] using hcwin)
-    simpa [hswap, e] using hcwin_map
+    have hcwin' :
+        e.symm (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}) ∈
+          scoringEliminationAux pluralityScore _ (removeClonesExcept P X x) := by
+      simpa [hfix] using hcwin
+    exact (hrel).mpr hcwin'
   · intro hcwin
-    have hcwin_map : (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}) ∈
-        (scoringEliminationAux pluralityScore _ (removeClonesExcept P X x)).map
-          e.toEmbedding := by
-      simpa [hswap, e] using hcwin
-    have hcwin_pre := hmem.mp hcwin_map
-    simpa [hfix] using hcwin_pre
+    have hcwin' :
+        e.symm (⟨c, Or.inl hc⟩ : {a : A // clonePred X x' a}) ∈
+          scoringEliminationAux pluralityScore _ (removeClonesExcept P X x) :=
+      (hrel).mp hcwin
+    simpa [hfix] using hcwin'
 
 lemma clone_winner_swap
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
@@ -425,39 +476,34 @@ lemma clone_winner_swap
             (cloneSwapEquiv X x x' hx hx' hxx')) := by
   classical
   let e := cloneSwapEquiv X x x' hx hx' hxx'
-  have hswap := scoringEliminationAux_swap_rep (P := P) (X := X) (x := x) (x' := x')
-    (hx := hx) (hx' := hx') (hxx' := hxx')
-  have hmem :
-      (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}) ∈
-        (scoringEliminationAux pluralityScore _ (removeClonesExcept P X x)).map
-          e.toEmbedding ↔
-      e.symm
-          (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}) ∈
-        scoringEliminationAux pluralityScore _ (removeClonesExcept P X x) :=
-    mem_relabelWinners (e := e) _ _
   have hsymm :
       e.symm (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}) =
         (⟨x, Or.inr rfl⟩ : {a : A // clonePred X x a}) := by
-    have hrep := cloneSwapEquiv_apply_rep (X := X) (x := x) (x' := x')
-      (hx := hx) (hx' := hx') (hxx' := hxx')
-    have hleft := e.left_inv ⟨x, Or.inr rfl⟩
-    simpa [e, hrep] using hleft
+    simpa [e] using
+      (cloneSwapEquiv_symm_apply_rep (X := X) (x := x) (x' := x')
+        (hx := hx) (hx' := hx') (hxx' := hxx'))
+  have hrel :
+      (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}) ∈
+          scoringEliminationAux pluralityScore _
+            (relabelProfile (removeClonesExcept P X x) e) ↔
+        e.symm (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}) ∈
+          scoringEliminationAux pluralityScore _ (removeClonesExcept P X x) :=
+    mem_scoringEliminationAux_relabel_iff (score := pluralityScore)
+      (P := removeClonesExcept P X x) (e := e)
+      (b := (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}))
   constructor
   · intro hxwin
-    have hxwin_map :
-        (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}) ∈
-          (scoringEliminationAux pluralityScore _ (removeClonesExcept P X x)).map
-            e.toEmbedding :=
-      hmem.mpr (by simpa [hsymm] using hxwin)
-    simpa [hswap, e] using hxwin_map
+    have hxwin' :
+        e.symm (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}) ∈
+          scoringEliminationAux pluralityScore _ (removeClonesExcept P X x) := by
+      simpa [hsymm] using hxwin
+    exact (hrel).mpr hxwin'
   · intro hxwin
-    have hxwin_map :
-        (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}) ∈
-          (scoringEliminationAux pluralityScore _ (removeClonesExcept P X x)).map
-            e.toEmbedding := by
-      simpa [hswap, e] using hxwin
-    have hxwin_pre := hmem.mp hxwin_map
-    simpa [hsymm] using hxwin_pre
+    have hxwin' :
+        e.symm (⟨x', Or.inr rfl⟩ : {a : A // clonePred X x' a}) ∈
+          scoringEliminationAux pluralityScore _ (removeClonesExcept P X x) :=
+      (hrel).mp hxwin
+    simpa [hsymm] using hxwin'
 
 
 /-! ## Plurality score facts under clone restriction -/
@@ -745,6 +791,77 @@ lemma lowestScoring_nonclone_preserved
   exact (lowestScoring_iff_forall_le (P := removeClonesExcept P X x)
       (score := pluralityScoreVec) hAhat
       (⟨ℓ, Or.inl hℓ⟩ : {a : A // clonePred X x a})).2 hle
+
+lemma lowestScoring_nonclone_reflect
+    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) (X : Set A) (x : A)
+    (hX : CloneSet P X) (hx : x ∈ X) {ℓ : A} (hℓ : ℓ ∉ X)
+    (hℓ_low_cl :
+      (⟨ℓ, Or.inl hℓ⟩ : {a : A // clonePred X x a}) ∈
+        lowestScoring (removeClonesExcept P X x) pluralityScoreVec)
+    (hclone_low : ¬ ∃ d, d ∈ lowestScoring P pluralityScoreVec ∧ d ∈ X) :
+    ℓ ∈ lowestScoring P pluralityScoreVec := by
+  classical
+  have hA : (Finset.univ : Finset A).Nonempty := by
+    rcases (by
+      simpa using (hX.1 : X.Nonempty)) with ⟨a, _⟩
+    haveI : Nonempty A := ⟨a⟩
+    exact Finset.univ_nonempty
+  apply (lowestScoring_iff_forall_le (P := P) (score := pluralityScoreVec) hA ℓ).2
+  intro d
+  by_cases hdX : d ∈ X
+  · -- If a clone were lower, it would contradict `hclone_low`.
+    by_contra hlt
+    have hlt' : scoreCandidate P pluralityScoreVec d < scoreCandidate P pluralityScoreVec ℓ :=
+      lt_of_not_ge hlt
+    -- Any non-clone has score ≥ ℓ (from collapsed lowest).
+    have hℓ_le_nonclone :
+        ∀ a : A, a ∉ X →
+          scoreCandidate P pluralityScoreVec ℓ ≤ scoreCandidate P pluralityScoreVec a := by
+      intro a haX
+      have hℓ_le_a_cl :
+          scoreCandidate (removeClonesExcept P X x) pluralityScoreVec
+              (⟨ℓ, Or.inl hℓ⟩ : {a : A // clonePred X x a}) ≤
+            scoreCandidate (removeClonesExcept P X x) pluralityScoreVec
+              (⟨a, Or.inl haX⟩ : {a : A // clonePred X x a}) :=
+        scoreCandidate_le_of_mem_lowestScoring
+          (P := removeClonesExcept P X x) (score := pluralityScoreVec) (hc := hℓ_low_cl)
+      have hscore_a :=
+        score_nonclone_eq (P := P) (X := X) (x := x) (hX := hX) (hx := hx) (ha := haX)
+      have hscore_ℓ :=
+        score_nonclone_eq (P := P) (X := X) (x := x) (hX := hX) (hx := hx) (ha := hℓ)
+      -- Rewrite both sides to original scores.
+      simpa [hscore_a, hscore_ℓ] using hℓ_le_a_cl
+    -- Choose any non-clone a (exists since X ≠ univ).
+    -- Pick a lowest-scoring candidate `w`.
+    rcases lowestScoring_nonempty (P := P) (score := pluralityScoreVec) hA with ⟨w, hw⟩
+    by_cases hwX : w ∈ X
+    · exact (hclone_low ⟨w, hw, hwX⟩).elim
+    · -- `w` is a non-clone, hence its score is ≥ ℓ, contradicting `d < ℓ`.
+      have hℓ_le_w := hℓ_le_nonclone w hwX
+      have hw_le_d :
+          scoreCandidate P pluralityScoreVec w ≤ scoreCandidate P pluralityScoreVec d :=
+        scoreCandidate_le_of_mem_lowestScoring
+          (P := P) (score := pluralityScoreVec) (hc := hw)
+      have hℓ_le_d : scoreCandidate P pluralityScoreVec ℓ ≤ scoreCandidate P pluralityScoreVec d :=
+        le_trans hℓ_le_w hw_le_d
+      have hcontra :
+          scoreCandidate P pluralityScoreVec d < scoreCandidate P pluralityScoreVec d :=
+        lt_of_lt_of_le hlt' hℓ_le_d
+      exact (lt_irrefl _ hcontra).elim
+  · -- d is a non-clone: use preservation of scores.
+    have hℓ_le_d_cl :
+        scoreCandidate (removeClonesExcept P X x) pluralityScoreVec
+            (⟨ℓ, Or.inl hℓ⟩ : {a : A // clonePred X x a}) ≤
+          scoreCandidate (removeClonesExcept P X x) pluralityScoreVec
+            (⟨d, Or.inl hdX⟩ : {a : A // clonePred X x a}) :=
+      scoreCandidate_le_of_mem_lowestScoring
+        (P := removeClonesExcept P X x) (score := pluralityScoreVec) (hc := hℓ_low_cl)
+    have hscore_d :=
+      score_nonclone_eq (P := P) (X := X) (x := x) (hX := hX) (hx := hx) (ha := hdX)
+    have hscore_ℓ :=
+      score_nonclone_eq (P := P) (X := X) (x := x) (hX := hX) (hx := hx) (ha := hℓ)
+    simpa [hscore_d, hscore_ℓ] using hℓ_le_d_cl
 
 /-! ## Main induction (proof sketch) -/
 
@@ -1036,6 +1153,28 @@ omit [Fintype A] in
 lemma clonePred_eq_or (X : Set A) (x : A) :
   clonePred X x = fun a => a ∉ X ∨ a = x := rfl
 
+lemma not_card_le_one_clonePred
+    {A : Type} [Fintype A] [DecidableEq A]
+    (X : Set A) (x : A) (hx : x ∈ X) (hX : X ≠ Set.univ) :
+    ¬ Fintype.card {a : A // clonePred X x a} ≤ 1 := by
+  classical
+  have hne : ∃ w : A, w ∉ X := by
+    by_contra hall
+    push_neg at hall
+    exact hX (Set.eq_univ_of_forall hall)
+  rcases hne with ⟨w, hw⟩
+  intro hle
+  have hsub : Subsingleton {a : A // clonePred X x a} :=
+    Fintype.card_le_one_iff_subsingleton.1 hle
+  have hneq :
+      (⟨x, Or.inr rfl⟩ : {a : A // clonePred X x a}) ≠
+        (⟨w, Or.inl hw⟩ : {a : A // clonePred X x a}) := by
+    intro hEq
+    have hxw : x = w := by
+      simpa using congrArg Subtype.val hEq
+    exact hw (hxw ▸ hx)
+  exact hneq (Subsingleton.elim _ _)
+
 /-- Key lemma: winning as non-clone is independent of representative choice (via relabeling). -/
 lemma nonclone_winner_rep_independent
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
@@ -1116,29 +1255,19 @@ theorem irv_independence_of_clones :
           ext v
           rfl
         -- Neutrality / equivariance of scoring elimination under relabeling.
-        have heq' :
-            scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') =
-              (scoringEliminationAux pluralityScore A' P').map e.toEmbedding := by
-          simpa [hrelabel] using
-            (scoringEliminationAux_equiv (score := pluralityScore) (P := P') (e := e))
         have hmem :
             (⟨c, Or.inl hc⟩ : {a : A' // clonePred X' x' a}) ∈
                 scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') ↔
               c ∈ scoringEliminationAux pluralityScore A' P' := by
-          -- Rewrite winners via `heq'` and use `mem_relabelWinners`.
           let b : {a : A' // clonePred X' x' a} := ⟨c, Or.inl hc⟩
+          have hb :
+              b ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') ↔
+                e.symm b ∈ scoringEliminationAux pluralityScore A' P' := by
+            simpa [hrelabel] using
+              (mem_scoringEliminationAux_relabel_iff
+                (score := pluralityScore) (P := P') (e := e) (b := b))
           have hsymm : e.symm b = c := by rfl
-          have hb0 : b ∈ (scoringEliminationAux pluralityScore A' P').map e.toEmbedding ↔
-              e.symm b ∈ scoringEliminationAux pluralityScore A' P' :=
-            mem_relabelWinners (e := e) (s := scoringEliminationAux pluralityScore A' P') (b := b)
-          have hb : b ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') ↔
-              e.symm b ∈ scoringEliminationAux pluralityScore A' P' := by
-            rw [heq']
-            exact hb0
-          have hb' : b ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') ↔
-              c ∈ scoringEliminationAux pluralityScore A' P' := by
-            simpa [hsymm] using hb
-          simpa [b] using hb'
+          simpa [b, hsymm] using hb
         exact hmem.symm
       · -- irv_clone_prop
         -- (∃ y ∈ X', y wins) ↔ x' wins in restricted
@@ -1161,28 +1290,19 @@ theorem irv_independence_of_clones :
         have hrelabel : relabelProfile P' e = removeClonesExcept P' X' x' := by
           ext v
           rfl
-        have heq' :
-            scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') =
-              (scoringEliminationAux pluralityScore A' P').map e.toEmbedding := by
-          simpa [hrelabel] using
-            (scoringEliminationAux_equiv (score := pluralityScore) (P := P') (e := e))
         have hxmem :
             (⟨x', Or.inr rfl⟩ : {a : A' // clonePred X' x' a}) ∈
                 scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') ↔
               x' ∈ scoringEliminationAux pluralityScore A' P' := by
           let b : {a : A' // clonePred X' x' a} := ⟨x', Or.inr rfl⟩
+          have hb :
+              b ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') ↔
+                e.symm b ∈ scoringEliminationAux pluralityScore A' P' := by
+            simpa [hrelabel] using
+              (mem_scoringEliminationAux_relabel_iff
+                (score := pluralityScore) (P := P') (e := e) (b := b))
           have hsymm : e.symm b = x' := by rfl
-          have hb0 : b ∈ (scoringEliminationAux pluralityScore A' P').map e.toEmbedding ↔
-              e.symm b ∈ scoringEliminationAux pluralityScore A' P' :=
-            mem_relabelWinners (e := e) (s := scoringEliminationAux pluralityScore A' P') (b := b)
-          have hb : b ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') ↔
-              e.symm b ∈ scoringEliminationAux pluralityScore A' P' := by
-            rw [heq']
-            exact hb0
-          have hb' : b ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') ↔
-              x' ∈ scoringEliminationAux pluralityScore A' P' := by
-            simpa [hsymm] using hb
-          simpa [b] using hb'
+          simpa [b, hsymm] using hb
         -- Now convert between “some clone wins” and “x' wins” using singletonness.
         constructor
         · intro hex
@@ -1275,21 +1395,11 @@ theorem irv_independence_of_clones :
               by_cases hℓX : ℓ ∈ X'
               · -- ℓ ∈ X': use IH on P'-ℓ with clone set X'\{ℓ}
                 classical
-                have hcnℓ : c ≠ ℓ := by
-                  have :=
-                    (liftFinset_subset_of_prop
+                rcases
+                    (_root_.SocialChoice.mem_liftFinset_iff_subtype
                       (s := scoringEliminationAux pluralityScore {x : A' // x ≠ ℓ}
                         (restrictProfile P' ℓ))
-                      c hc_rec)
-                  simpa using this
-
-                have hc_rec' : (⟨c, hcnℓ⟩ : {x : A' // x ≠ ℓ}) ∈
-                    scoringEliminationAux pluralityScore {x : A' // x ≠ ℓ} (restrictProfile P' ℓ) := by
-                  rcases Finset.mem_image.mp hc_rec with ⟨d, hd, hdval⟩
-                  have hd' : d = (⟨c, hcnℓ⟩ : {x : A' // x ≠ ℓ}) := by
-                    ext
-                    simpa [liftFinset] using hdval
-                  simpa [hd'] using hd
+                      (x := c)).1 hc_rec with ⟨hcnℓ, hc_rec'⟩
 
                 have hklt : Fintype.card {x : A' // x ≠ ℓ} < k := by
                   simpa [hcard] using (card_restrict_lt (A := A') ℓ)
@@ -1341,30 +1451,14 @@ theorem irv_independence_of_clones :
                             (relabelProfile (removeClonesExcept P' X' y) e) := by
                     simpa [hcomm] using hc_after_remove
 
-                  have heq :
-                      scoringEliminationAux pluralityScore _
-                          (relabelProfile (removeClonesExcept P' X' y) e) =
-                        (scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' y)).map
-                          e.toEmbedding := by
-                    simpa using
-                      (scoringEliminationAux_equiv (score := pluralityScore)
-                        (P := removeClonesExcept P' X' y) (e := e))
-
-                  have hb_map :
-                      (⟨⟨c, hcnℓ⟩, Or.inl hc_restr⟩ :
-                          {a : {x : A' // x ≠ x'} // clonePred (restrictCloneSet X' x') xℓ a})
-                        ∈ (scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' y)).map
-                            e.toEmbedding := by
-                    simpa [heq] using hbR'
-
                   have hb_pre :
                       e.symm (⟨⟨c, hcnℓ⟩, Or.inl hc_restr⟩ :
                         {a : {x : A' // x ≠ x'} // clonePred (restrictCloneSet X' x') xℓ a})
                         ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' y) :=
-                    (mem_relabelWinners (e := e)
-                      (s := scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' y))
+                    (mem_scoringEliminationAux_relabel_iff
+                      (score := pluralityScore) (P := removeClonesExcept P' X' y) (e := e)
                       (b := (⟨⟨c, hcnℓ⟩, Or.inl hc_restr⟩ :
-                        {a : {x : A' // x ≠ x'} // clonePred (restrictCloneSet X' x') xℓ a}))).1 hb_map
+                        {a : {x : A' // x ≠ x'} // clonePred (restrictCloneSet X' x') xℓ a}))).1 hbR'
 
                   have hb_val :
                       (e.symm (⟨⟨c, hcnℓ⟩, Or.inl hc_restr⟩)).1 = c := by
@@ -1456,29 +1550,14 @@ theorem irv_independence_of_clones :
                         ∈ scoringEliminationAux pluralityScore _
                             (relabelProfile (removeClonesExcept P' X' x') e) := by
                     simpa [hcomm] using hc_after_remove
-                  have heq :
-                      scoringEliminationAux pluralityScore _
-                          (relabelProfile (removeClonesExcept P' X' x') e) =
-                        (scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x')).map
-                          e.toEmbedding := by
-                    simpa using
-                      (scoringEliminationAux_equiv (score := pluralityScore)
-                        (P := removeClonesExcept P' X' x') (e := e))
-                  have hb_map :
-                      (⟨⟨c, hcnℓ⟩, Or.inl hc_restr⟩ :
-                          {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})
-                        ∈ (scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x')).map
-                            e.toEmbedding := by
-                    simpa [heq] using hbR'
-
                   have hb_pre :
                       e.symm (⟨⟨c, hcnℓ⟩, Or.inl hc_restr⟩ :
                         {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})
                         ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') :=
-                    (mem_relabelWinners (e := e)
-                      (s := scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x'))
+                    (mem_scoringEliminationAux_relabel_iff
+                      (score := pluralityScore) (P := removeClonesExcept P' X' x') (e := e)
                       (b := (⟨⟨c, hcnℓ⟩, Or.inl hc_restr⟩ :
-                        {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}))).1 hb_map
+                        {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}))).1 hbR'
                   have hb_val :
                       ((e.symm (⟨⟨c, hcnℓ⟩, Or.inl hc_restr⟩)).1 : A') = c := by
                     simpa using (he_symm_val (⟨⟨c, hcnℓ⟩, Or.inl hc_restr⟩))
@@ -1492,24 +1571,12 @@ theorem irv_independence_of_clones :
                 classical
                 have hℓnotX : ℓ ∉ X' := hℓX
 
-                -- From `hc_rec : c ∈ liftFinset (...)`, we get `c ≠ ℓ` and the corresponding
-                -- subtype winner in the restricted election.
-                have hcnℓ : c ≠ ℓ := by
-                  have :=
-                    (liftFinset_subset_of_prop
+                -- Extract the recursive winner and its inequality from `hc_rec`.
+                rcases
+                    (_root_.SocialChoice.mem_liftFinset_iff_subtype
                       (s := scoringEliminationAux pluralityScore {x : A' // x ≠ ℓ}
                         (restrictProfile P' ℓ))
-                      c hc_rec)
-                  simpa using this
-
-                have hc_rec' : (⟨c, hcnℓ⟩ : {x : A' // x ≠ ℓ}) ∈
-                    scoringEliminationAux pluralityScore {x : A' // x ≠ ℓ} (restrictProfile P' ℓ) := by
-                  -- `liftFinset` is `image Subtype.val`.
-                  rcases Finset.mem_image.mp hc_rec with ⟨d, hd, hdval⟩
-                  have hd' : d = (⟨c, hcnℓ⟩ : {x : A' // x ≠ ℓ}) := by
-                    ext
-                    simpa [liftFinset] using hdval
-                  simpa [hd'] using hd
+                      (x := c)).1 hc_rec with ⟨hcnℓ, hc_rec'⟩
 
                 -- Apply IH to the restricted profile `P' - ℓ`.
                 have hklt : Fintype.card {x : A' // x ≠ ℓ} < k := by
@@ -1557,25 +1624,8 @@ theorem irv_independence_of_clones :
                   with ⟨e, he_val, he_symm_val, hcomm⟩
 
                 -- Unfold one step of elimination on the clone-restricted election.
-                have hcard_cl : ¬ Fintype.card {a : A' // clonePred X' x' a} ≤ 1 := by
-                  -- There exists a non-clone candidate since `X' ≠ univ`.
-                  have hne : ∃ w : A', w ∉ X' := by
-                    by_contra hall
-                    push_neg at hall
-                    have hXuniv : X' = Set.univ := Set.eq_univ_of_forall hall
-                    exact hX_all hXuniv
-                  rcases hne with ⟨w, hw⟩
-                  intro hle
-                  have hsub : Subsingleton {a : A' // clonePred X' x' a} :=
-                    Fintype.card_le_one_iff_subsingleton.1 hle
-                  have hneq :
-                      (⟨x', Or.inr rfl⟩ : {a : A' // clonePred X' x' a}) ≠
-                        (⟨w, Or.inl hw⟩ : {a : A' // clonePred X' x' a}) := by
-                    intro hEq
-                    have hxw : x' = w := by
-                      simpa using congrArg Subtype.val hEq
-                    exact hw (hxw ▸ hx')
-                  exact hneq (Subsingleton.elim _ _)
+                have hcard_cl : ¬ Fintype.card {a : A' // clonePred X' x' a} ≤ 1 :=
+                  not_card_le_one_clonePred (X := X') (x := x') (hx := hx') (hX := hX_all)
 
                 have haux_cl :=
                   scoringEliminationAux_eq_biUnion_of_not_card_le_one
@@ -1620,40 +1670,16 @@ theorem irv_independence_of_clones :
                     simpa [hcomm] using hbR
 
                   -- Use equivariance of `scoringEliminationAux` under relabeling.
-                  have heq :
-                      scoringEliminationAux pluralityScore _
-                          (relabelProfile
-                            (restrictProfile (removeClonesExcept P' X' x')
-                              (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))
-                            e) =
-                        (scoringEliminationAux pluralityScore _
-                          (restrictProfile (removeClonesExcept P' X' x')
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))).map
-                          e.toEmbedding := by
-                    simpa using
-                      (scoringEliminationAux_equiv (score := pluralityScore)
-                        (P :=
-                          restrictProfile (removeClonesExcept P' X' x')
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))
-                        (e := e))
-                  have hb_map :
-                      bR ∈
-                        (scoringEliminationAux pluralityScore _
-                          (restrictProfile (removeClonesExcept P' X' x')
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))).map
-                          e.toEmbedding := by
-                    simpa [heq] using hbR'
-
                   have hb_pre :
                       e.symm bR ∈ scoringEliminationAux pluralityScore _
                         (restrictProfile (removeClonesExcept P' X' x')
                           (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a})) :=
-                    (mem_relabelWinners (e := e)
-                      (s :=
-                        scoringEliminationAux pluralityScore _
-                          (restrictProfile (removeClonesExcept P' X' x')
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a})))
-                      (b := bR)).1 hb_map
+                    (mem_scoringEliminationAux_relabel_iff
+                      (score := pluralityScore)
+                      (P :=
+                        restrictProfile (removeClonesExcept P' X' x')
+                          (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))
+                      (e := e) (b := bR)).1 hbR'
 
                   -- Show that the preimage winner has underlying value `c`.
                   have hb_val :
@@ -1781,10 +1807,9 @@ theorem irv_independence_of_clones :
                     refine Finset.mem_image.mpr ?_
                     refine ⟨(⟨c, by simpa using hcnℓ⟩ : {x : A' // x ≠ ℓ}), hc_rec', ?_⟩
                     simp
-                  rw [haux_orig]
-                  refine Finset.mem_biUnion.mpr ?_
-                  refine ⟨ℓ, hℓ_low, ?_⟩
-                  simpa using hc_rec
+                  exact mem_scoringEliminationAux_of_mem_liftFinset (P := P')
+                    (haux := by simpa [pluralityScoreVec] using haux_orig)
+                    (hℓ_low := hℓ_low) (hc := hc_rec)
                 · -- ℓ ≠ x': keep x' as the representative.
                   have hxne : x' ≠ ℓ := by
                     intro hEq
@@ -1858,31 +1883,13 @@ theorem irv_independence_of_clones :
                     refine Finset.mem_image.mpr ?_
                     refine ⟨(⟨c, hcnℓ⟩ : {x : A' // x ≠ ℓ}), hc_rec', ?_⟩
                     simp
-                  rw [haux_orig]
-                  refine Finset.mem_biUnion.mpr ?_
-                  refine ⟨ℓ, hℓ_low, ?_⟩
-                  simpa using hc_rec
+                  exact mem_scoringEliminationAux_of_mem_liftFinset (P := P')
+                    (haux := by simpa [pluralityScoreVec] using haux_orig)
+                    (hℓ_low := hℓ_low) (hc := hc_rec)
               · -- No clone is lowest-scoring in P'.
                 -- Unfold one step of elimination in the clone-restricted election.
-                have hcard_cl : ¬ Fintype.card {a : A' // clonePred X' x' a} ≤ 1 := by
-                  -- There exists a non-clone since X' ≠ univ.
-                  have hne : ∃ w : A', w ∉ X' := by
-                    by_contra hall
-                    push_neg at hall
-                    have hXuniv : X' = Set.univ := Set.eq_univ_of_forall hall
-                    exact hX_all hXuniv
-                  rcases hne with ⟨w, hw⟩
-                  intro hle
-                  have hsub : Subsingleton {a : A' // clonePred X' x' a} :=
-                    Fintype.card_le_one_iff_subsingleton.1 hle
-                  have hneq :
-                      (⟨x', Or.inr rfl⟩ : {a : A' // clonePred X' x' a}) ≠
-                        (⟨w, Or.inl hw⟩ : {a : A' // clonePred X' x' a}) := by
-                    intro hEq
-                    have hxw : x' = w := by
-                      simpa using congrArg Subtype.val hEq
-                    exact hw (hxw ▸ hx')
-                  exact hneq (Subsingleton.elim _ _)
+                have hcard_cl : ¬ Fintype.card {a : A' // clonePred X' x' a} ≤ 1 :=
+                  not_card_le_one_clonePred (X := X') (x := x') (hx := hx') (hX := hX_all)
                 have haux_cl :=
                   scoringEliminationAux_eq_biUnion_of_not_card_le_one
                     (score := pluralityScore) (P := removeClonesExcept P' X' x') (hcard := hcard_cl)
@@ -2034,78 +2041,16 @@ theorem irv_independence_of_clones :
                   refine Finset.mem_image.mpr ?_
                   refine ⟨(⟨c, hcnℓ⟩ : {x : A' // x ≠ ℓ}), hc_rec'', ?_⟩
                   simp
-                -- Show ℓ is lowest-scoring in P' (clones are not lowest).
-                have hA : (Finset.univ : Finset A').Nonempty := by
-                  rcases (by
-                    simpa using (hX'.1 : X'.Nonempty)) with ⟨a, _⟩
-                  haveI : Nonempty A' := ⟨a⟩
-                  exact Finset.univ_nonempty
+                -- ℓ is lowest-scoring in P' (no clone is lowest).
                 have hℓ_low' :
-                    ℓ ∈ lowestScoring P' pluralityScoreVec := by
-                  apply (lowestScoring_iff_forall_le (P := P') (score := pluralityScoreVec) hA ℓ).2
-                  intro d
-                  by_cases hdX : d ∈ X'
-                  · -- If a clone were lower, it would contradict `hclone_low`.
-                    by_contra hlt
-                    have hlt' : scoreCandidate P' pluralityScoreVec d < scoreCandidate P' pluralityScoreVec ℓ :=
-                      lt_of_not_ge hlt
-                    -- Any non-clone has score ≥ ℓ (from collapsed lowest).
-                    have hℓ_le_nonclone :
-                        ∀ a : A', a ∉ X' →
-                          scoreCandidate P' pluralityScoreVec ℓ ≤ scoreCandidate P' pluralityScoreVec a := by
-                      intro a haX
-                      have hℓ_le_a_cl :
-                          scoreCandidate (removeClonesExcept P' X' x') pluralityScoreVec
-                              (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}) ≤
-                            scoreCandidate (removeClonesExcept P' X' x') pluralityScoreVec
-                              (⟨a, Or.inl haX⟩ : {a : A' // clonePred X' x' a}) :=
-                        scoreCandidate_le_of_mem_lowestScoring
-                          (P := removeClonesExcept P' X' x') (score := pluralityScoreVec) (hc := hℓ_low_cl)
-                      have hscore_a :=
-                        score_nonclone_eq (P := P') (X := X') (x := x')
-                          (hX := hX') (hx := hx') (ha := haX)
-                      have hscore_ℓ :=
-                        score_nonclone_eq (P := P') (X := X') (x := x')
-                          (hX := hX') (hx := hx') (ha := hℓnotX)
-                      -- Rewrite both sides to original scores.
-                      simpa [hscore_a, hscore_ℓ] using hℓ_le_a_cl
-                    -- Choose any non-clone a (exists since X' ≠ univ).
-                    -- Pick a lowest-scoring candidate `w`.
-                    rcases lowestScoring_nonempty (P := P') (score := pluralityScoreVec) hA with ⟨w, hw⟩
-                    by_cases hwX : w ∈ X'
-                    · exact (hclone_low ⟨w, hw, hwX⟩).elim
-                    · -- `w` is a non-clone, hence its score is ≥ ℓ, contradicting `d < ℓ`.
-                      have hℓ_le_w := hℓ_le_nonclone w hwX
-                      have hw_le_d :
-                          scoreCandidate P' pluralityScoreVec w ≤ scoreCandidate P' pluralityScoreVec d :=
-                        scoreCandidate_le_of_mem_lowestScoring
-                          (P := P') (score := pluralityScoreVec) (hc := hw)
-                      have hℓ_le_d : scoreCandidate P' pluralityScoreVec ℓ ≤ scoreCandidate P' pluralityScoreVec d :=
-                        le_trans hℓ_le_w hw_le_d
-                      have hcontra :
-                          scoreCandidate P' pluralityScoreVec d < scoreCandidate P' pluralityScoreVec d :=
-                        lt_of_lt_of_le hlt' hℓ_le_d
-                      exact (lt_irrefl _ hcontra).elim
-                  · -- d is a non-clone: use preservation of scores.
-                    have hℓ_le_d_cl :
-                        scoreCandidate (removeClonesExcept P' X' x') pluralityScoreVec
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}) ≤
-                          scoreCandidate (removeClonesExcept P' X' x') pluralityScoreVec
-                            (⟨d, Or.inl hdX⟩ : {a : A' // clonePred X' x' a}) :=
-                      scoreCandidate_le_of_mem_lowestScoring
-                        (P := removeClonesExcept P' X' x') (score := pluralityScoreVec) (hc := hℓ_low_cl)
-                    have hscore_d :=
-                      score_nonclone_eq (P := P') (X := X') (x := x')
-                        (hX := hX') (hx := hx') (ha := hdX)
-                    have hscore_ℓ :=
-                      score_nonclone_eq (P := P') (X := X') (x := x')
-                        (hX := hX') (hx := hx') (ha := hℓnotX)
-                    simpa [hscore_d, hscore_ℓ] using hℓ_le_d_cl
+                    ℓ ∈ lowestScoring P' pluralityScoreVec :=
+                  lowestScoring_nonclone_reflect (P := P') (X := X') (x := x')
+                    (hX := hX') (hx := hx') (hℓ := hℓnotX)
+                    (hℓ_low_cl := hℓ_low_cl) (hclone_low := hclone_low)
                 -- Conclude in the original election.
-                rw [haux_orig]
-                refine Finset.mem_biUnion.mpr ?_
-                refine ⟨ℓ, hℓ_low', ?_⟩
-                simpa using hc_rec
+                exact mem_scoringEliminationAux_of_mem_liftFinset (P := P')
+                  (haux := by simpa [pluralityScoreVec] using haux_orig)
+                  (hℓ_low := hℓ_low') (hc := hc_rec)
           · -- irv_clone_prop
             constructor
             · -- (∃ y ∈ X', y wins in P') → x' wins in P'-X'+x'
@@ -2118,20 +2063,11 @@ theorem irv_independence_of_clones :
               rw [haux] at hwwin
               rcases Finset.mem_biUnion.mp hwwin with ⟨ℓ, hℓ_low, hw_rec⟩
               -- Extract `w ≠ ℓ` and the recursive winner.
-              have hwnℓ : w ≠ ℓ := by
-                have :=
-                  (liftFinset_subset_of_prop
+              rcases
+                  (_root_.SocialChoice.mem_liftFinset_iff_subtype
                     (s := scoringEliminationAux pluralityScore {x : A' // x ≠ ℓ}
                       (restrictProfile P' ℓ))
-                    w hw_rec)
-                simpa using this
-              have hw_rec' : (⟨w, hwnℓ⟩ : {x : A' // x ≠ ℓ}) ∈
-                  scoringEliminationAux pluralityScore {x : A' // x ≠ ℓ} (restrictProfile P' ℓ) := by
-                rcases Finset.mem_image.mp hw_rec with ⟨d, hd, hdval⟩
-                have hd' : d = (⟨w, hwnℓ⟩ : {x : A' // x ≠ ℓ}) := by
-                  ext
-                  simpa [liftFinset] using hdval
-                simpa [hd'] using hd
+                    (x := w)).1 hw_rec with ⟨hwnℓ, hw_rec'⟩
               by_cases hℓX : ℓ ∈ X'
               · -- ℓ is a clone: use IH on the restricted profile.
                 have hklt : Fintype.card {x : A' // x ≠ ℓ} < k := by
@@ -2175,29 +2111,15 @@ theorem irv_independence_of_clones :
                         ∈ scoringEliminationAux pluralityScore _
                             (relabelProfile (removeClonesExcept P' X' y) e) := by
                     simpa [hcomm] using hxℓ_win
-                  have heq :
-                      scoringEliminationAux pluralityScore _
-                          (relabelProfile (removeClonesExcept P' X' y) e) =
-                        (scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' y)).map
-                          e.toEmbedding := by
-                    simpa using
-                      (scoringEliminationAux_equiv (score := pluralityScore)
-                        (P := removeClonesExcept P' X' y) (e := e))
-                  have hxℓ_map :
-                      (⟨xℓ, Or.inr rfl⟩ :
-                        {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})
-                        ∈ (scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' y)).map
-                          e.toEmbedding := by
-                    simpa [heq] using hxℓ_win'
                   have hxℓ_pre :
                       e.symm (⟨xℓ, Or.inr rfl⟩ :
                         {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})
                         ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' y) :=
-                    (mem_relabelWinners (e := e)
-                      (s := scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' y))
+                    (mem_scoringEliminationAux_relabel_iff
+                      (score := pluralityScore) (P := removeClonesExcept P' X' y) (e := e)
                       (b := (⟨xℓ, Or.inr rfl⟩ :
                         {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}))).1
-                      hxℓ_map
+                      hxℓ_win'
                   have hxℓ_val :
                       (e.symm (⟨xℓ, Or.inr rfl⟩ :
                         {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})).1 = y := by
@@ -2258,29 +2180,15 @@ theorem irv_independence_of_clones :
                         ∈ scoringEliminationAux pluralityScore _
                             (relabelProfile (removeClonesExcept P' X' x') e) := by
                     simpa [hcomm] using hxℓ_win
-                  have heq :
-                      scoringEliminationAux pluralityScore _
-                          (relabelProfile (removeClonesExcept P' X' x') e) =
-                        (scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x')).map
-                          e.toEmbedding := by
-                    simpa using
-                      (scoringEliminationAux_equiv (score := pluralityScore)
-                        (P := removeClonesExcept P' X' x') (e := e))
-                  have hxℓ_map :
-                      (⟨xℓ, Or.inr rfl⟩ :
-                        {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})
-                        ∈ (scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x')).map
-                            e.toEmbedding := by
-                    simpa [heq] using hxℓ_win'
                   have hxℓ_pre :
                       e.symm (⟨xℓ, Or.inr rfl⟩ :
                         {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})
                         ∈ scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x') :=
-                    (mem_relabelWinners (e := e)
-                      (s := scoringEliminationAux pluralityScore _ (removeClonesExcept P' X' x'))
+                    (mem_scoringEliminationAux_relabel_iff
+                      (score := pluralityScore) (P := removeClonesExcept P' X' x') (e := e)
                       (b := (⟨xℓ, Or.inr rfl⟩ :
                         {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}))).1
-                      hxℓ_map
+                      hxℓ_win'
                   have hxℓ_val :
                       ((e.symm (⟨xℓ, Or.inr rfl⟩ :
                         {a : {x : A' // x ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})).1 : A') = x' := by
@@ -2349,39 +2257,16 @@ theorem irv_independence_of_clones :
                             (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))
                           e) := by
                     simpa [hcomm] using hbR
-                  have heq :
-                      scoringEliminationAux pluralityScore _
-                          (relabelProfile
-                            (restrictProfile (removeClonesExcept P' X' x')
-                              (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))
-                            e) =
-                        (scoringEliminationAux pluralityScore _
-                          (restrictProfile (removeClonesExcept P' X' x')
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))).map
-                          e.toEmbedding := by
-                    simpa using
-                      (scoringEliminationAux_equiv (score := pluralityScore)
-                        (P :=
-                          restrictProfile (removeClonesExcept P' X' x')
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))
-                        (e := e))
-                  have hb_map :
-                      bR ∈
-                        (scoringEliminationAux pluralityScore _
-                          (restrictProfile (removeClonesExcept P' X' x')
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))).map
-                          e.toEmbedding := by
-                    simpa [heq] using hbR'
                   have hb_pre :
                       e.symm bR ∈ scoringEliminationAux pluralityScore _
                         (restrictProfile (removeClonesExcept P' X' x')
                           (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a})) :=
-                    (mem_relabelWinners (e := e)
-                      (s :=
-                        scoringEliminationAux pluralityScore _
-                          (restrictProfile (removeClonesExcept P' X' x')
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a})))
-                      (b := bR)).1 hb_map
+                    (mem_scoringEliminationAux_relabel_iff
+                      (score := pluralityScore)
+                      (P :=
+                        restrictProfile (removeClonesExcept P' X' x')
+                          (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}))
+                      (e := e) (b := bR)).1 hbR'
                   have hb_val :
                       ((e.symm bR).1 : {a : A' // clonePred X' x' a}).1 = x' := by
                     simpa [bR, xℓ] using (he_symm_val bR)
@@ -2394,25 +2279,8 @@ theorem irv_independence_of_clones :
                   refine ⟨e.symm bR, hb_pre, ?_⟩
                   simp [hb_val']
                 -- Unfold one step of elimination on the clone-restricted election.
-                have hcard_cl : ¬ Fintype.card {a : A' // clonePred X' x' a} ≤ 1 := by
-                  -- There exists a non-clone candidate since `X' ≠ univ`.
-                  have hne : ∃ w : A', w ∉ X' := by
-                    by_contra hall
-                    push_neg at hall
-                    have hXuniv : X' = Set.univ := Set.eq_univ_of_forall hall
-                    exact hX_all hXuniv
-                  rcases hne with ⟨w, hw'⟩
-                  intro hle
-                  have hsub : Subsingleton {a : A' // clonePred X' x' a} :=
-                    Fintype.card_le_one_iff_subsingleton.1 hle
-                  have hneq :
-                      (⟨x', Or.inr rfl⟩ : {a : A' // clonePred X' x' a}) ≠
-                        (⟨w, Or.inl hw'⟩ : {a : A' // clonePred X' x' a}) := by
-                    intro hEq
-                    have hxw : x' = w := by
-                      simpa using congrArg Subtype.val hEq
-                    exact hw' (hxw ▸ hx')
-                  exact hneq (Subsingleton.elim _ _)
+                have hcard_cl : ¬ Fintype.card {a : A' // clonePred X' x' a} ≤ 1 :=
+                  not_card_le_one_clonePred (X := X') (x := x') (hx := hx') (hX := hX_all)
                 have haux_cl :=
                   scoringEliminationAux_eq_biUnion_of_not_card_le_one
                     (score := pluralityScore) (P := removeClonesExcept P' X' x') (hcard := hcard_cl)
@@ -2528,11 +2396,10 @@ theorem irv_independence_of_clones :
                     refine Finset.mem_image.mpr ?_
                     refine ⟨z, hzwins, ?_⟩
                     simp
-                  have hz_win : (z : A') ∈ scoringEliminationAux pluralityScore A' P' := by
-                    rw [haux_orig]
-                    refine Finset.mem_biUnion.mpr ?_
-                    refine ⟨ℓ, hℓ_low, ?_⟩
-                    simpa using hz_lift
+                  have hz_win : (z : A') ∈ scoringEliminationAux pluralityScore A' P' :=
+                    mem_scoringEliminationAux_of_mem_liftFinset (P := P')
+                      (haux := by simpa [pluralityScoreVec] using haux_orig)
+                      (hℓ_low := hℓ_low) (hc := hz_lift)
                   exact ⟨(z : A'), hz_inX, hz_win⟩
                 · -- ℓ ≠ x': keep x' as the representative.
                   have hxne : x' ≠ ℓ := by
@@ -2605,33 +2472,15 @@ theorem irv_independence_of_clones :
                     refine Finset.mem_image.mpr ?_
                     refine ⟨z, hzwins, ?_⟩
                     simp
-                  have hz_win : (z : A') ∈ scoringEliminationAux pluralityScore A' P' := by
-                    rw [haux_orig]
-                    refine Finset.mem_biUnion.mpr ?_
-                    refine ⟨ℓ, hℓ_low, ?_⟩
-                    simpa using hz_lift
+                  have hz_win : (z : A') ∈ scoringEliminationAux pluralityScore A' P' :=
+                    mem_scoringEliminationAux_of_mem_liftFinset (P := P')
+                      (haux := by simpa [pluralityScoreVec] using haux_orig)
+                      (hℓ_low := hℓ_low) (hc := hz_lift)
                   exact ⟨(z : A'), hz_inX, hz_win⟩
               · -- No clone is lowest-scoring in P'.
                 -- Unfold one step of elimination in the clone-restricted election.
-                have hcard_cl : ¬ Fintype.card {a : A' // clonePred X' x' a} ≤ 1 := by
-                  -- There exists a non-clone since X' ≠ univ.
-                  have hne : ∃ w : A', w ∉ X' := by
-                    by_contra hall
-                    push_neg at hall
-                    have hXuniv : X' = Set.univ := Set.eq_univ_of_forall hall
-                    exact hX_all hXuniv
-                  rcases hne with ⟨w, hw⟩
-                  intro hle
-                  have hsub : Subsingleton {a : A' // clonePred X' x' a} :=
-                    Fintype.card_le_one_iff_subsingleton.1 hle
-                  have hneq :
-                      (⟨x', Or.inr rfl⟩ : {a : A' // clonePred X' x' a}) ≠
-                        (⟨w, Or.inl hw⟩ : {a : A' // clonePred X' x' a}) := by
-                    intro hEq
-                    have hxw : x' = w := by
-                      simpa using congrArg Subtype.val hEq
-                    exact hw (hxw ▸ hx')
-                  exact hneq (Subsingleton.elim _ _)
+                have hcard_cl : ¬ Fintype.card {a : A' // clonePred X' x' a} ≤ 1 :=
+                  not_card_le_one_clonePred (X := X') (x := x') (hx := hx') (hX := hX_all)
                 have haux_cl :=
                   scoringEliminationAux_eq_biUnion_of_not_card_le_one
                     (score := pluralityScore) (P := removeClonesExcept P' X' x') (hcard := hcard_cl)
@@ -2774,79 +2623,17 @@ theorem irv_independence_of_clones :
                   refine Finset.mem_image.mpr ?_
                   refine ⟨z, hzwins, ?_⟩
                   simp
-                -- Show ℓ is lowest-scoring in P' (clones are not lowest).
-                have hA : (Finset.univ : Finset A').Nonempty := by
-                  rcases (by
-                    simpa using (hX'.1 : X'.Nonempty)) with ⟨a, _⟩
-                  haveI : Nonempty A' := ⟨a⟩
-                  exact Finset.univ_nonempty
+                -- ℓ is lowest-scoring in P' (no clone is lowest).
                 have hℓ_low' :
-                    ℓ ∈ lowestScoring P' pluralityScoreVec := by
-                  apply (lowestScoring_iff_forall_le (P := P') (score := pluralityScoreVec) hA ℓ).2
-                  intro d
-                  by_cases hdX : d ∈ X'
-                  · -- If a clone were lower, it would contradict `hclone_low`.
-                    by_contra hlt
-                    have hlt' : scoreCandidate P' pluralityScoreVec d < scoreCandidate P' pluralityScoreVec ℓ :=
-                      lt_of_not_ge hlt
-                    -- Any non-clone has score ≥ ℓ (from collapsed lowest).
-                    have hℓ_le_nonclone :
-                        ∀ a : A', a ∉ X' →
-                          scoreCandidate P' pluralityScoreVec ℓ ≤ scoreCandidate P' pluralityScoreVec a := by
-                      intro a haX
-                      have hℓ_le_a_cl :
-                          scoreCandidate (removeClonesExcept P' X' x') pluralityScoreVec
-                              (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}) ≤
-                            scoreCandidate (removeClonesExcept P' X' x') pluralityScoreVec
-                              (⟨a, Or.inl haX⟩ : {a : A' // clonePred X' x' a}) :=
-                        scoreCandidate_le_of_mem_lowestScoring
-                          (P := removeClonesExcept P' X' x') (score := pluralityScoreVec) (hc := hℓ_low_cl)
-                      have hscore_a :=
-                        score_nonclone_eq (P := P') (X := X') (x := x')
-                          (hX := hX') (hx := hx') (ha := haX)
-                      have hscore_ℓ :=
-                        score_nonclone_eq (P := P') (X := X') (x := x')
-                          (hX := hX') (hx := hx') (ha := hℓnotX)
-                      -- Rewrite both sides to original scores.
-                      simpa [hscore_a, hscore_ℓ] using hℓ_le_a_cl
-                    -- Choose any non-clone a (exists since X' ≠ univ).
-                    -- Pick a lowest-scoring candidate `w`.
-                    rcases lowestScoring_nonempty (P := P') (score := pluralityScoreVec) hA with ⟨w, hw⟩
-                    by_cases hwX : w ∈ X'
-                    · exact (hclone_low ⟨w, hw, hwX⟩).elim
-                    · -- `w` is a non-clone, hence its score is ≥ ℓ, contradicting `d < ℓ`.
-                      have hℓ_le_w := hℓ_le_nonclone w hwX
-                      have hw_le_d :
-                          scoreCandidate P' pluralityScoreVec w ≤ scoreCandidate P' pluralityScoreVec d :=
-                        scoreCandidate_le_of_mem_lowestScoring
-                          (P := P') (score := pluralityScoreVec) (hc := hw)
-                      have hℓ_le_d : scoreCandidate P' pluralityScoreVec ℓ ≤ scoreCandidate P' pluralityScoreVec d :=
-                        le_trans hℓ_le_w hw_le_d
-                      have hcontra :
-                          scoreCandidate P' pluralityScoreVec d < scoreCandidate P' pluralityScoreVec d :=
-                        lt_of_lt_of_le hlt' hℓ_le_d
-                      exact (lt_irrefl _ hcontra).elim
-                  · -- d is a non-clone: use preservation of scores.
-                    have hℓ_le_d_cl :
-                        scoreCandidate (removeClonesExcept P' X' x') pluralityScoreVec
-                            (⟨ℓ, Or.inl hℓnotX⟩ : {a : A' // clonePred X' x' a}) ≤
-                          scoreCandidate (removeClonesExcept P' X' x') pluralityScoreVec
-                            (⟨d, Or.inl hdX⟩ : {a : A' // clonePred X' x' a}) :=
-                      scoreCandidate_le_of_mem_lowestScoring
-                        (P := removeClonesExcept P' X' x') (score := pluralityScoreVec) (hc := hℓ_low_cl)
-                    have hscore_d :=
-                      score_nonclone_eq (P := P') (X := X') (x := x')
-                        (hX := hX') (hx := hx') (ha := hdX)
-                    have hscore_ℓ :=
-                      score_nonclone_eq (P := P') (X := X') (x := x')
-                        (hX := hX') (hx := hx') (ha := hℓnotX)
-                    simpa [hscore_d, hscore_ℓ] using hℓ_le_d_cl
+                    ℓ ∈ lowestScoring P' pluralityScoreVec :=
+                  lowestScoring_nonclone_reflect (P := P') (X := X') (x := x')
+                    (hX := hX') (hx := hx') (hℓ := hℓnotX)
+                    (hℓ_low_cl := hℓ_low_cl) (hclone_low := hclone_low)
                 -- Conclude in the original election.
-                have hz_win : (z : A') ∈ scoringEliminationAux pluralityScore A' P' := by
-                  rw [haux_orig]
-                  refine Finset.mem_biUnion.mpr ?_
-                  refine ⟨ℓ, hℓ_low', ?_⟩
-                  simpa using hz_lift
+                have hz_win : (z : A') ∈ scoringEliminationAux pluralityScore A' P' :=
+                  mem_scoringEliminationAux_of_mem_liftFinset (P := P')
+                    (haux := by simpa [pluralityScoreVec] using haux_orig)
+                    (hℓ_low := hℓ_low') (hc := hz_lift)
                 exact ⟨(z : A'), hz_inX, hz_win⟩
   -- Apply the strong induction result
   have h := @hStrong A instA (Classical.decEq _) rfl V instV P₀ X x hX hx
