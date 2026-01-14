@@ -11,7 +11,7 @@ open scoped BigOperators
 
 theorem scoringRule_pareto_nonempty (score : Nat → Nat → Int)
     (hstrict : strictlyDecreasingScore score) :
-    ParetoEfficiencyNonempty (scoringRule score) := by
+    ParetoEfficiency (scoringRule score) := by
   intro V A _ _ _ P c d hpref hd
   classical
   let scoreFun : Nat → Int := fun r => score (Fintype.card A) r
