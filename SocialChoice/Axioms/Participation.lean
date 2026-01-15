@@ -1,5 +1,6 @@
 import SocialChoice.Profile
 import SocialChoice.Axioms.Core
+import SocialChoice.SetExtensions
 
 namespace SocialChoice
 
@@ -26,6 +27,42 @@ def liftVoter {U : Type} [DecidableEq U] {V : Finset U} (u : U) (v : Electorate 
 def newVoter {U : Type} [DecidableEq U] {V : Finset U} (u : U) (hu : u ∉ V) :
     Electorate U (insert u V) :=
   ⟨u, by simp [hu]⟩
+
+def StrongParticipation (E : ∀ {A : Type}, LinearOrder A → SetExtension A) (f : VotingRule) :
+    Prop :=
+  ∀ {U A : Type} [DecidableEq U] [Fintype A] [DecidableEq A]
+      (V : Finset U) (u : U) (hu : u ∉ V)
+    (P : Profile (Electorate U V) A)
+    (Q : Profile (Electorate U (insert u V)) A),
+    (∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v) →
+    (E (Q.pref (newVoter (u := u) (V := V) hu))).weak (f Q) (f P)
+
+def WeakParticipation (E : ∀ {A : Type}, LinearOrder A → SetExtension A) (f : VotingRule) :
+    Prop :=
+  ∀ {U A : Type} [DecidableEq U] [Fintype A] [DecidableEq A]
+      (V : Finset U) (u : U) (hu : u ∉ V)
+      (P : Profile (Electorate U V) A)
+      (Q : Profile (Electorate U (insert u V)) A),
+    (∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v) →
+    ¬ (E (Q.pref (newVoter (u := u) (V := V) hu))).strict (f Q) (f P)
+
+def OptimistParticipation (f : VotingRule) : Prop :=
+  StrongParticipation (fun {A} r => OptimistExtension (A := A) r) f
+
+def PessimistParticipation (f : VotingRule) : Prop :=
+  StrongParticipation (fun {A} r => PessimistExtension (A := A) r) f
+
+def StrongKellyParticipation (f : VotingRule) : Prop :=
+  StrongParticipation (fun {A} r => KellyExtension (A := A) r) f
+
+def WeakKellyParticipation (f : VotingRule) : Prop :=
+  WeakParticipation (fun {A} r => KellyExtension (A := A) r) f
+
+def StrongFishburnParticipation (f : VotingRule) : Prop :=
+  StrongParticipation (fun {A} r => FishburnExtension (A := A) r) f
+
+def WeakFishburnParticipation (f : VotingRule) : Prop :=
+  WeakParticipation (fun {A} r => FishburnExtension (A := A) r) f
 
 noncomputable def restrictElectorate {U A : Type} [DecidableEq U] [Fintype A] {W : Finset U}
     (Q : Profile (Electorate U W) A) (S : Finset U) (hS : S ⊆ W) :
