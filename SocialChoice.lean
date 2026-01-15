@@ -54,6 +54,9 @@ import SocialChoice.Rules.PluralityWithRunoff.Defs
 import SocialChoice.Rules.PluralityWithRunoff.CondorcetLoser
 import SocialChoice.Rules.PluralityWithRunoff.Pareto
 import SocialChoice.Rules.PluralityWithRunoff.Majority
+import SocialChoice.Rules.Minimax.Defs
+import SocialChoice.Rules.Minimax.Condorcet
+import SocialChoice.Rules.Minimax.Monotonicity
 import SocialChoice.Rules.SplitCycle.Defs
 import SocialChoice.Rules.SplitCycle.Clones
 import SocialChoice.Rules.SplitCycle.Condorcet
