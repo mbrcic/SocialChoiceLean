@@ -148,10 +148,10 @@ theorem irv_mutualMajorityCriterion : MutualMajorityCriterion instantRunoffVotin
       · by_cases hcardT : T.card = 1
         · have hT_eq : T = {c} := by
             rcases (Finset.card_eq_one.mp hcardT) with ⟨a, ha⟩
-            have hac : a = c := by
+            have hac : c = a := by
               have : c ∈ ({a} : Finset A) := by simpa [ha] using hcT
               simpa using this
-            simpa [ha, hac]
+            simp [ha, hac]
           have hSsub : S ⊆ votersTop P c := by
             apply votersTop_subset_of_singleton (P := P) (S := S) (c := c)
             simpa [hT_eq] using hpref
@@ -166,7 +166,7 @@ theorem irv_mutualMajorityCriterion : MutualMajorityCriterion instantRunoffVotin
         · have hpos : 0 < T.card := Finset.card_pos.mpr hTne
           have hge : 1 ≤ T.card := Nat.succ_le_iff.mp hpos
           have hlt : 1 < T.card := lt_of_le_of_ne hge (Ne.symm hcardT)
-          rcases Finset.exists_ne_of_one_lt_card hlt c with ⟨t, htT, htne⟩
+          rcases Finset.exists_mem_ne hlt c with ⟨t, htT, htne⟩
           have hT'ne : T'.Nonempty := by
             refine ⟨⟨t, htne⟩, ?_⟩
             exact Finset.mem_subtype.mpr htT
