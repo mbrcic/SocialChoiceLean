@@ -46,6 +46,7 @@ import SocialChoice.Rules.ScoringElimination.Neutrality
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Clones
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.CondorcetLoser
+import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.MutualMajority
 import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
