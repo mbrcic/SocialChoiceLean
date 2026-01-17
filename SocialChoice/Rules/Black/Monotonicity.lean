@@ -15,55 +15,54 @@ theorem black_monotonicity : Monotonicity black := by
       have : x ∈ ({Classical.choose hP} : Finset A) := by
         simpa [black, hP] using hx
       exact Finset.mem_singleton.mp this
-    subst hx_eq
-    have hxwinP' : condorcet_winner P' x := by
+    have hxwinP' : condorcet_winner P' (Classical.choose hP) := by
       intro y hy
-      have hle : margin P x y ≤ margin P' x y :=
-        margin_le_of_simpleLift_other (P := P) (P' := P') (x := x) (y := y) (a := x) hLift hy
+      have hle : margin P (Classical.choose hP) y ≤ margin P' (Classical.choose hP) y :=
+        margin_le_of_simpleLift_other (P := P) (P' := P') (x := x)
+          (y := y) (a := Classical.choose hP) hLift (by simpa [hx_eq, eq_comm] using hy)
       exact lt_of_lt_of_le (hxwinP y hy) hle
     by_cases hP' : ∃ y, condorcet_winner P' y
     · have hx_choose : Classical.choose hP' = x := by
-        exact condorcet_winner_unique (P := P')
+        have hx_choose' := condorcet_winner_unique (P := P')
           (hx := Classical.choose_spec hP') (hy := hxwinP')
-      simpa [black, hP', hx_choose]
-    · exact (hP' ⟨x, hxwinP'⟩).elim
+        simpa [hx_eq] using hx_choose'
+      simp [black, hP', hx_choose]
+    · exact (hP' ⟨x, by simpa [hx_eq] using hxwinP'⟩).elim
   · have hx_borda : x ∈ borda P := by
       simpa [black, hP] using hx
     have hx_borda' : x ∈ borda P' :=
       borda_monotonicity (P := P) (P' := P') (x := x) hx_borda hLift
+    set x0 : A := x
+    have hLift0 : simpleLift P' P x0 := by
+      simpa [x0] using hLift
+    have hx_borda0 : x0 ∈ borda P := by
+      simpa [x0] using hx_borda
+    have hx_borda0' : x0 ∈ borda P' := by
+      simpa [x0] using hx_borda'
     by_cases hP' : ∃ y, condorcet_winner P' y
-    · have hx_choose : Classical.choose hP' = x := by
+    · have hx_choose : Classical.choose hP' = x0 := by
         by_contra hne
-        have hne' : Classical.choose hP' ≠ x := hne
-        have hnotP : ¬ condorcet_winner P (Classical.choose hP') := by
-          intro hcw
-          exact hP ⟨Classical.choose hP', hcw⟩
-        have hnotP' : ∃ z, z ≠ Classical.choose hP' ∧
-            ¬ margin_pos P (Classical.choose hP') z := by
-          by_contra hforall
-          have hforall' :
-              ∀ z, z ≠ Classical.choose hP' → margin_pos P (Classical.choose hP') z := by
-            intro z hz
-            by_contra hnm
-            exact hforall ⟨z, hz, hnm⟩
-          exact hnotP (by intro z hz; exact hforall' z hz)
-        rcases hnotP' with ⟨z, hz, hnm⟩
-        have hnm' : ¬ margin_pos P' (Classical.choose hP') z := by
-          by_cases hzx : z = x
-          · subst hzx
-            have hle : margin P' (Classical.choose hP') x ≤
-                margin P (Classical.choose hP') x :=
-              margin_le_of_simpleLift_x (P := P) (P' := P') (x := x) (a := Classical.choose hP')
-                hLift
-            exact fun hpos =>
-              hnm (lt_of_lt_of_le hpos hle)
-          · have hEq : margin P (Classical.choose hP') z = margin P' (Classical.choose hP') z :=
-              margin_eq_of_simpleLift P P' x (Classical.choose hP') z
-                (by exact hne') (by exact hzx) hLift
-            exact fun hpos => hnm (by simpa [hEq] using hpos)
-        exact hnm' (Classical.choose_spec hP')
-      simpa [black, hP', hx_choose]
-    · simpa [black, hP'] using hx_borda'
+        have hyx : Classical.choose hP' ≠ x0 := by
+          simpa [x0] using hne
+        have hywinP : condorcet_winner P (Classical.choose hP') := by
+          intro w hw
+          by_cases hwx : w = x0
+          · subst hwx
+            have hle : margin P' (Classical.choose hP') x0 ≤
+                margin P (Classical.choose hP') x0 :=
+              margin_le_of_simpleLift_x (P := P) (P' := P') (x := x0)
+                (a := Classical.choose hP') hLift0
+            have hpos : margin_pos P' (Classical.choose hP') x0 :=
+              Classical.choose_spec hP' x0 (by simpa [eq_comm, x0] using hyx)
+            exact lt_of_lt_of_le hpos hle
+          · have hEq : margin P (Classical.choose hP') w = margin P' (Classical.choose hP') w :=
+              margin_eq_of_simpleLift P P' x0 (Classical.choose hP') w
+                (by exact hyx) (by exact hwx) hLift0
+            simpa [margin_pos, hEq] using (Classical.choose_spec hP' w hw)
+        exact (hP ⟨Classical.choose hP', hywinP⟩).elim
+      have : x0 ∈ black P' := by
+        simp [black, hP', hx_choose]
+      simpa [x0] using this
+    · simpa [black, hP', x0] using hx_borda0'
 
 end SocialChoice
-
