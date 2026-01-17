@@ -25,42 +25,6 @@ lemma c2BordaScore_eq_zero_of_subsingleton {V A : Type} [Fintype V] [Fintype A]
   simp [huniv] at hsum
   exact hsum
 
-lemma exists_neg_c2BordaScore_of_pos {V A : Type} [Fintype V] [Fintype A]
-    (P : Profile V A) (c : A) (hpos : 0 < c2BordaScore P c) :
-    ∃ d, c2BordaScore P d < 0 := by
-  classical
-  by_contra hneg
-  have hnonneg : ∀ d, 0 ≤ c2BordaScore P d := by
-    intro d
-    by_contra hdneg
-    exact hneg ⟨d, lt_of_not_ge hdneg⟩
-  have hsum :
-      (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) =
-        (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c := by
-    have hsum' :=
-      Finset.sum_erase_add (s := (Finset.univ : Finset A))
-        (f := fun d => c2BordaScore P d) (a := c) (by exact Finset.mem_univ c)
-    exact hsum'.symm
-  have hsum_rest_nonneg :
-      0 ≤ (Finset.univ.erase c).sum (fun d => c2BordaScore P d) := by
-    refine Finset.sum_nonneg ?_
-    intro d hd
-    exact hnonneg d
-  have hsum_pos :
-      0 < (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) := by
-    have hpos' :
-        0 < (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c :=
-      add_pos_of_nonneg_of_pos hsum_rest_nonneg hpos
-    calc
-      0 < (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c := hpos'
-      _ = (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) := by
-        exact hsum.symm
-  have hsum_zero := c2BordaScore_sum_zero (P := P)
-  have : (0 : Int) < 0 := by
-    nth_rewrite 2 [← hsum_zero]
-    exact hsum_pos
-  exact (lt_irrefl 0 this)
-
 lemma prefers_restrictCandidates_iff {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (p : A → Prop) [DecidablePred p] (v : V)
     (a b : {x : A // p x}) :

@@ -2,6 +2,7 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Data.Int.Basic
 import Mathlib.Tactic
 import SocialChoice.Profile
+import SocialChoice.Axioms.Reversal
 
 namespace SocialChoice
 
@@ -91,6 +92,12 @@ lemma unanimous_margin_eq_card {V A : Type} [Fintype V] [Fintype A]
     exact hcontra (by simpa using (Finset.mem_filter.mp hv).2)
   dsimp [margin]
   simp [hxy_card, hyx_card]
+
+lemma margin_reverse_eq {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (a b : A) :
+    margin (reverse_profile P) b a = margin P a b := by
+  classical
+  simp [margin, prefers_reverse_profile]
 
 lemma margin_le_card {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a b : A) :

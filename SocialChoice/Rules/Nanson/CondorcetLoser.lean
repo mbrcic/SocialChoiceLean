@@ -8,39 +8,6 @@ namespace SocialChoice
 
 open Finset
 
-lemma exists_pos_c2BordaScore_of_neg {V A : Type} [Fintype V] [Fintype A]
-    (P : Profile V A) {c : A} (hneg : c2BordaScore P c < 0) :
-    ∃ d, 0 < c2BordaScore P d := by
-  classical
-  by_contra hno
-  have hnonpos : ∀ d, c2BordaScore P d ≤ 0 := by
-    intro d
-    by_contra hdpos
-    exact hno ⟨d, lt_of_not_ge hdpos⟩
-  have hsum :
-      (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) =
-        (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c := by
-    have hsum' :=
-      Finset.sum_erase_add (s := (Finset.univ : Finset A))
-        (f := fun d => c2BordaScore P d) (a := c) (by exact Finset.mem_univ c)
-    exact hsum'.symm
-  have hsum_rest_nonpos :
-      (Finset.univ.erase c).sum (fun d => c2BordaScore P d) ≤ 0 := by
-    refine Finset.sum_nonpos ?_
-    intro d hd
-    exact hnonpos d
-  have hsum_lt :
-      (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) < 0 := by
-    have hlt :
-        (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c < 0 :=
-      add_lt_of_le_of_neg hsum_rest_nonpos hneg
-    rw [hsum]
-    exact hlt
-  have hsum_zero := c2BordaScore_sum_zero (P := P)
-  have hsum_lt' := hsum_lt
-  rw [hsum_zero] at hsum_lt'
-  exact (lt_irrefl 0 hsum_lt')
-
 lemma not_mem_liftWinners_of_not_pred {A : Type} {p : A → Prop} [DecidablePred p]
     {s : Finset {a : A // p a}} {c : A} (hc : ¬ p c) :
     c ∉ liftWinners s := by

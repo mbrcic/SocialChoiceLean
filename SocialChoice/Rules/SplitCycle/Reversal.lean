@@ -1,17 +1,13 @@
 import SocialChoice.Axioms.Reversal
 import SocialChoice.Margin
 import SocialChoice.Cycles
+import SocialChoice.ListBallot
 import SocialChoice.Rules.SplitCycle.Defs
+import Mathlib.Tactic.FinCases
 
 namespace SocialChoice
 
 open Finset
-
-lemma margin_reverse_eq {V A : Type} [Fintype V] [Fintype A]
-    (P : Profile V A) (a b : A) :
-    margin (reverse_profile P) b a = margin P a b := by
-  classical
-  simp [margin, prefers_reverse_profile]
 
 lemma splitCycleDefeats_reverse_iff {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (x y : A) :
@@ -117,7 +113,7 @@ lemma splitCycleDefeats_acyclic {V A : Type} [Fintype V] [Fintype A]
     · exact hymemL
   exact hnocycle ⟨l, hxmem, hymem, hcycle'⟩
 
-theorem split_cycle_reversal_symmetry : reversal_symmetry splitCycle := by
+theorem split_cycle_reversal_symmetry : singleton_reversal_symmetry splitCycle := by
   intro V A _ _ P x hnontriv hxwin
   classical
   have hxdef : ∃ y, splitCycleDefeats P x y := by
@@ -321,5 +317,205 @@ theorem split_cycle_reversal_symmetry : reversal_symmetry splitCycle := by
   have hxcond : ∀ z, ¬ splitCycleDefeats (reverse_profile P) z x :=
     (Finset.mem_filter.mp hxmem).2
   exact (hxcond y) hydef'
+
+end SocialChoice
+
+namespace SocialChoice
+
+open Finset
+
+section ReversalCounterexample
+
+def reversalCounterexampleBallots : Fin 2 → ListBallot 3
+  | 0 => ListBallot.identity 3
+  | 1 => ListBallot.mk' [1, 2, 0]
+
+noncomputable def reversalCounterexampleProfile : Profile (Fin 2) (Fin 3) :=
+  profileOfListBallots reversalCounterexampleBallots
+
+lemma reversalCounterexample_marginList_00 :
+    marginList (fun v => (reversalCounterexampleBallots v).ranking) 0 0 = 0 := by rfl
+lemma reversalCounterexample_marginList_01 :
+    marginList (fun v => (reversalCounterexampleBallots v).ranking) 0 1 = 0 := by rfl
+lemma reversalCounterexample_marginList_02 :
+    marginList (fun v => (reversalCounterexampleBallots v).ranking) 0 2 = 0 := by rfl
+lemma reversalCounterexample_marginList_10 :
+    marginList (fun v => (reversalCounterexampleBallots v).ranking) 1 0 = 0 := by rfl
+lemma reversalCounterexample_marginList_11 :
+    marginList (fun v => (reversalCounterexampleBallots v).ranking) 1 1 = 0 := by rfl
+lemma reversalCounterexample_marginList_12 :
+    marginList (fun v => (reversalCounterexampleBallots v).ranking) 1 2 = 2 := by rfl
+lemma reversalCounterexample_marginList_20 :
+    marginList (fun v => (reversalCounterexampleBallots v).ranking) 2 0 = 0 := by rfl
+lemma reversalCounterexample_marginList_21 :
+    marginList (fun v => (reversalCounterexampleBallots v).ranking) 2 1 = -2 := by rfl
+lemma reversalCounterexample_marginList_22 :
+    marginList (fun v => (reversalCounterexampleBallots v).ranking) 2 2 = 0 := by rfl
+
+lemma reversalCounterexample_rel_iff (a b : Fin 3) :
+    margin reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) ≤
+      margin reversalCounterexampleProfile a b ↔ a = 1 ∧ b = 2 := by
+  fin_cases a <;> fin_cases b <;>
+    (simp [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexampleBallots] <;> decide)
+
+lemma reversalCounterexample_no_cycle_12 :
+    ¬ ∃ c : List (Fin 3), 1 ∈ c ∧ 2 ∈ c ∧
+      cycle (fun a b =>
+        margin reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) ≤
+          margin reversalCounterexampleProfile a b) c := by
+  intro h
+  rcases h with ⟨c, _hx, _hy, hcycle⟩
+  rcases hcycle with ⟨hne, hchain⟩
+  let L : List (Fin 3) := List.getLast c hne :: c
+  have hchain' :
+      L.IsChain (fun a b =>
+        margin reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) ≤
+          margin reversalCounterexampleProfile a b) := by
+    simpa [L] using hchain
+  have hchain_get :=
+    (List.isChain_iff_getElem
+      (R := fun a b =>
+        margin reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) ≤
+          margin reversalCounterexampleProfile a b)
+      (l := L)).1 hchain'
+  cases c with
+  | nil => cases hne rfl
+  | cons a t =>
+      cases t with
+      | nil =>
+          have hrel : margin reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) ≤
+              margin reversalCounterexampleProfile a a := by
+            have hlen : 0 + 1 < L.length := by simp [L]
+            simpa [L] using hchain_get 0 hlen
+          have h := (reversalCounterexample_rel_iff (a := a) (b := a)).1 hrel
+          simpa [h.1] using h.2
+      | cons b t =>
+          have hrel_last_a :
+              margin reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) ≤
+                margin reversalCounterexampleProfile
+                  (List.getLast (a :: b :: t) (by simp)) a := by
+            have hlen : 0 + 1 < L.length := by simp [L]
+            simpa [L] using hchain_get 0 hlen
+          have hrel_ab :
+              margin reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) ≤
+                margin reversalCounterexampleProfile a b := by
+            have hlen : 1 + 1 < L.length := by simp [L]
+            simpa [L] using hchain_get 1 hlen
+          have h1 := (reversalCounterexample_rel_iff (a := a) (b := b)).1 hrel_ab
+          have h2 :=
+            (reversalCounterexample_rel_iff
+              (a := List.getLast (a :: b :: t) (by simp)) (b := a)).1 hrel_last_a
+          exact (by simpa [h1.1] using h2.2)
+
+lemma reversalCounterexample_splitCycleDefeats_12 :
+    splitCycleDefeats reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) := by
+  refine ⟨?_, reversalCounterexample_no_cycle_12⟩
+  have hpos : marginList (fun v => (reversalCounterexampleBallots v).ranking) 1 2 > 0 := by
+    simp [reversalCounterexample_marginList_12]
+  have hiff :
+      margin_pos reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) ↔
+        marginList (fun v => (reversalCounterexampleBallots v).ranking) 1 2 > 0 := by
+    simpa [reversalCounterexampleProfile] using
+      (margin_pos_iff_marginList_pos
+        (ballots := reversalCounterexampleBallots) (a := (1 : Fin 3)) (b := (2 : Fin 3)))
+  exact hiff.mpr hpos
+
+lemma reversalCounterexample_zero_mem_splitCycle :
+    (0 : Fin 3) ∈ splitCycle reversalCounterexampleProfile := by
+  classical
+  simp [splitCycle]
+  intro y hydef
+  have hpos : margin_pos reversalCounterexampleProfile y 0 := hydef.1
+  fin_cases y
+  · exact (margin_pos_irrefl (P := reversalCounterexampleProfile) 0) hpos
+  ·
+    have hiff :
+        margin_pos reversalCounterexampleProfile (1 : Fin 3) (0 : Fin 3) ↔
+          marginList (fun v => (reversalCounterexampleBallots v).ranking) 1 0 > 0 := by
+      simpa [reversalCounterexampleProfile] using
+        (margin_pos_iff_marginList_pos
+          (ballots := reversalCounterexampleBallots) (a := (1 : Fin 3)) (b := (0 : Fin 3)))
+    have hpos' : marginList (fun v => (reversalCounterexampleBallots v).ranking) 1 0 > 0 :=
+      hiff.mp hpos
+    simp [reversalCounterexample_marginList_10] at hpos'
+  ·
+    have hiff :
+        margin_pos reversalCounterexampleProfile (2 : Fin 3) (0 : Fin 3) ↔
+          marginList (fun v => (reversalCounterexampleBallots v).ranking) 2 0 > 0 := by
+      simpa [reversalCounterexampleProfile] using
+        (margin_pos_iff_marginList_pos
+          (ballots := reversalCounterexampleBallots) (a := (2 : Fin 3)) (b := (0 : Fin 3)))
+    have hpos' : marginList (fun v => (reversalCounterexampleBallots v).ranking) 2 0 > 0 :=
+      hiff.mp hpos
+    simp [reversalCounterexample_marginList_20] at hpos'
+
+lemma reversalCounterexample_no_defeats_from_zero :
+    ∀ y : Fin 3, ¬ splitCycleDefeats reversalCounterexampleProfile (0 : Fin 3) y := by
+  intro y hydef
+  have hpos : margin_pos reversalCounterexampleProfile 0 y := hydef.1
+  fin_cases y
+  · exact (margin_pos_irrefl (P := reversalCounterexampleProfile) 0) hpos
+  ·
+    have hiff :
+        margin_pos reversalCounterexampleProfile (0 : Fin 3) (1 : Fin 3) ↔
+          marginList (fun v => (reversalCounterexampleBallots v).ranking) 0 1 > 0 := by
+      simpa [reversalCounterexampleProfile] using
+        (margin_pos_iff_marginList_pos
+          (ballots := reversalCounterexampleBallots) (a := (0 : Fin 3)) (b := (1 : Fin 3)))
+    have hpos' : marginList (fun v => (reversalCounterexampleBallots v).ranking) 0 1 > 0 :=
+      hiff.mp hpos
+    simp [reversalCounterexample_marginList_01] at hpos'
+  ·
+    have hiff :
+        margin_pos reversalCounterexampleProfile (0 : Fin 3) (2 : Fin 3) ↔
+          marginList (fun v => (reversalCounterexampleBallots v).ranking) 0 2 > 0 := by
+      simpa [reversalCounterexampleProfile] using
+        (margin_pos_iff_marginList_pos
+          (ballots := reversalCounterexampleBallots) (a := (0 : Fin 3)) (b := (2 : Fin 3)))
+    have hpos' : marginList (fun v => (reversalCounterexampleBallots v).ranking) 0 2 > 0 :=
+      hiff.mp hpos
+    simp [reversalCounterexample_marginList_02] at hpos'
+
+lemma reversalCounterexample_zero_mem_splitCycle_reverse :
+    (0 : Fin 3) ∈ splitCycle (reverse_profile reversalCounterexampleProfile) := by
+  classical
+  simp [splitCycle]
+  intro y hydef
+  have hydef' : splitCycleDefeats reversalCounterexampleProfile (0 : Fin 3) y := by
+    simpa [splitCycleDefeats_reverse_iff] using hydef
+  exact reversalCounterexample_no_defeats_from_zero y hydef'
+
+lemma reversalCounterexample_two_not_mem_splitCycle :
+    (2 : Fin 3) ∉ splitCycle reversalCounterexampleProfile := by
+  classical
+  intro hmem
+  have hcond : ∀ y, ¬ splitCycleDefeats reversalCounterexampleProfile y (2 : Fin 3) := by
+    simpa [splitCycle] using hmem
+  exact (hcond 1) reversalCounterexample_splitCycleDefeats_12
+
+lemma reversalCounterexample_splitCycle_ne_univ :
+    splitCycle reversalCounterexampleProfile ≠ Finset.univ := by
+  intro hEq
+  have hmem : (2 : Fin 3) ∈ splitCycle reversalCounterexampleProfile := by
+    simp [hEq]
+  exact reversalCounterexample_two_not_mem_splitCycle hmem
+
+theorem split_cycle_not_reversal_symmetry : ¬ reversal_symmetry splitCycle := by
+  intro h
+  have hne : splitCycle reversalCounterexampleProfile ≠ Finset.univ :=
+    reversalCounterexample_splitCycle_ne_univ
+  have hEq := h (P := reversalCounterexampleProfile) hne
+  have hmem : (0 : Fin 3) ∈
+      splitCycle reversalCounterexampleProfile ∩
+        splitCycle (reverse_profile reversalCounterexampleProfile) := by
+    exact Finset.mem_inter.mpr
+      ⟨reversalCounterexample_zero_mem_splitCycle,
+       reversalCounterexample_zero_mem_splitCycle_reverse⟩
+  have hmem' := hmem
+  simp [hEq] at hmem'
+
+end ReversalCounterexample
 
 end SocialChoice

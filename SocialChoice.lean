@@ -38,6 +38,7 @@ import SocialChoice.Rules.ScoringRules.Borda.Defs
 import SocialChoice.Rules.ScoringRules.Borda.C2Borda
 import SocialChoice.Rules.ScoringRules.Borda.Condorcet
 import SocialChoice.Rules.ScoringRules.Borda.Majority
+import SocialChoice.Rules.ScoringRules.Borda.Reversal
 import SocialChoice.Rules.ScoringRules.Veto.Defs
 import SocialChoice.Rules.ScoringRules.Veto.Majority
 import SocialChoice.Rules.ScoringElimination.Defs
@@ -55,6 +56,7 @@ import SocialChoice.Rules.ScoringElimination.Coombs.Majority
 import SocialChoice.Rules.Nanson.Defs
 import SocialChoice.Rules.Nanson.Condorcet
 import SocialChoice.Rules.Nanson.CondorcetLoser
+import SocialChoice.Rules.Nanson.Reversal
 import SocialChoice.Rules.PluralityWithRunoff.Defs
 import SocialChoice.Rules.PluralityWithRunoff.CondorcetLoser
 import SocialChoice.Rules.PluralityWithRunoff.Pareto

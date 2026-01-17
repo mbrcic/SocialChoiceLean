@@ -526,6 +526,136 @@ lemma c2BordaScore_sum_zero {V A : Type} [Fintype V] [Fintype A]
     linarith
   simpa [c2BordaScore] using hsum
 
+lemma c2BordaScore_reverse {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (x : A) :
+    c2BordaScore (reverse_profile P) x = - c2BordaScore P x := by
+  classical
+  have hrev : ∀ y, margin (reverse_profile P) x y = margin P y x := by
+    intro y
+    simpa using (margin_reverse_eq (P := P) (a := y) (b := x))
+  have hskew : ∀ y, margin P y x = - margin P x y := by
+    intro y
+    simpa [skew_symmetric] using (margin_antisymmetric (P := P) y x)
+  calc
+    c2BordaScore (reverse_profile P) x =
+        (Finset.univ : Finset A).sum (fun y => margin (reverse_profile P) x y) := by
+          rfl
+    _ =
+        (Finset.univ : Finset A).sum (fun y => margin P y x) := by
+          refine Finset.sum_congr rfl ?_
+          intro y hy
+          exact hrev y
+    _ =
+        (Finset.univ : Finset A).sum (fun y => - margin P x y) := by
+          refine Finset.sum_congr rfl ?_
+          intro y hy
+          exact hskew y
+    _ = - (Finset.univ : Finset A).sum (fun y => margin P x y) := by
+          simp [Finset.sum_neg_distrib]
+    _ = - c2BordaScore P x := by
+          rfl
+
+lemma c2BordaRule_eq_univ_of_all_zero {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (hall : ∀ x, c2BordaScore P x = 0) :
+    c2BordaRule P = Finset.univ := by
+  classical
+  by_cases h : (Finset.univ : Finset A).Nonempty
+  · let scoreSet : Finset Int :=
+      (Finset.univ.image (fun c => c2BordaScore P c))
+    let maxScore : Int :=
+      scoreSet.max' (by
+        simpa [scoreSet, Finset.Nonempty] using
+          (h.image (fun c => c2BordaScore P c)))
+    have hscoreSet : scoreSet = {0} := by
+      ext z
+      constructor
+      · intro hz
+        rcases Finset.mem_image.mp hz with ⟨c, _hc, rfl⟩
+        simp [hall c]
+      · intro hz
+        have hz' : z = 0 := by
+          simpa using hz
+        rcases h with ⟨c, hc⟩
+        subst hz'
+        exact Finset.mem_image.mpr ⟨c, hc, by simp [hall c]⟩
+    have hmax : maxScore = 0 := by
+      simp [maxScore, hscoreSet]
+    ext c
+    simp [c2BordaRule, h, scoreSet, maxScore, hmax, hall c]
+  · have huniv : (Finset.univ : Finset A) = ∅ := by
+      by_contra hne
+      exact h (Finset.nonempty_iff_ne_empty.mpr hne)
+    simp [c2BordaRule, huniv]
+
+lemma exists_neg_c2BordaScore_of_pos {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (c : A) (hpos : 0 < c2BordaScore P c) :
+    ∃ d, c2BordaScore P d < 0 := by
+  classical
+  by_contra hneg
+  have hnonneg : ∀ d, 0 ≤ c2BordaScore P d := by
+    intro d
+    by_contra hdneg
+    exact hneg ⟨d, lt_of_not_ge hdneg⟩
+  have hsum :
+      (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) =
+        (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c := by
+    have hsum' :=
+      Finset.sum_erase_add (s := (Finset.univ : Finset A))
+        (f := fun d => c2BordaScore P d) (a := c) (by exact Finset.mem_univ c)
+    exact hsum'.symm
+  have hsum_rest_nonneg :
+      0 ≤ (Finset.univ.erase c).sum (fun d => c2BordaScore P d) := by
+    refine Finset.sum_nonneg ?_
+    intro d hd
+    exact hnonneg d
+  have hsum_pos :
+      0 < (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) := by
+    have hpos' :
+        0 < (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c :=
+      add_pos_of_nonneg_of_pos hsum_rest_nonneg hpos
+    calc
+      0 < (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c := hpos'
+      _ = (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) := by
+        exact hsum.symm
+  have hsum_zero := c2BordaScore_sum_zero (P := P)
+  have : (0 : Int) < 0 := by
+    nth_rewrite 2 [← hsum_zero]
+    exact hsum_pos
+  exact (lt_irrefl 0 this)
+
+lemma exists_pos_c2BordaScore_of_neg {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) {c : A} (hneg : c2BordaScore P c < 0) :
+    ∃ d, 0 < c2BordaScore P d := by
+  classical
+  by_contra hno
+  have hnonpos : ∀ d, c2BordaScore P d ≤ 0 := by
+    intro d
+    by_contra hdpos
+    exact hno ⟨d, lt_of_not_ge hdpos⟩
+  have hsum :
+      (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) =
+        (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c := by
+    have hsum' :=
+      Finset.sum_erase_add (s := (Finset.univ : Finset A))
+        (f := fun d => c2BordaScore P d) (a := c) (by exact Finset.mem_univ c)
+    exact hsum'.symm
+  have hsum_rest_nonpos :
+      (Finset.univ.erase c).sum (fun d => c2BordaScore P d) ≤ 0 := by
+    refine Finset.sum_nonpos ?_
+    intro d hd
+    exact hnonpos d
+  have hsum_lt :
+      (Finset.univ : Finset A).sum (fun d => c2BordaScore P d) < 0 := by
+    have hlt :
+        (Finset.univ.erase c).sum (fun d => c2BordaScore P d) + c2BordaScore P c < 0 :=
+      add_lt_of_le_of_neg hsum_rest_nonpos hneg
+    rw [hsum]
+    exact hlt
+  have hsum_zero := c2BordaScore_sum_zero (P := P)
+  have hsum_lt' := hsum_lt
+  rw [hsum_zero] at hsum_lt'
+  exact (lt_irrefl 0 hsum_lt')
+
 lemma c2BordaRule_score_nonneg {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) {x : A} (hx : x ∈ c2BordaRule P) :
     0 ≤ c2BordaScore P x := by
