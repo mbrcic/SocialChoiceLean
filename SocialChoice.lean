@@ -49,8 +49,12 @@ import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.MutualMajority
 import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
+import SocialChoice.Rules.ScoringElimination.Baldwin.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
 import SocialChoice.Rules.ScoringElimination.Coombs.Majority
+import SocialChoice.Rules.Nanson.Defs
+import SocialChoice.Rules.Nanson.Condorcet
+import SocialChoice.Rules.Nanson.CondorcetLoser
 import SocialChoice.Rules.PluralityWithRunoff.Defs
 import SocialChoice.Rules.PluralityWithRunoff.CondorcetLoser
 import SocialChoice.Rules.PluralityWithRunoff.Pareto
