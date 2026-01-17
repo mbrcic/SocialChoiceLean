@@ -61,6 +61,7 @@ theorem scoringRule_monotonicity (score : Nat → Nat → Int)
     have hrank : rank (P'.pref v) x ≤ rank (P.pref v) x :=
       rank_le_of_simpleLift_x (P := P) (P' := P') (x := x) hLift v
     exact hmono (Fintype.card A) _ _ hrank
+      (rank_lt_card (P'.pref v) x) (rank_lt_card (P.pref v) x)
   have hscore_y : ∀ y, y ≠ x → scoreCandidate P' scoreFun y ≤ scoreCandidate P scoreFun y := by
     intro y hy
     unfold scoreCandidate
@@ -69,6 +70,7 @@ theorem scoringRule_monotonicity (score : Nat → Nat → Int)
     have hrank : rank (P.pref v) y ≤ rank (P'.pref v) y :=
       rank_le_of_simpleLift_other (P := P) (P' := P') (x := x) (y := y) hLift hy v
     exact hmono (Fintype.card A) _ _ hrank
+      (rank_lt_card (P.pref v) y) (rank_lt_card (P'.pref v) y)
   have hle' : ∀ y, scoreCandidate P' scoreFun y ≤ scoreCandidate P' scoreFun x := by
     intro y
     by_cases hy : y = x

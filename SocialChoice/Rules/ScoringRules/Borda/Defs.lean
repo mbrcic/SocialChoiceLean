@@ -7,4 +7,16 @@ def bordaScore (m r : Nat) : Int := Int.ofNat (m - 1 - r)
 noncomputable def borda : VotingRule :=
   scoringRule bordaScore
 
+lemma bordaScore_strictlyDecreasing : strictlyDecreasingScore bordaScore := by
+  intro m r s hrs hrm hsm
+  cases m with
+  | zero =>
+      exact (Nat.not_lt_zero _ hrm).elim
+  | succ m =>
+      dsimp [bordaScore]
+      have hsle : s ≤ m := Nat.lt_succ_iff.mp hsm
+      have hrlt : r < m := lt_of_lt_of_le hrs hsle
+      have hsub : m - s < m - r := Nat.sub_lt_sub_left hrlt hrs
+      exact Int.ofNat_lt_ofNat_of_lt hsub
+
 end SocialChoice

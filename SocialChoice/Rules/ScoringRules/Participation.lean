@@ -90,7 +90,7 @@ lemma rank_lt_of_score_gt {A : Type} [Fintype A] (r : LinearOrder A)
   by_contra hnot
   have hle : rank r y ≤ rank r x := le_of_not_gt hnot
   have hle' : score (Fintype.card A) (rank r x) ≤ score (Fintype.card A) (rank r y) :=
-    hmono (Fintype.card A) _ _ hle
+    hmono (Fintype.card A) _ _ hle (rank_lt_card r y) (rank_lt_card r x)
   exact (not_le_of_gt h) hle'
 
 lemma lt_of_rank_lt {A : Type} [Fintype A] (r : LinearOrder A) {x y : A}

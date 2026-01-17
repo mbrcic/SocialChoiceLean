@@ -67,9 +67,16 @@ noncomputable def scoringRule (score : Nat → Nat → Int) : VotingRule :=
     scoringWinners P (fun r => score (Fintype.card A) r)
 
 def weaklyDecreasingScore (score : Nat → Nat → Int) : Prop :=
-  ∀ m r s, r ≤ s → score m s ≤ score m r
+  ∀ m r s, r ≤ s → r < m → s < m → score m s ≤ score m r
 
 def strictlyDecreasingScore (score : Nat → Nat → Int) : Prop :=
-  ∀ m r s, r < s → score m s < score m r
+  ∀ m r s, r < s → r < m → s < m → score m s < score m r
+
+lemma strictlyDecreasingScore.to_weakly {score : Nat → Nat → Int}
+    (hstrict : strictlyDecreasingScore score) : weaklyDecreasingScore score := by
+  intro m r s hrs hrm hsm
+  rcases lt_or_eq_of_le hrs with hlt | hEq
+  · exact (hstrict m r s hlt hrm hsm).le
+  · simp [hEq]
 
 end SocialChoice

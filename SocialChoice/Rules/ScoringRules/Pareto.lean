@@ -24,7 +24,8 @@ theorem scoringRule_pareto_nonempty (score : Nat → Nat → Int)
       intro v hv
       have hlt_rank : rank (P.pref v) c < rank (P.pref v) d :=
         rank_lt_of_lt (r := P.pref v) (c := c) (d := d) (hpref v)
-      exact (hstrict (Fintype.card A) _ _ hlt_rank).le
+      exact (hstrict (Fintype.card A) _ _ hlt_rank
+        (rank_lt_card (P.pref v) c) (rank_lt_card (P.pref v) d)).le
     have hlt' :
         ∃ v ∈ (Finset.univ : Finset V),
           scoreFun (rank (P.pref v) d) < scoreFun (rank (P.pref v) c) := by
@@ -33,6 +34,7 @@ theorem scoringRule_pareto_nonempty (score : Nat → Nat → Int)
       have hlt_rank : rank (P.pref v0) c < rank (P.pref v0) d :=
         rank_lt_of_lt (r := P.pref v0) (c := c) (d := d) (hpref v0)
       exact hstrict (Fintype.card A) _ _ hlt_rank
+        (rank_lt_card (P.pref v0) c) (rank_lt_card (P.pref v0) d)
     have hdiff_nonneg :
         ∀ v ∈ (Finset.univ : Finset V),
           0 ≤ scoreFun (rank (P.pref v) c) - scoreFun (rank (P.pref v) d) :=
