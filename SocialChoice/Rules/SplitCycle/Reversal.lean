@@ -113,7 +113,7 @@ lemma splitCycleDefeats_acyclic {V A : Type} [Fintype V] [Fintype A]
     · exact hymemL
   exact hnocycle ⟨l, hxmem, hymem, hcycle'⟩
 
-theorem split_cycle_reversal_symmetry : singleton_reversal_symmetry splitCycle := by
+theorem split_cycle_singleton_reversal_symmetry : SingletonReversalSymmetry splitCycle := by
   intro V A _ _ P x hnontriv hxwin
   classical
   have hxdef : ∃ y, splitCycleDefeats P x y := by
@@ -502,7 +502,7 @@ lemma reversalCounterexample_splitCycle_ne_univ :
     simp [hEq]
   exact reversalCounterexample_two_not_mem_splitCycle hmem
 
-theorem split_cycle_not_reversal_symmetry : ¬ reversal_symmetry splitCycle := by
+theorem split_cycle_not_reversal_symmetry : ¬ ReversalSymmetry splitCycle := by
   intro h
   have hne : splitCycle reversalCounterexampleProfile ≠ Finset.univ :=
     reversalCounterexample_splitCycle_ne_univ

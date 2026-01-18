@@ -454,19 +454,19 @@ lemma P7_to_P8_preserve_ac {f : VotingRule} (hf : Resolute f)
         ListBallot.mk']
   decide
 
-lemma P2_condorcet_winner_c : CondorcetWinner P2ProfileSub 2 := by
+lemma P2_CondorcetWinner_c : CondorcetWinner P2ProfileSub 2 := by
   intro y hy
   fin_cases y <;> first | cases hy rfl | simp
 
-lemma P4_condorcet_winner_a : CondorcetWinner P4ProfileSub 0 := by
+lemma P4_CondorcetWinner_a : CondorcetWinner P4ProfileSub 0 := by
   intro y hy
   fin_cases y <;> first | cases hy rfl | simp
 
-lemma P6_condorcet_winner_b : CondorcetWinner P6ProfileSub 1 := by
+lemma P6_CondorcetWinner_b : CondorcetWinner P6ProfileSub 1 := by
   intro y hy
   fin_cases y <;> first | cases hy rfl | simp
 
-lemma P8_condorcet_winner_d : CondorcetWinner P8ProfileSub 3 := by
+lemma P8_CondorcetWinner_d : CondorcetWinner P8ProfileSub 3 := by
   intro y hy
   fin_cases y <;> first | cases hy rfl | simp
 
@@ -500,7 +500,7 @@ theorem no_resolute_condorcet_participation_m4_n12 :
       have hz_eq : z = 0 := P1_to_P2_preserve_a hf hpart hy hz
       rw [hz_eq] at hz
       -- P2 has CW c (2). f(P2) = {a} (0).
-      have h_cw : f P2ProfileSub = {2} := hcond P2ProfileSub 2 P2_condorcet_winner_c
+      have h_cw : f P2ProfileSub = {2} := hcond P2ProfileSub 2 P2_CondorcetWinner_c
       rw [hz] at h_cw
       have : (0 : Fin 4) = 2 := by
         have : 0 ∈ ({2} : Finset (Fin 4)) := by rw [← h_cw]; simp
@@ -518,7 +518,7 @@ theorem no_resolute_condorcet_participation_m4_n12 :
       have hw_bd : w ∈ ({1, 3} : Finset (Fin 4)) :=
         P3_to_P4_preserve_bd hf hpart hz hw
       -- P4 has CW a (0). f(P4) = {w}. w \in {b, d}.
-      have h_cw : f P4ProfileSub = {0} := hcond P4ProfileSub 0 P4_condorcet_winner_a
+      have h_cw : f P4ProfileSub = {0} := hcond P4ProfileSub 0 P4_CondorcetWinner_a
       rw [hw] at h_cw
       have : w = 0 := by
          have : w ∈ ({0} : Finset (Fin 4)) := by rw [← h_cw]; simp
@@ -554,7 +554,7 @@ theorem no_resolute_condorcet_participation_m4_n12 :
       have hw_ac : w ∈ ({0, 2} : Finset (Fin 4)) :=
         P7_to_P8_preserve_ac hf hpart hz hw
       -- P8 has CW d (3). f(P8) = {w}. w \in {a, c}.
-      have h_cw : f P8ProfileSub = {3} := hcond P8ProfileSub 3 P8_condorcet_winner_d
+      have h_cw : f P8ProfileSub = {3} := hcond P8ProfileSub 3 P8_CondorcetWinner_d
       rw [hw] at h_cw
       have : w = 3 := by
          have : w ∈ ({3} : Finset (Fin 4)) := by rw [← h_cw]; simp
@@ -568,7 +568,7 @@ theorem no_resolute_condorcet_participation_m4_n12 :
       have hz_eq : z = 3 := P5_to_P6_preserve_d hf hpart hy hz
       rw [hz_eq] at hz
       -- P6 has CW b (1). f(P6) = {d} (3).
-      have h_cw : f P6ProfileSub = {1} := hcond P6ProfileSub 1 P6_condorcet_winner_b
+      have h_cw : f P6ProfileSub = {1} := hcond P6ProfileSub 1 P6_CondorcetWinner_b
       rw [hz] at h_cw
       have : (3 : Fin 4) = 1 := by
          have : 3 ∈ ({1} : Finset (Fin 4)) := by rw [← h_cw]; simp

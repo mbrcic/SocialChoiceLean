@@ -7,7 +7,7 @@ namespace SocialChoice
 open Finset
 
 -- Plurality satisfies positive involvement.
-theorem plurality_positiveInvolvement : PositiveInvolvement plurality := by
+theorem plurality_positive_involvement : PositiveInvolvement plurality := by
   intro V A _ _ P c ballot hc htop
   classical
   let P' := addVoter P ballot

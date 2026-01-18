@@ -5,7 +5,7 @@ namespace SocialChoice
 
 open Finset
 
-theorem plurality_pareto : ParetoEfficiency plurality := by
+theorem plurality_pareto_efficiency : ParetoEfficiency plurality := by
   intro V A _ _ _ P c d hpref hd
   classical
   rcases Classical.choice (inferInstance : Nonempty V) with v0

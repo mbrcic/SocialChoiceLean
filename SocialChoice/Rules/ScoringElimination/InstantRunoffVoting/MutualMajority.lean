@@ -98,7 +98,7 @@ lemma not_lowestScoring_of_strictMajority_top
       (score := fun r => pluralityScore (Fintype.card A) r) (c := c) (e := d) hcL
   exact (not_lt_of_ge hle) hlt_score
 
-theorem irv_mutualMajorityCriterion : MutualMajorityCriterion instantRunoffVoting := by
+theorem irv_mutual_majority_criterion : MutualMajorityCriterion instantRunoffVoting := by
   intro V A _ _ P S T hmaj hTne hpref
   classical
   letI : DecidableEq A := Classical.decEq A

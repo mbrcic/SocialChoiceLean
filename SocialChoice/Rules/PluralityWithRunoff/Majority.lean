@@ -67,7 +67,7 @@ lemma margin_pos_of_majority_top {V A : Type} [Fintype V] [Fintype A]
           Int.ofNat (votersPreferring P y x).card := sub_pos.mpr hlt'
   simpa [margin_pos, margin] using hmargin
 
-theorem pluralityWithRunoff_majorityCriterion : MajorityCriterion pluralityWithRunoff := by
+theorem plurality_with_runoff_majority_criterion : MajorityCriterion pluralityWithRunoff := by
   intro V A _ _ P x hmaj
   classical
   by_cases hcard : Fintype.card A ≤ 1
@@ -85,7 +85,7 @@ theorem pluralityWithRunoff_majorityCriterion : MajorityCriterion pluralityWithR
   · let S := plurality P
     have hplurality : S = {x} := by
       have hplurality' : plurality P = {x} :=
-        plurality_majorityCriterion (P := P) (c := x) hmaj
+        plurality_majority_criterion (P := P) (c := x) hmaj
       simpa [S] using hplurality'
     have hS : ¬ S.card ≥ 2 := by
       have hScard : S.card = 1 := by
@@ -138,7 +138,7 @@ theorem pluralityWithRunoff_majorityCriterion : MajorityCriterion pluralityWithR
     have hxmem : x ∈ pluralityWithRunoff P := by
       letI : Nonempty A := ⟨x⟩
       have hnonempty : (pluralityWithRunoff P).Nonempty :=
-        pluralityWithRunoff_nonempty (P := P)
+        plurality_with_runoff_nonempty (P := P)
       rcases hnonempty with ⟨w, hw⟩
       have hwx : w = x := huniq w hw
       simpa [hwx] using hw

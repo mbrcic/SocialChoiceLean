@@ -29,17 +29,6 @@ resulting winners.
 * `scoringEliminationRule`: The main voting rule.
 -/
 
--- Helper instance for restricted candidate types
-noncomputable instance instFintypeNeq {A : Type} [Fintype A] [DecidableEq A] (c : A) :
-    Fintype {x : A // x ≠ c} := by
-  classical
-  infer_instance
-
--- Restrict a profile by removing one candidate
-noncomputable def restrictProfile {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P : Profile V A) (c : A) : Profile V {x : A // x ≠ c} :=
-  restrictCandidates P (fun x => x ≠ c)
-
 -- Compute the set of lowest-scoring candidates
 noncomputable def lowestScoring {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (score : Nat → Int) : Finset A := by

@@ -849,8 +849,8 @@ lemma clone_winner_rep_independent
 
 
 theorem irv_independence_of_clones :
-    @independence_of_clones (scoringEliminationRule pluralityScore) := by
-  unfold independence_of_clones
+    @IndependenceOfClones (scoringEliminationRule pluralityScore) := by
+  unfold IndependenceOfClones
   intro V A instV instA instDecEq P₀ X x hX hx
   classical
   -- `scoringEliminationRule` uses `Classical.decEq` internally; align all `DecidableEq` instances.

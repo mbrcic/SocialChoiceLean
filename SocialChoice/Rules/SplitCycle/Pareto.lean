@@ -21,7 +21,7 @@ lemma prefers_acyclic {V A : Type} [Fintype V] [Fintype A]
       (b := List.getLast c hne) hchain hmem
   exact (lt_irrefl (a := List.getLast c hne)) hrel
 
-theorem splitCycle_pareto : ParetoEfficiency splitCycle := by
+theorem split_cycle_pareto_efficiency : ParetoEfficiency splitCycle := by
   intro V A _ _ _ P c d hpref
   classical
   have hdef : splitCycleDefeats P c d := by

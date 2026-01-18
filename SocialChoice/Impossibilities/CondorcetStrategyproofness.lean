@@ -68,7 +68,7 @@ private lemma profile_ext {V A : Type} [Fintype V] [Fintype A]
   cases h
   rfl
 
-private lemma swap0_condorcet_winner : CondorcetWinner swap0Profile (2 : Fin 3) := by
+private lemma swap0_CondorcetWinner : CondorcetWinner swap0Profile (2 : Fin 3) := by
   intro d hd
   fin_cases d
   · have hcount : countPrefers (fun v => (swap0Ballots v).ranking) 2 0 = 2 := rfl
@@ -81,7 +81,7 @@ private lemma swap0_condorcet_winner : CondorcetWinner swap0Profile (2 : Fin 3) 
     exact strictMajority_fin3 hcard
   · cases hd rfl
 
-private lemma swap1_condorcet_winner : CondorcetWinner swap1Profile (0 : Fin 3) := by
+private lemma swap1_CondorcetWinner : CondorcetWinner swap1Profile (0 : Fin 3) := by
   intro d hd
   fin_cases d
   · cases hd rfl
@@ -94,7 +94,7 @@ private lemma swap1_condorcet_winner : CondorcetWinner swap1Profile (0 : Fin 3) 
       simpa [swap1Profile, votersPreferring_card_eq_countPrefers] using hcount
     exact strictMajority_fin3 hcard
 
-private lemma swap2_condorcet_winner : CondorcetWinner swap2Profile (1 : Fin 3) := by
+private lemma swap2_CondorcetWinner : CondorcetWinner swap2Profile (1 : Fin 3) := by
   intro d hd
   fin_cases d
   · have hcount : countPrefers (fun v => (swap2Ballots v).ranking) 1 0 = 2 := rfl
@@ -149,21 +149,21 @@ theorem no_resolute_condorcet_strategyproof_3x3
   rcases Finset.card_eq_one.mp hcard with ⟨x, hx⟩
   fin_cases x
   · have hcond0 : f swap0Profile = {2} := by
-      simpa using (hcond swap0Profile 2 swap0_condorcet_winner)
+      simpa using (hcond swap0Profile 2 swap0_CondorcetWinner)
     have hnot :
         ¬ Prefers swap0Profile 0 0 2 :=
       hsp swap0Profile 0 ballot012.toLinearOrder 2 0 hcond0
         (by simpa [update_swap0_eq_cycle] using hx)
     exact hnot voter0_prefers0_over2
   · have hcond1 : f swap1Profile = {0} := by
-      simpa using (hcond swap1Profile 0 swap1_condorcet_winner)
+      simpa using (hcond swap1Profile 0 swap1_CondorcetWinner)
     have hnot :
         ¬ Prefers swap1Profile 1 1 0 :=
       hsp swap1Profile 1 ballot120.toLinearOrder 0 1 hcond1
         (by simpa [update_swap1_eq_cycle] using hx)
     exact hnot voter1_prefers1_over0
   · have hcond2 : f swap2Profile = {1} := by
-      simpa using (hcond swap2Profile 1 swap2_condorcet_winner)
+      simpa using (hcond swap2Profile 1 swap2_CondorcetWinner)
     have hnot :
         ¬ Prefers swap2Profile 2 2 1 :=
       hsp swap2Profile 2 ballot201.toLinearOrder 1 2 hcond2

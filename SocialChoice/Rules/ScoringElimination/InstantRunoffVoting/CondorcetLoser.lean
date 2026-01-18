@@ -34,56 +34,7 @@ Therefore `c` has higher plurality score, contradicting that `c` was eliminated.
 
 variable {V A : Type} [Fintype V] [Fintype A]
 
-lemma one_lt_card_subtype_ne {A : Type} [Fintype A] [DecidableEq A] {c : A}
-    (h : 2 < Fintype.card A) : 1 < Fintype.card {x : A // x ≠ c} := by
-  -- From `2 < card A`, we get `1 < card A - 1`, and the subtype has that cardinality.
-  have hpred : 1 < (Fintype.card A).pred := by
-    have hle : 2 ≤ (Fintype.card A).pred := Nat.le_pred_of_lt h
-    exact lt_of_lt_of_le (by decide : (1 : Nat) < 2) hle
-  simpa [card_subtype_ne_eq c, Nat.pred_eq_sub_one] using hpred
-
-lemma condorcet_loser_restrictProfile_of_two_lt_card
-    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P : Profile V A) {d c : A} (hdc : d ≠ c)
-    (hcard : 2 < Fintype.card A) (hloser : condorcet_loser P d) :
-    condorcet_loser (restrictProfile P c) (⟨d, hdc⟩ : {x : A // x ≠ c}) := by
-  classical
-  refine ⟨?_, ?_⟩
-  · intro y hy
-    have hne : d ≠ (y : A) := by
-      intro hEq
-      apply hy
-      ext
-      simpa using hEq
-    have hpos : margin_pos P (y : A) d := hloser.1 (y : A) hne
-    dsimp [margin_pos] at hpos ⊢
-    have heq := margin_eq_margin_restrictProfile (P := P) (c := c) (a := y)
-      (b := (⟨d, hdc⟩ : {x : A // x ≠ c}))
-    -- `heq` is `margin P y d = margin (restrictProfile P c) y d'`.
-    simpa [heq] using hpos
-  · have hone : 1 < Fintype.card {x : A // x ≠ c} := one_lt_card_subtype_ne (A := A) (c := c) hcard
-    rcases Fintype.exists_ne_of_one_lt_card hone (⟨d, hdc⟩ : {x : A // x ≠ c}) with ⟨y, hy⟩
-    exact ⟨y, hy.symm⟩
-
 /-! ### Two-candidate election lemmas -/
-
-/-- In a two-element type, if you're not equal to one element, you equal the other -/
-lemma two_elems_eq_or_eq (hcard : Fintype.card A = 2) (a b : A) (hab : a ≠ b) (c : A) :
-    c = a ∨ c = b := by
-  classical
-  have hpair : ({a, b} : Finset A).card = 2 := Finset.card_pair hab
-  have hsub : ({a, b} : Finset A) ⊆ (Finset.univ : Finset A) := by
-    intro x _
-    exact Finset.mem_univ x
-  have hcard_univ : (Finset.univ : Finset A).card = 2 := by
-    simpa [Finset.card_univ] using hcard
-  have hpair_eq : ({a, b} : Finset A) = (Finset.univ : Finset A) := by
-    apply Finset.eq_of_subset_of_card_le hsub
-    simp [hcard_univ, hpair]
-  have huniv : (Finset.univ : Finset A) = {a, b} := hpair_eq.symm
-  have hc : c ∈ ({a, b} : Finset A) := by
-    simpa [huniv] using Finset.mem_univ c
-  simpa using hc
 
 /-- In a two-candidate election, TopRank is equivalent to pairwise preference -/
 lemma topRank_iff_prefers_of_two (P : Profile V A) (hcard : Fintype.card A = 2)
@@ -190,14 +141,16 @@ lemma pluralityScore_eq_votersPreferring_of_two (P : Profile V A) (hcard : Finty
 /-! ### Condorcet loser in two-candidate election -/
 
 /-- A Condorcet loser in a 2-candidate election has strictly fewer first-place votes -/
-lemma condorcet_loser_lower_plurality_two (P : Profile V A) (hcard : Fintype.card A = 2)
-    (c d : A) (hcd : c ≠ d) (hloser : condorcet_loser P d) :
+lemma CondorcetLoser_lower_plurality_two (P : Profile V A) (hcard : Fintype.card A = 2)
+    (c d : A) (hcd : c ≠ d) (hloser : CondorcetLoser P d) :
     scoreCandidate P (fun r => if r = 0 then 1 else 0) d <
       scoreCandidate P (fun r => if r = 0 then 1 else 0) c := by
   rw [pluralityScore_eq_votersPreferring_of_two P hcard d c (Ne.symm hcd)]
   rw [pluralityScore_eq_votersPreferring_of_two P hcard c d hcd]
   -- hloser says margin_pos P c d (since c ≠ d and d is Condorcet loser)
-  have hmargin : margin_pos P c d := hloser.1 c (Ne.symm hcd)
+  have hmargin : margin_pos P c d :=
+    (strictMajority_votersPreferring_iff_margin_pos
+      (P := P) (c := c) (d := d) (hcd := hcd)).1 (hloser.1 c hcd)
   -- margin_pos means more prefer c > d than d > c
   dsimp [margin_pos, margin] at hmargin
   have hmargin' :
@@ -212,7 +165,7 @@ lemma condorcet_loser_lower_plurality_two (P : Profile V A) (hcard : Fintype.car
 
 /-! ### Main theorem -/
 
-theorem irv_condorcet_loser_criterion : condorcet_loser_criterion instantRunoffVoting := by
+theorem irv_CondorcetLoser_criterion : CondorcetLoserCriterion instantRunoffVoting := by
   intro V A _ _ P d hloser
   classical
   letI : DecidableEq A := Classical.decEq A
@@ -226,11 +179,11 @@ theorem irv_condorcet_loser_criterion : condorcet_loser_criterion instantRunoffV
           ∀ {A : Type} [Fintype A] [DecidableEq A],
             Fintype.card A = m →
               ∀ {V : Type} [Fintype V] (P : Profile V A) (d : A),
-                condorcet_loser P d → d ∉ scoringEliminationAux pluralityScore A P) →
+                CondorcetLoser P d → d ∉ scoringEliminationAux pluralityScore A P) →
         ∀ {A : Type} [Fintype A] [DecidableEq A],
           Fintype.card A = n →
             ∀ {V : Type} [Fintype V] (P : Profile V A) (d : A),
-              condorcet_loser P d → d ∉ scoringEliminationAux pluralityScore A P := by
+              CondorcetLoser P d → d ∉ scoringEliminationAux pluralityScore A P := by
     intro n ih A _ _ hcard V _ P d hloser
     classical
     -- We are never in the base case `card ≤ 1`, since a Condorcet loser requires another candidate.
@@ -238,7 +191,7 @@ theorem irv_condorcet_loser_criterion : condorcet_loser_criterion instantRunoffV
       intro hle
       have hsubs : Subsingleton A := (Fintype.card_le_one_iff_subsingleton).1 hle
       rcases hloser.2 with ⟨y, hy⟩
-      exact hy (Subsingleton.elim d y)
+      exact hy (Subsingleton.elim y d)
     -- Split on candidate count.
     by_cases htwo : Fintype.card A = 2
     · -- Two-candidate case: the Condorcet loser has strictly lower plurality score,
@@ -265,7 +218,7 @@ theorem irv_condorcet_loser_criterion : condorcet_loser_criterion instantRunoffV
             scoreCandidate P (fun r => pluralityScore 2 r) c := by
         -- `pluralityScore 2` is the usual plurality scoring vector.
         simpa [pluralityScore] using
-          (condorcet_loser_lower_plurality_two (V := V) (A := A) (P := P) (hcard := htwo)
+          (CondorcetLoser_lower_plurality_two (V := V) (A := A) (P := P) (hcard := htwo)
             (c := c) (d := d) (hcd := hcd) (hloser := hloser))
       -- But `c` is lowest-scoring, so its score is ≤ `d`'s score.
       have hle :
@@ -311,8 +264,8 @@ theorem irv_condorcet_loser_criterion : condorcet_loser_criterion instantRunoffV
         -- Use the strict decrease proved in `ScoringElimination/Defs.lean`.
         simpa [hcard] using (card_restrict_lt (A := A) c)
       have hloser' :
-          condorcet_loser (restrictProfile P c) (⟨d, hdc⟩ : {x : A // x ≠ c}) :=
-        condorcet_loser_restrictProfile_of_two_lt_card (P := P) (hdc := hdc) (hcard := hgt2) hloser
+          CondorcetLoser (restrictProfile P c) (⟨d, hdc⟩ : {x : A // x ≠ c}) :=
+        CondorcetLoser_restrictProfile_of_two_lt_card (P := P) (hdc := hdc) (hcard := hgt2) hloser
       have hnot : (⟨d, hdc⟩ : {x : A // x ≠ c}) ∉
           scoringEliminationAux pluralityScore {x : A // x ≠ c} (restrictProfile P c) := by
         -- Specialize IH to the restricted type.
@@ -326,7 +279,7 @@ theorem irv_condorcet_loser_criterion : condorcet_loser_criterion instantRunoffV
     ∀ {A : Type} [Fintype A] [DecidableEq A],
       Fintype.card A = k →
         ∀ {V : Type} [Fintype V] (P : Profile V A) (d : A),
-          condorcet_loser P d → d ∉ scoringEliminationAux pluralityScore A P
+          CondorcetLoser P d → d ∉ scoringEliminationAux pluralityScore A P
   have hStrong : Motive n := by
     classical
     refine Nat.strongRecOn (motive := Motive) n (fun k ih => ?_)
@@ -337,7 +290,7 @@ theorem irv_condorcet_loser_criterion : condorcet_loser_criterion instantRunoffV
           ∀ {A : Type} [Fintype A] [DecidableEq A],
             Fintype.card A = m →
               ∀ {V : Type} [Fintype V] (P : Profile V A) (d : A),
-                condorcet_loser P d → d ∉ scoringEliminationAux pluralityScore A P := by
+                CondorcetLoser P d → d ∉ scoringEliminationAux pluralityScore A P := by
       intro m hm A _ _ hcardm V _ P d hloser
       -- `ih m hm` is the induction hypothesis at `m`.
       exact (ih m hm) (by simpa using hcardm) (P := P) (d := d) hloser

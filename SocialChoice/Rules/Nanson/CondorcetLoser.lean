@@ -18,12 +18,12 @@ lemma not_mem_liftWinners_of_not_pred {A : Type} {p : A → Prop} [DecidablePred
     simpa [hxc] using x.property
   exact hc this
 
-theorem nanson_condorcet_loser_criterion : condorcet_loser_criterion nanson := by
+theorem nanson_CondorcetLoser_criterion : CondorcetLoserCriterion nanson := by
   intro V A _ _ P c hloser
   classical
   letI : DecidableEq A := Classical.decEq A
   have hneg : c2BordaScore P c < 0 :=
-    c2BordaScore_neg_of_condorcet_loser (P := P) (x := c) hloser
+    c2BordaScore_neg_of_CondorcetLoser (P := P) (x := c) hloser
   have hpos_ex : ∃ d, 0 < c2BordaScore P d :=
     exists_pos_c2BordaScore_of_neg (P := P) (c := c) hneg
   have hall : ¬ ∀ a : A, c2BordaScore P a = 0 := by

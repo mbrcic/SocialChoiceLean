@@ -52,8 +52,8 @@ private lemma scoringCondorcet_winner_list :
   · decide
 
 private theorem scoringCondorcet_winner :
-    condorcet_winner scoringCondorcetProfile (0 : Fin 3) := by
-  rw [scoringCondorcetProfile_eq, condorcet_winner_iff_marginList]
+    CondorcetWinner scoringCondorcetProfile (0 : Fin 3) := by
+  rw [scoringCondorcetProfile_eq, CondorcetWinner_iff_marginList]
   exact scoringCondorcet_winner_list
 
 private lemma scoreCandidate_scoringCondorcet_eq (score : Nat → Int) :
@@ -75,9 +75,9 @@ private lemma scoreCandidate_scoringCondorcet_eq (score : Nat → Int) :
           ring
 
 theorem scoringRule_not_condorcet (score : Nat → Nat → Int) :
-    ¬ condorcet_criterion (scoringRule score) := by
+    ¬ CondorcetConsistency (scoringRule score) := by
   intro hcriterion
-  have hcond : condorcet_winner scoringCondorcetProfile (0 : Fin 3) :=
+  have hcond : CondorcetWinner scoringCondorcetProfile (0 : Fin 3) :=
     scoringCondorcet_winner
   have hres :
       scoringRule score scoringCondorcetProfile = ({0} : Finset (Fin 3)) :=

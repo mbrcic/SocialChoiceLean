@@ -32,7 +32,7 @@ lemma c2BordaRule_score_pos_of_exists_pos {V A : Type} [Fintype V] [Fintype A]
       simp [c2BordaRule, hA] at hx
     exact this.elim
 
-theorem borda_reversal_symmetry : reversal_symmetry borda := by
+theorem borda_reversal_symmetry : ReversalSymmetry borda := by
   intro V A _ _ _ P hnot
   classical
   by_cases hA : (Finset.univ : Finset A).Nonempty

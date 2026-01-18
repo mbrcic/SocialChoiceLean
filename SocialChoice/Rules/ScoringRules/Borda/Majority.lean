@@ -50,7 +50,7 @@ private lemma exampleProfile_strictMajority_top0 :
 private lemma exampleProfile_borda_has_b : (1 : Fin 3) ∈ borda bordaExampleProfile :=
   bordaExample_borda_has_one
 
-theorem borda_not_majorityCriterion : ¬ MajorityCriterion borda := by
+theorem borda_not_majority_criterion : ¬ MajorityCriterion borda := by
   intro hmaj
   have hmaj' : StrictMajority (votersTop bordaExampleProfile 0) :=
     exampleProfile_strictMajority_top0

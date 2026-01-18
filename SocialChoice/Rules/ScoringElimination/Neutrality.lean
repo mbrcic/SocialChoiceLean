@@ -1,7 +1,7 @@
 import Mathlib.Data.Fintype.Card
 import Mathlib.Data.Finset.Union
 import SocialChoice.Axioms.Neutrality
-import SocialChoice.Rules.ScoringElimination.Defs
+import SocialChoice.Rules.ScoringElimination.Basic
 import SocialChoice.Rules.ScoringRules.Neutrality
 
 namespace SocialChoice
@@ -215,27 +215,6 @@ lemma liftFinset_map_subtypeEquiv {A B : Type} [DecidableEq A] [DecidableEq B]
     refine ⟨(subtypeEquiv e a y), ?_, ?_⟩
     · exact Finset.mem_map.mpr ⟨y, hy, rfl⟩
     · simpa using hba
-
-lemma scoringEliminationAux_eq_biUnion_of_not_card_le_one
-    {V : Type} [Fintype V]
-    (score : Nat → Nat → Int)
-    {A : Type} [Fintype A] [DecidableEq A]
-    (P : Profile V A) (hcard : ¬ Fintype.card A ≤ 1) :
-    scoringEliminationAux score A P =
-      let m := Fintype.card A
-      let scoreVec : Nat → Int := fun r => score m r
-      let L : Finset A := lowestScoring P scoreVec
-      L.biUnion (fun c => liftFinset (scoringEliminationAux score _ (restrictProfile P c))) := by
-  classical
-  let rhs : Finset A :=
-    let m := Fintype.card A
-    let scoreVec : Nat → Int := fun r => score m r
-    let L : Finset A := lowestScoring P scoreVec
-    L.biUnion (fun c => liftFinset (scoringEliminationAux score _ (restrictProfile P c)))
-  change scoringEliminationAux score A P = rhs
-  conv_lhs =>
-    unfold SocialChoice.scoringEliminationAux
-  simp [hcard, rhs]
 
 theorem scoringEliminationAux_equiv_card (score : Nat → Nat → Int) :
     ∀ n, ∀ {V A B : Type} [Fintype V] [Fintype A] [Fintype B]

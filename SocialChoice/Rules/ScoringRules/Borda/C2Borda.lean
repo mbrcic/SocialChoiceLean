@@ -406,8 +406,8 @@ theorem borda_eq_c2BordaRule {V A : Type} [Fintype V] [Fintype A]
   · unfold borda scoringRule c2BordaRule scoringWinners
     simp [h]
 
-lemma c2BordaScore_pos_of_condorcet_winner {V A : Type} [Fintype V] [Fintype A]
-    (P : Profile V A) (x : A) (hwin : condorcet_winner P x) (hne : ∃ y, y ≠ x) :
+lemma c2BordaScore_pos_of_CondorcetWinner {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (x : A) (hwin : CondorcetWinner P x) (hne : ∃ y, y ≠ x) :
     0 < c2BordaScore P x := by
   classical
   rcases hne with ⟨y, hy⟩
@@ -421,7 +421,9 @@ lemma c2BordaScore_pos_of_condorcet_winner {V A : Type} [Fintype V] [Fintype A]
     have hyne : y ≠ x := (Finset.mem_erase.mp hy).1
     have hyne' : x ≠ y := by simpa [eq_comm] using hyne
     have hxy : 0 < margin P x y := by
-      simpa [margin_pos] using hwin y hyne'
+      have hpos : margin_pos P x y :=
+        (CondorcetWinner_iff_margin_pos P x).mp hwin y (by simpa [eq_comm] using hyne)
+      simpa [margin_pos] using hpos
     exact hxy
   have hsum :
       c2BordaScore P x =
@@ -435,8 +437,8 @@ lemma c2BordaScore_pos_of_condorcet_winner {V A : Type} [Fintype V] [Fintype A]
   rw [hsum]
   exact hpos
 
-lemma c2BordaScore_neg_of_condorcet_loser {V A : Type} [Fintype V] [Fintype A]
-    (P : Profile V A) (x : A) (hlose : condorcet_loser P x) :
+lemma c2BordaScore_neg_of_CondorcetLoser {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (x : A) (hlose : CondorcetLoser P x) :
     c2BordaScore P x < 0 := by
   classical
   rcases hlose with ⟨hlose, ⟨y, hy⟩⟩
@@ -448,9 +450,12 @@ lemma c2BordaScore_neg_of_condorcet_loser {V A : Type} [Fintype V] [Fintype A]
       (f := fun y => margin P y x) ?_ hnonempty)
     intro y hy
     have hyne : y ≠ x := (Finset.mem_erase.mp hy).1
-    have hyne' : x ≠ y := by simpa [eq_comm] using hyne
     have hxy : 0 < margin P y x := by
-      simpa [margin_pos] using hlose y hyne'
+      have hpos : margin_pos P y x :=
+        (strictMajority_votersPreferring_iff_margin_pos
+          (P := P) (c := y) (d := x) (hcd := by simpa [eq_comm] using hyne)).1
+          (hlose y hyne)
+      simpa [margin_pos] using hpos
     exact hxy
   have hsum :
       c2BordaScore P x =

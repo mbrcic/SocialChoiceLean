@@ -44,32 +44,6 @@ lemma scoringEliminationAux_eq_biUnion_of_not_card_le_one
   -- Now we just select the recursive branch of the `by_cases`.
   simp [hcard, rhs]
 
-@[simp] lemma prefers_restrictProfile_iff {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P : Profile V A) (c : A) (v : V) (a b : {x : A // x ≠ c}) :
-    Prefers (restrictProfile P c) v a b ↔ Prefers P v a b := by
-  rfl
-
-lemma margin_eq_margin_restrictProfile {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    {P : Profile V A} {c : A} {a b : {x : A // x ≠ c}} :
-    margin P a b = margin (restrictProfile P c) a b := by
-  classical
-  have h1 :
-      (Finset.univ.filter (fun v => Prefers P v a b)).card =
-        (Finset.univ.filter (fun v => Prefers (restrictProfile P c) v a b)).card := by
-    refine cardinality_lemma2 (p := fun v => Prefers P v a b)
-      (q := fun v => Prefers (restrictProfile P c) v a b) ?_
-    intro v
-    simp
-  have h2 :
-      (Finset.univ.filter (fun v => Prefers P v b a)).card =
-        (Finset.univ.filter (fun v => Prefers (restrictProfile P c) v b a)).card := by
-    refine cardinality_lemma2 (p := fun v => Prefers P v b a)
-      (q := fun v => Prefers (restrictProfile P c) v b a) ?_
-    intro v
-    simp
-  dsimp [margin]
-  simp [h1, h2]
-
 /-! ## Basic nonemptiness of winners -/
 
 lemma scoringEliminationAux_nonempty

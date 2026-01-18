@@ -9,7 +9,7 @@ namespace SocialChoice
 open Finset
 
 -- Plurality satisfies the majority criterion.
-theorem plurality_majorityCriterion : MajorityCriterion plurality := by
+theorem plurality_majority_criterion : MajorityCriterion plurality := by
   intro V A _ _ P c hmaj
   classical
   -- A strict majority for c implies every other candidate has fewer top votes.
@@ -177,7 +177,7 @@ private lemma pluralityMajorityLoser_has_a :
     exact Finset.mem_filter.mpr ⟨by simp, hmax⟩
   simpa [plurality] using hmem
 
-theorem plurality_not_majorityLoserCriterion : ¬ MajorityLoserCriterion plurality := by
+theorem plurality_not_majority_loser_criterion : ¬ MajorityLoserCriterion plurality := by
   intro hmaj
   have hmaj' : StrictMajority (votersBottom pluralityMajorityLoserProfile 0) :=
     pluralityMajorityLoser_strictMajority_bottom0

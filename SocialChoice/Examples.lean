@@ -127,7 +127,7 @@ example : marginList (fun v => (condorcetBallots v).ranking) 0 3 > 0 := by decid
 /-! #### Proof that 0 is Condorcet winner (abstract definition) -/
 
 /-- Candidate 0 is the Condorcet winner in the list-based sense. -/
-theorem zero_is_condorcet_winner_list :
+theorem zero_is_CondorcetWinner_list :
     ∀ d : Fin 4, (0 : Fin 4) ≠ d →
       marginList (fun v => (condorcetBallots v).ranking) 0 d > 0 := by
   intro d hne
@@ -138,10 +138,10 @@ theorem zero_is_condorcet_winner_list :
   · decide
 
 /-- Candidate 0 is the Condorcet winner in the abstract sense (from Condorcet.lean). -/
-theorem zero_is_condorcet_winner :
-    condorcet_winner condorcetProfile (0 : Fin 4) := by
-  rw [condorcetProfile_eq, condorcet_winner_iff_marginList]
-  exact zero_is_condorcet_winner_list
+theorem zero_is_CondorcetWinner :
+    CondorcetWinner condorcetProfile (0 : Fin 4) := by
+  rw [condorcetProfile_eq, CondorcetWinner_iff_marginList]
+  exact zero_is_CondorcetWinner_list
 
 end CondorcetExample
 

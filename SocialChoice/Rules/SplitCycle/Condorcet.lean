@@ -6,7 +6,24 @@ namespace SocialChoice
 
 open Finset
 
-theorem split_cycle_condorcet_criterion : condorcet_criterion splitCycle := by
+-- Technical lemma for Split Cycle proofs
+lemma no_margin_pos_cycle_of_CondorcetWinner {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (c : A) :
+    CondorcetWinner P c → ¬ ∃ l, cycle (margin_pos P) l ∧ c ∈ l := by
+  intro hw hcyc
+  rcases hcyc with ⟨l, hcycle, hwmem⟩
+  have hdom := dominate_of_cycle l (margin_pos P) hcycle c hwmem
+  rcases hdom with ⟨y, _hy_mem, hyw⟩
+  have hne : y ≠ c := by
+    intro hEq
+    subst hEq
+    exact (margin_pos_irrefl (P := P) y) hyw
+  have hwy : margin_pos P c y := by
+    have := (CondorcetWinner_iff_margin_pos P c).mp hw y (by simpa [eq_comm] using hne)
+    exact this
+  exact (margin_pos_asymm (P := P) c y hwy) hyw
+
+theorem split_cycle_condorcet_consistency : CondorcetConsistency splitCycle := by
   intro V A _ _ P c hw
   classical
   apply Finset.ext
@@ -17,7 +34,9 @@ theorem split_cycle_condorcet_criterion : condorcet_criterion splitCycle := by
     by_cases h : x = c
     · simp [h]
     · have hdef : splitCycleDefeats P c x := by
-        have hpos : margin_pos P c x := hw x (by simpa [eq_comm] using h)
+        have hpos : margin_pos P c x := by
+          have := (CondorcetWinner_iff_margin_pos P c).mp hw x (by simpa [eq_comm] using h)
+          exact this
         refine ⟨hpos, ?_⟩
         intro hcyc
         rcases hcyc with ⟨l, hwmem, hxmem, hcycle⟩
@@ -28,7 +47,7 @@ theorem split_cycle_condorcet_criterion : condorcet_criterion splitCycle := by
           intro a b hab
           have hlt : 0 < margin P a b := lt_of_lt_of_le hpos' hab
           simpa [margin_pos] using hlt
-        have hno := no_margin_pos_cycle_of_condorcet P c hw
+        have hno := no_margin_pos_cycle_of_CondorcetWinner P c hw
         exact hno ⟨l, hcycle', hwmem⟩
       exfalso
       exact (hxcond c) hdef
@@ -41,18 +60,21 @@ theorem split_cycle_condorcet_criterion : condorcet_criterion splitCycle := by
       by_cases h : y = c
       · subst h
         exact (margin_pos_irrefl (P := P) y) hypos
-      · have hwy : margin_pos P c y := hw y (by simpa [eq_comm] using h)
+      · have hwy : margin_pos P c y := by
+          have := (CondorcetWinner_iff_margin_pos P c).mp hw y (by simpa [eq_comm] using h)
+          exact this
         exact (margin_pos_asymm (P := P) c y hwy) hypos
     exact (Finset.mem_filter.mpr ⟨Finset.mem_univ c, hwcond⟩)
 
-theorem split_cycle_condorcet_loser_criterion :
-    condorcet_loser_criterion splitCycle := by
+theorem split_cycle_CondorcetLoser_criterion :
+    CondorcetLoserCriterion splitCycle := by
   intro V A _ _ P x hloser
   classical
-  rcases hloser with ⟨hlose, ⟨y, hyne⟩⟩
   by_contra hxmem
   have hxcond : ∀ z, ¬ splitCycleDefeats P z x := (Finset.mem_filter.mp hxmem).2
-  have hypos : margin_pos P y x := hlose y hyne
+  rcases hloser.2 with ⟨y, hyne⟩
+  have hypos : margin_pos P y x := by
+    exact (CondorcetLoser_iff_margin_pos P x).mp hloser |>.1 y (Ne.symm hyne)
   have hdef : splitCycleDefeats P y x := by
     refine ⟨hypos, ?_⟩
     intro hcyc
@@ -78,7 +100,8 @@ theorem split_cycle_condorcet_loser_criterion :
       by_cases hz : z = x
       · subst hz
         simp [self_margin_zero]
-      · have hpos : margin_pos P z x := hlose z (by simpa [eq_comm] using hz)
+      · have hpos : margin_pos P z x := by
+          exact (CondorcetLoser_iff_margin_pos P x).mp hloser |>.1 z (by simpa [eq_comm] using hz)
         have hpos' : 0 < margin P z x := by
           simpa [margin_pos] using hpos
         have hskew : margin P x z = - margin P z x := by

@@ -71,7 +71,7 @@ private lemma mem_secondPluralitySet_of_max {V A : Type} [Fintype V] [Fintype A]
     Finset.mem_filter.mpr ⟨hyR, hEq⟩
   simpa [secondPluralitySet, hR, R, scoreSet, maxScore] using hyMem
 
-theorem pluralityWithRunoff_positiveInvolvement : PositiveInvolvement pluralityWithRunoff := by
+theorem plurality_with_runoff_positive_involvement : PositiveInvolvement pluralityWithRunoff := by
   intro V A _ _ P x ballot hx htop
   classical
   letI : DecidableEq A := Classical.decEq A

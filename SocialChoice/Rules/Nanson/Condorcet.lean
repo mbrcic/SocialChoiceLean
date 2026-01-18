@@ -53,24 +53,29 @@ lemma margin_eq_margin_restrictCandidates {V A : Type} [Fintype V] [Fintype A]
   dsimp [margin]
   simp [h1, h2]
 
-lemma condorcet_winner_restrictCandidates {V A : Type} [Fintype V] [Fintype A]
+lemma CondorcetWinner_restrictCandidates {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (p : A → Prop) [DecidablePred p] {c : A} (hc : p c)
-    (hwin : condorcet_winner P c) :
-    condorcet_winner (restrictCandidates P p) (⟨c, hc⟩ : {x : A // p x}) := by
+    (hwin : CondorcetWinner P c) :
+    CondorcetWinner (restrictCandidates P p) (⟨c, hc⟩ : {x : A // p x}) := by
   intro y hy
   have hne : c ≠ (y : A) := by
     intro hEq
     apply hy
     apply Subtype.ext
-    exact hEq
-  have hpos : margin_pos P c (y : A) := hwin (y : A) hne
-  dsimp [margin_pos] at hpos ⊢
-  have heq := margin_eq_margin_restrictCandidates (P := P) (p := p)
-    (a := (⟨c, hc⟩ : {x : A // p x})) (b := y)
-  simp [heq] at hpos
-  exact hpos
+    exact hEq.symm
+  have hpos : margin_pos P c (y : A) :=
+    (CondorcetWinner_iff_margin_pos P c).mp hwin (y : A) hne
+  have hpos' : margin_pos (restrictCandidates P p) (⟨c, hc⟩ : {x : A // p x}) y := by
+    dsimp [margin_pos] at hpos ⊢
+    have heq := margin_eq_margin_restrictCandidates (P := P) (p := p)
+      (a := (⟨c, hc⟩ : {x : A // p x})) (b := y)
+    simpa [heq] using hpos
+  exact (strictMajority_votersPreferring_iff_margin_pos
+    (P := restrictCandidates P p) (c := (⟨c, hc⟩ : {x : A // p x})) (d := y)
+      (hcd := Ne.symm hy)).2
+    hpos'
 
-theorem nanson_condorcet_criterion : condorcet_criterion nanson := by
+theorem nanson_condorcet_consistency : CondorcetConsistency nanson := by
   intro V A _ _ P c hwin
   classical
   letI : DecidableEq A := Classical.decEq A
@@ -80,7 +85,7 @@ theorem nanson_condorcet_criterion : condorcet_criterion nanson := by
     ∀ {A : Type} [Fintype A] [DecidableEq A],
       Fintype.card A ≤ n →
         ∀ {V : Type} [Fintype V] (P : Profile V A) (c : A),
-          condorcet_winner P c → nansonAux n A P = {c}
+          CondorcetWinner P c → nansonAux n A P = {c}
   have hStrong : Motive k := by
     classical
     refine Nat.strongRecOn (motive := Motive) k ?_
@@ -109,7 +114,7 @@ theorem nanson_condorcet_criterion : condorcet_criterion nanson := by
     · have hcard_gt1 : 1 < Fintype.card A := Nat.lt_of_not_ge hle
       rcases Fintype.exists_ne_of_one_lt_card hcard_gt1 c with ⟨y, hy⟩
       have hpos : 0 < c2BordaScore P c :=
-        c2BordaScore_pos_of_condorcet_winner (P := P) (x := c) hwin ⟨y, hy⟩
+        c2BordaScore_pos_of_CondorcetWinner (P := P) (x := c) hwin ⟨y, hy⟩
       have hall : ¬ ∀ a : A, c2BordaScore P a = 0 := by
         intro hall
         have h0 := hall c
@@ -121,8 +126,8 @@ theorem nanson_condorcet_criterion : condorcet_criterion nanson := by
         simp [p, hcpos]
       let P' : Profile V {a : A // p a} := restrictCandidates P p
       have hwin' :
-          condorcet_winner P' (⟨c, hcpos⟩ : {a : A // p a}) := by
-        exact condorcet_winner_restrictCandidates (P := P) (p := p) (hc := hcpos) hwin
+          CondorcetWinner P' (⟨c, hcpos⟩ : {a : A // p a}) := by
+        exact CondorcetWinner_restrictCandidates (P := P) (p := p) (hc := hcpos) hwin
       have hneg : ∃ d, c2BordaScore P d < 0 :=
         exists_neg_c2BordaScore_of_pos (P := P) (c := c) hpos
       rcases hneg with ⟨d, hdneg⟩

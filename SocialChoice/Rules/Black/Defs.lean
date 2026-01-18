@@ -6,7 +6,7 @@ namespace SocialChoice
 noncomputable def black : VotingRule :=
   fun {V A} _ _ (P : Profile V A) => by
     classical
-    by_cases h : ∃ x, condorcet_winner P x
+    by_cases h : ∃ x, CondorcetWinner P x
     · exact {Classical.choose h}
     · exact borda P
 

@@ -51,15 +51,15 @@ lemma mem_pluralityWithRunoffPairs_card {V A : Type} [Fintype V] [Fintype A] [De
       simpa [hEq] using hp1
     exact Finset.card_eq_two.mpr ⟨p.1, p.2, hp1_ne_hp2, rfl⟩
 
-theorem pluralityWithRunoff_condorcet_loser_criterion :
-    condorcet_loser_criterion pluralityWithRunoff := by
+theorem plurality_with_runoff_CondorcetLoser_criterion :
+    CondorcetLoserCriterion pluralityWithRunoff := by
   intro V A _ _ P x hloser
   classical
   by_cases hcard : Fintype.card A ≤ 1
-  · rcases hloser with ⟨_, ⟨y, hxy⟩⟩
+  · rcases hloser.2 with ⟨y, hxy⟩
     have hforall : ∀ a b : A, a = b := (Fintype.card_le_one_iff).1 hcard
     exfalso
-    exact hxy (hforall x y)
+    exact hxy (hforall y x)
   · by_contra hxmem
     have hxmem' :
         ∃ y : A, ({x, y} : Finset A) ∈ pluralityWithRunoffPairs P ∧ 0 ≤ margin P x y := by
@@ -70,7 +70,8 @@ theorem pluralityWithRunoff_condorcet_loser_criterion :
     have hxy : x ≠ y := by
       by_contra hxy
       simp [hxy] at hcardpair
-    have hpos : margin_pos P y x := hloser.1 y hxy
+    have hpos : margin_pos P y x :=
+      (CondorcetLoser_iff_margin_pos P x).mp hloser |>.1 y (by simpa [eq_comm] using hxy)
     have hneg : margin P x y < 0 := by
       have hpos' : 0 < margin P y x := by
         simpa [margin_pos] using hpos

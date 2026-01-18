@@ -8,7 +8,7 @@ open Finset
 
 /-- Minimax satisfies the Condorcet criterion: if a Condorcet winner exists,
 then it is the unique winner returned by the rule. -/
-theorem minimax_condorcet : condorcet_criterion minimax := by
+theorem minimax_condorcet_consistency : CondorcetConsistency minimax := by
   intro V A _ _ P c hw
   classical
   have hA : (Finset.univ : Finset A).Nonempty := ⟨c, Finset.mem_univ c⟩
@@ -26,7 +26,8 @@ theorem minimax_condorcet : condorcet_criterion minimax := by
       rcases Finset.mem_image.mp hx with ⟨b, _, rfl⟩
       by_cases hb : b = c
       · subst hb; simp [margin]
-      · have hpos : margin_pos P c b := hw b (by simpa [eq_comm] using hb)
+      · have hpos : margin_pos P c b :=
+          (CondorcetWinner_iff_margin_pos P c).mp hw b (by simpa [eq_comm] using hb)
         have hskew : margin P b c = - margin P c b := by
           simpa [skew_symmetric] using (margin_antisymmetric (P := P)) b c
         have hneg : margin P b c < 0 := by
@@ -71,7 +72,8 @@ theorem minimax_condorcet : condorcet_criterion minimax := by
       rcases hA with ⟨b, hb⟩
       exact ⟨margin P b x, Finset.mem_image.mpr ⟨b, hb, rfl⟩⟩
     have hpos_margin : 0 < margin P c x := by
-      have : margin_pos P c x := hw x (by simpa [eq_comm] using hx)
+      have : margin_pos P c x :=
+        (CondorcetWinner_iff_margin_pos P c).mp hw x (by simpa [eq_comm] using hx)
       simpa [margin_pos] using this
     have hmem : margin P c x ∈ losses := by
       refine Finset.mem_image.mpr ?_

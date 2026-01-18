@@ -6,7 +6,7 @@ namespace SocialChoice
 
 open Finset
 
-theorem plurality_independenceOfDominated_nonempty :
+theorem plurality_independence_of_dominated_nonempty :
     ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty V]
       (P : Profile V A) (c d : A),
         (∀ v : V, Prefers P v c d) →

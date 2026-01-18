@@ -7,7 +7,7 @@ namespace SocialChoice
 open Finset
 open scoped BigOperators
 
-theorem borda_independenceOfUniversallyLeastPreferred_nonempty :
+theorem borda_independence_of_universally_least_preferred_nonempty :
     ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty V]
       (P : Profile V A) (c d : A),
         c ≠ d →

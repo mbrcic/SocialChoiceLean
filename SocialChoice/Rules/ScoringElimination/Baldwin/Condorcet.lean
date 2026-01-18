@@ -33,15 +33,15 @@ lemma c2BordaScore_lt_iff_bordaScore_lt {V A : Type} [Fintype V] [Fintype A]
   · intro hlt
     linarith [hx, hy]
 
-lemma condorcet_winner_not_lowest_borda
+lemma CondorcetWinner_not_lowest_borda
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P : Profile V A) (c : A) (hwin : condorcet_winner P c)
+    (P : Profile V A) (c : A) (hwin : CondorcetWinner P c)
     (hcard : 1 < Fintype.card A) :
     c ∉ lowestScoring P (fun r => bordaScore (Fintype.card A) r) := by
   classical
   rcases Fintype.exists_ne_of_one_lt_card hcard c with ⟨y, hy⟩
   have hpos : 0 < c2BordaScore P c :=
-    c2BordaScore_pos_of_condorcet_winner (P := P) (x := c) hwin ⟨y, hy⟩
+    c2BordaScore_pos_of_CondorcetWinner (P := P) (x := c) hwin ⟨y, hy⟩
   have hneg : ∃ d, c2BordaScore P d < 0 :=
     exists_neg_c2BordaScore_of_pos (P := P) (c := c) hpos
   rcases hneg with ⟨d, hdneg⟩
@@ -58,25 +58,29 @@ lemma condorcet_winner_not_lowest_borda
       (score := fun r => bordaScore (Fintype.card A) r) (c := c) (e := d) hc
   exact (not_lt_of_ge hle) hlt_borda
 
-lemma condorcet_winner_restrictProfile {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+lemma CondorcetWinner_restrictProfile {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
     (P : Profile V A) {c d : A} (hcd : c ≠ d)
-    (hwin : condorcet_winner P c) :
-    condorcet_winner (restrictProfile P d) (⟨c, hcd⟩ : {x : A // x ≠ d}) := by
+    (hwin : CondorcetWinner P c) :
+    CondorcetWinner (restrictProfile P d) (⟨c, hcd⟩ : {x : A // x ≠ d}) := by
   intro y hy
   have hne : c ≠ (y : A) := by
     intro hEq
     apply hy
     apply Subtype.ext
-    exact hEq
-  have hpos : margin_pos P c (y : A) := hwin (y : A) hne
-  dsimp [margin_pos] at hpos ⊢
-  have heq := margin_eq_margin_restrictProfile (P := P) (c := d)
-    (a := (⟨c, hcd⟩ : {x : A // x ≠ d})) (b := y)
-  have hpos' := hpos
-  simp [heq] at hpos'
-  exact hpos'
+    exact hEq.symm
+  have hpos : margin_pos P c (y : A) :=
+    (CondorcetWinner_iff_margin_pos P c).mp hwin (y : A) hne
+  have hpos' : margin_pos (restrictProfile P d) (⟨c, hcd⟩ : {x : A // x ≠ d}) y := by
+    dsimp [margin_pos] at hpos ⊢
+    have heq := margin_eq_margin_restrictProfile (P := P) (c := d)
+      (a := (⟨c, hcd⟩ : {x : A // x ≠ d})) (b := y)
+    simpa [heq] using hpos
+  exact (strictMajority_votersPreferring_iff_margin_pos
+    (P := restrictProfile P d) (c := (⟨c, hcd⟩ : {x : A // x ≠ d})) (d := y)
+      (hcd := Ne.symm hy)).2
+    hpos'
 
-theorem baldwin_condorcet_criterion : condorcet_criterion baldwin := by
+theorem baldwin_condorcet_consistency : CondorcetConsistency baldwin := by
   intro V A _ _ P c hwin
   classical
   letI : DecidableEq A := Classical.decEq A
@@ -86,7 +90,7 @@ theorem baldwin_condorcet_criterion : condorcet_criterion baldwin := by
     ∀ {A : Type} [Fintype A] [DecidableEq A],
       Fintype.card A = k →
         ∀ {V : Type} [Fintype V] (P : Profile V A) (c : A),
-          condorcet_winner P c → scoringEliminationAux bordaScore A P = {c}
+          CondorcetWinner P c → scoringEliminationAux bordaScore A P = {c}
   have hStrong : Motive n := by
     classical
     refine Nat.strongRecOn (motive := Motive) n (fun k ih => ?_)
@@ -117,7 +121,7 @@ theorem baldwin_condorcet_criterion : condorcet_criterion baldwin := by
       have hcard_gt1 : 1 < Fintype.card A := Nat.lt_of_not_ge hle
       have hnot_lowest : c ∉ L := by
         have hnot_lowest' :=
-          condorcet_winner_not_lowest_borda (P := P) (c := c) hwin hcard_gt1
+          CondorcetWinner_not_lowest_borda (P := P) (c := c) hwin hcard_gt1
         exact hnot_lowest'
       apply Finset.ext
       intro x
@@ -138,8 +142,8 @@ theorem baldwin_condorcet_criterion : condorcet_criterion baldwin := by
           rw [hcard] at hltcard'
           exact hltcard'
         have hwin' :
-            condorcet_winner (restrictProfile P d) (⟨c, hcd⟩ : {x : A // x ≠ d}) :=
-          condorcet_winner_restrictProfile (P := P) (c := c) (d := d) hcd hwin
+            CondorcetWinner (restrictProfile P d) (⟨c, hcd⟩ : {x : A // x ≠ d}) :=
+          CondorcetWinner_restrictProfile (P := P) (c := c) (d := d) hcd hwin
         have hrec :
             scoringEliminationAux bordaScore {x : A // x ≠ d} (restrictProfile P d) =
               {⟨c, hcd⟩} := by
@@ -173,8 +177,8 @@ theorem baldwin_condorcet_criterion : condorcet_criterion baldwin := by
           subst hEq
           exact hnot_lowest hdL
         have hwin' :
-            condorcet_winner (restrictProfile P d) (⟨c, hcd⟩ : {x : A // x ≠ d}) :=
-          condorcet_winner_restrictProfile (P := P) (c := c) (d := d) hcd hwin
+            CondorcetWinner (restrictProfile P d) (⟨c, hcd⟩ : {x : A // x ≠ d}) :=
+          CondorcetWinner_restrictProfile (P := P) (c := c) (d := d) hcd hwin
         have hltcard : Fintype.card {x : A // x ≠ d} < k := by
           have hltcard' := card_restrict_lt (A := A) d
           rw [hcard] at hltcard'

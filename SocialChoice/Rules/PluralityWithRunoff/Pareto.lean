@@ -28,7 +28,7 @@ private lemma topCount_eq_zero_of_pareto {V A : Type} [Fintype V] [Fintype A] [N
   have hcd' : Prefers P v c d := hpref v
   exact (lt_asymm hdc hcd')
 
-theorem pluralityWithRunoff_pareto : ParetoEfficiency pluralityWithRunoff := by
+theorem plurality_with_runoff_pareto_efficiency : ParetoEfficiency pluralityWithRunoff := by
   intro V A _ _ _ P c d hpref
   classical
   letI : Nonempty A := ⟨c⟩

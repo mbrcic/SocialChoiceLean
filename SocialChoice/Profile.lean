@@ -84,6 +84,22 @@ noncomputable def restrictCandidates {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (p : A → Prop) [DecidablePred p] : Profile V {a // p a} :=
   { pref := fun v => restrictBallot (P.pref v) p }
 
+-- Helper instance for restricted candidate types
+noncomputable instance instFintypeNeq {A : Type} [Fintype A] [DecidableEq A] (c : A) :
+    Fintype {x : A // x ≠ c} := by
+  classical
+  infer_instance
+
+-- Restrict a profile by removing one candidate
+noncomputable def restrictProfile {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) (c : A) : Profile V {x : A // x ≠ c} :=
+  restrictCandidates P (fun x => x ≠ c)
+
+@[simp] lemma prefers_restrictProfile_iff {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) (c : A) (v : V) (a b : {x : A // x ≠ c}) :
+    Prefers (restrictProfile P c) v a b ↔ Prefers P v a b := by
+  rfl
+
 -- Tie back to ℕ via finite subtypes.
 abbrev NatElectorate (S : Finset Nat) := {n // n ∈ S}
 abbrev NatAgenda (S : Finset Nat) := {n // n ∈ S}
@@ -193,5 +209,29 @@ lemma exists_pair_of_one_lt_card {α : Type} [Fintype α]
     omega
   rw [not_subsingleton_iff_nontrivial] at hne
   exact Nontrivial.exists_pair_ne
+
+lemma one_lt_card_subtype_ne {A : Type} [Fintype A] [DecidableEq A] {c : A}
+    (h : 2 < Fintype.card A) : 1 < Fintype.card {x : A // x ≠ c} := by
+  have hpred : 1 < (Fintype.card A).pred := by
+    have hle : 2 ≤ (Fintype.card A).pred := Nat.le_pred_of_lt h
+    exact lt_of_lt_of_le (by decide : (1 : Nat) < 2) hle
+  simpa [card_subtype_ne_eq c, Nat.pred_eq_sub_one] using hpred
+
+lemma two_elems_eq_or_eq {A : Type} [Fintype A] (hcard : Fintype.card A = 2) (a b : A) (hab : a ≠ b) (c : A) :
+    c = a ∨ c = b := by
+  classical
+  have hpair : ({a, b} : Finset A).card = 2 := Finset.card_pair hab
+  have hsub : ({a, b} : Finset A) ⊆ (Finset.univ : Finset A) := by
+    intro x _
+    exact Finset.mem_univ x
+  have hcard_univ : (Finset.univ : Finset A).card = 2 := by
+    simpa [Finset.card_univ] using hcard
+  have hpair_eq : ({a, b} : Finset A) = (Finset.univ : Finset A) := by
+    apply Finset.eq_of_subset_of_card_le hsub
+    simp [hcard_univ, hpair]
+  have huniv : (Finset.univ : Finset A) = {a, b} := hpair_eq.symm
+  have hc : c ∈ ({a, b} : Finset A) := by
+    simpa [huniv] using Finset.mem_univ c
+  simpa using hc
 
 end SocialChoice

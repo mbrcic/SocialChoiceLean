@@ -291,18 +291,23 @@ lemma margin_pos_iff_marginList_pos (ballots : Fin m → ListBallot n) (a b : Fi
   unfold margin_pos
   rw [margin_eq_marginList]
 
-/-- condorcet_winner in a list-based profile. -/
-lemma condorcet_winner_iff_marginList (ballots : Fin m → ListBallot n) (c : Fin n) :
-    condorcet_winner (profileOfListBallots ballots) c ↔
+/-- CondorcetWinner in a list-based profile. -/
+lemma CondorcetWinner_iff_marginList (ballots : Fin m → ListBallot n) (c : Fin n) :
+    CondorcetWinner (profileOfListBallots ballots) c ↔
     ∀ d : Fin n, c ≠ d → marginList (fun v => (ballots v).ranking) c d > 0 := by
-  unfold condorcet_winner
   constructor
   · intro h d hne
-    rw [← margin_pos_iff_marginList_pos]
-    exact h d hne
-  · intro h d hne
-    rw [margin_pos_iff_marginList_pos]
-    exact h d hne
+    have hpos :=
+      (CondorcetWinner_iff_margin_pos (profileOfListBallots ballots) c).mp h d
+        (by simpa [eq_comm] using hne)
+    simpa [margin_pos_iff_marginList_pos] using hpos
+  · intro h
+    have hpos :
+        ∀ d : Fin n, c ≠ d → margin_pos (profileOfListBallots ballots) c d := by
+      intro d hne
+      have h' := h d hne
+      simpa [margin_pos_iff_marginList_pos] using h'
+    exact (CondorcetWinner_iff_margin_pos (profileOfListBallots ballots) c).mpr hpos
 
 end BridgeLemmas
 

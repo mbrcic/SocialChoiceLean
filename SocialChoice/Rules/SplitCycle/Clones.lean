@@ -1913,7 +1913,7 @@ lemma cycle_of_forall_defeater {X : Type} [Fintype X]
 
 variable {V A : Type} [Fintype V] [Fintype A]
 
-theorem non_clone_choice_ind_clones_split_cycle : nonCloneChoiceIndClones splitCycle := by
+theorem split_cycle_non_clone_choice_independence_of_clones : NonCloneChoiceIndependenceOfClones splitCycle := by
   intro V A _ _ P c D clone a ha
   classical
   constructor
@@ -1953,7 +1953,7 @@ theorem non_clone_choice_ind_clones_split_cycle : nonCloneChoiceIndClones splitC
         exact (hcond y') hdefm
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ a.1, hcond'⟩
 
-theorem clone_choice_ind_clones_split_cycle : cloneChoiceIndClones splitCycle := by
+theorem split_cycle_clone_choice_independence_of_clones : CloneChoiceIndependenceOfClones splitCycle := by
   intro V A _ _ P c D clone
   classical
   constructor

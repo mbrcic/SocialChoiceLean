@@ -56,7 +56,7 @@ lemma plurality_nonempty {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [N
   refine ⟨c, ?_⟩
   simp [plurality, hmax]
 
-theorem pluralityWithRunoff_nonempty
+theorem plurality_with_runoff_nonempty
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty A]
     (P : Profile V A) : (pluralityWithRunoff P).Nonempty := by
   classical

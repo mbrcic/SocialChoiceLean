@@ -6,61 +6,6 @@ namespace SocialChoice
 
 open Finset
 
-lemma margin_lemma {V A : Type} [Fintype V] [Fintype A]
-    (P P' : Profile V A) (a b : A) (_ : a ≠ b) :
-    (∀ v : V, (Prefers P v a b → Prefers P' v a b) ∧
-      (Prefers P' v b a → Prefers P v b a)) →
-    margin P a b ≤ margin P' a b := by
-  classical
-  intro lift
-  have h1 :
-      (Finset.univ.filter (fun v => Prefers P v a b)).card ≤
-        (Finset.univ.filter (fun v => Prefers P' v a b)).card := by
-    refine cardinality_lemma (p := fun v => Prefers P v a b)
-      (q := fun v => Prefers P' v a b) ?_
-    intro v hv
-    exact (lift v).1 hv
-  have h2 :
-      (Finset.univ.filter (fun v => Prefers P' v b a)).card ≤
-        (Finset.univ.filter (fun v => Prefers P v b a)).card := by
-    refine cardinality_lemma (p := fun v => Prefers P' v b a)
-      (q := fun v => Prefers P v b a) ?_
-    intro v hv
-    exact (lift v).2 hv
-  have h1' :
-      (Int.ofNat (Finset.univ.filter (fun v => Prefers P v a b)).card) ≤
-        Int.ofNat (Finset.univ.filter (fun v => Prefers P' v a b)).card := by
-    exact Int.ofNat_le_ofNat_of_le h1
-  have h2' :
-      (Int.ofNat (Finset.univ.filter (fun v => Prefers P' v b a)).card) ≤
-        Int.ofNat (Finset.univ.filter (fun v => Prefers P v b a)).card := by
-    exact Int.ofNat_le_ofNat_of_le h2
-  have hsub := sub_le_sub h1' h2'
-  simpa [margin] using hsub
-
-lemma margin_eq_of_simpleLift {V A : Type} [Fintype V] [Fintype A]
-    (P P' : Profile V A) (x a b : A) (ha : a ≠ x) (hb : b ≠ x) :
-    simpleLift P' P x → margin P a b = margin P' a b := by
-  classical
-  intro lift
-  rcases lift with ⟨lift1, _⟩
-  have h1 :
-      (Finset.univ.filter (fun v => Prefers P v a b)).card =
-        (Finset.univ.filter (fun v => Prefers P' v a b)).card := by
-    refine cardinality_lemma2 (p := fun v => Prefers P v a b)
-      (q := fun v => Prefers P' v a b) ?_
-    intro v
-    exact lift1 v a b ha hb
-  have h2 :
-      (Finset.univ.filter (fun v => Prefers P v b a)).card =
-        (Finset.univ.filter (fun v => Prefers P' v b a)).card := by
-    refine cardinality_lemma2 (p := fun v => Prefers P v b a)
-      (q := fun v => Prefers P' v b a) ?_
-    intro v
-    exact lift1 v b a hb ha
-  dsimp [margin]
-  simp [h1, h2]
-
 lemma margin_le_of_simpleLift_x {V A : Type} [Fintype V] [Fintype A]
     {P P' : Profile V A} {x a : A} (hLift : simpleLift P' P x) :
     margin P' a x ≤ margin P a x := by

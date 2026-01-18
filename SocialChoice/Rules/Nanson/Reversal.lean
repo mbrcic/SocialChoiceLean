@@ -27,7 +27,7 @@ lemma nanson_score_pos_of_mem {V A : Type} [Fintype V] [Fintype A]
       rcases Finset.mem_image.mp hx' with ⟨y, _hy, rfl⟩
       exact y.property
 
-theorem nanson_reversal_symmetry : reversal_symmetry nanson := by
+theorem nanson_reversal_symmetry : ReversalSymmetry nanson := by
   intro V A _ _ _ P hnot
   classical
   have hnotall : ¬ ∀ a, c2BordaScore P a = 0 := by
