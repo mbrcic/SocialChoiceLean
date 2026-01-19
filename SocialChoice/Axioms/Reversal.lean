@@ -1,4 +1,5 @@
 import SocialChoice.Profile
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -13,10 +14,12 @@ def reverse_profile {V A : Type} [Fintype V] [Fintype A] (P : Profile V A) : Pro
     Prefers (reverse_profile P) v a b ↔ Prefers P v b a := by
   rfl
 
+@[scAxiom]
 def SingletonReversalSymmetry (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A) (x : A),
     (∃ y, x ≠ y) → f P = {x} → x ∉ f (reverse_profile P)
 
+@[scAxiom]
 def ReversalSymmetry (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] (P : Profile V A),
     f P ≠ Finset.univ → f P ∩ f (reverse_profile P) = ∅

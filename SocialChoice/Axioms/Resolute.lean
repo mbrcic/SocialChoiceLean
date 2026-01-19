@@ -1,5 +1,6 @@
 import SocialChoice.Profile
 import Mathlib.Data.Finset.Card
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -13,6 +14,7 @@ This file provides the definition and helper lemmas for working with resolute ru
 open Finset
 
 /-- A voting rule is resolute if it always returns exactly one winner. -/
+@[scAxiom]
 def Resolute (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A), (f P).card = 1
 

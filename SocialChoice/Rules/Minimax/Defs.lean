@@ -1,6 +1,7 @@
 import Mathlib.Data.Finset.Basic
 import SocialChoice.Profile
 import SocialChoice.Margin
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -30,6 +31,7 @@ noncomputable def minimaxScore (P : Profile V A) : Int := by
     exact Finset.min' scores hScores
   · exact 0
 
+@[scRule]
 noncomputable def minimax : VotingRule := by
   intro V A _ _ P
   classical

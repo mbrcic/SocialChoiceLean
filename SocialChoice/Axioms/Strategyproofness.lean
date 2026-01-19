@@ -1,5 +1,6 @@
 import SocialChoice.Profile
 import SocialChoice.Axioms.Core
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -10,6 +11,7 @@ noncomputable def updateProfile {V A : Type} [Fintype V] [Fintype A]
   exact { pref := fun w => if w = v then ballot else P.pref w }
 
 /-- Strategyproofness for resolute rules: no voter can gain by misreporting. -/
+@[scAxiom]
 def ResoluteStrategyproofness (f : VotingRule) (_hf : Resolute f) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A]
       (P : Profile V A) (v : V) (ballot : LinearOrder A) (x y : A),
@@ -34,6 +36,7 @@ worst outcome in the winner set.
     is better than the max of the old winner set.
 
     We say a system is **optimist strategyproof** if no such manipulation exists. -/
+@[scAxiom]
 def OptimistStrategyproof (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A]
       (P : Profile V A) (v : V) (ballot : LinearOrder A),
@@ -48,6 +51,7 @@ def OptimistStrategyproof (f : VotingRule) : Prop :=
     is better than the min of the old winner set.
 
     We say a system is **pessimist strategyproof** if no such manipulation exists. -/
+@[scAxiom]
 def PessimistStrategyproof (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A]
       (P : Profile V A) (v : V) (ballot : LinearOrder A),

@@ -1,5 +1,6 @@
 import SocialChoice.Profile
 import SocialChoice.Axioms.Resolute
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -11,6 +12,7 @@ The `Resolute` definition is in `Axioms/Resolute.lean`.
 -/
 
 /-- A voting rule is non-trivial if some candidate can lose. -/
+@[scAxiom]
 def NonTrivial (f : VotingRule) : Prop :=
   ∃ (V A : Type) (instV : Fintype V) (instA : Fintype A),
     let _ := instV
@@ -18,6 +20,7 @@ def NonTrivial (f : VotingRule) : Prop :=
     ∃ (P : Profile V A) (c : A), c ∉ f P
 
 /-- A voting rule is onto if every candidate can win. -/
+@[scAxiom]
 def Onto (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] (c : A), ∃ P : Profile V A, f P = {c}
 

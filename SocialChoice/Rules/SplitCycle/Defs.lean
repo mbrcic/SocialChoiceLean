@@ -2,6 +2,7 @@ import Mathlib.Data.Finset.Basic
 import SocialChoice.Profile
 import SocialChoice.Margin
 import SocialChoice.Cycles
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -11,6 +12,7 @@ noncomputable def splitCycleDefeats {V A : Type} [Fintype V] [Fintype A]
     ¬ ∃ c : List A, x ∈ c ∧ y ∈ c ∧
       cycle (fun a b => margin P x y ≤ margin P a b) c
 
+@[scRule]
 noncomputable def splitCycle : VotingRule := by
   intro V A _ _ P
   classical

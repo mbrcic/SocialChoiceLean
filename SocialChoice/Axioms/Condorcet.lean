@@ -1,6 +1,7 @@
 import SocialChoice.Profile
 import SocialChoice.Margin
 import SocialChoice.Cycles
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -14,10 +15,12 @@ def CondorcetLoser {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) : Prop :=
   (∀ d : A, d ≠ c → StrictMajority (votersPreferring P d c)) ∧ ∃ d, d ≠ c
 
+@[scAxiom]
 def CondorcetConsistency (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A) (c : A),
     CondorcetWinner P c → f P = {c}
 
+@[scAxiom]
 def CondorcetLoserCriterion (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A) (c : A),
     CondorcetLoser P c → c ∉ f P

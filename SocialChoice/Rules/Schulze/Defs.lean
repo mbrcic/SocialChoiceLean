@@ -1,6 +1,7 @@
 import Mathlib.Data.Finset.Basic
 import SocialChoice.Profile
 import SocialChoice.Rules.Schulze.Path
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -19,6 +20,7 @@ lemma schulzeDefeats_asymm {V A : Type} [Fintype V] [Fintype A]
     ¬ schulzeDefeats P b a := by
   exact (lt_asymm h)
 
+@[scRule]
 noncomputable def schulze : VotingRule := by
   intro V A _ _ P
   classical

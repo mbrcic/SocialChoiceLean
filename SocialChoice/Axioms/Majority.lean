@@ -1,15 +1,19 @@
 import SocialChoice.Profile
+import SocialChoice.Meta
 
 namespace SocialChoice
 
+@[scAxiom]
 def MajorityCriterion (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A) (c : A),
     StrictMajority (votersTop P c) → f P = {c}
 
+@[scAxiom]
 def MajorityLoserCriterion (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A) (c : A),
     StrictMajority (votersBottom P c) → (∃ d, d ≠ c) → c ∉ f P
 
+@[scAxiom]
 def MutualMajorityCriterion (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A]
       (P : Profile V A) (S : Finset V) (T : Finset A),

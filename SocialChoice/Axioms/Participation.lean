@@ -1,14 +1,17 @@
 import SocialChoice.Profile
 import SocialChoice.Axioms.Core
 import SocialChoice.SetExtensions
+import SocialChoice.Meta
 
 namespace SocialChoice
 
+@[scAxiom]
 def PositiveInvolvement (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A]
       (P : Profile V A) (c : A) (ballot : LinearOrder A),
     c ∈ f P → BallotTop ballot c → c ∈ f (addVoter P ballot)
 
+@[scAxiom]
 def NegativeInvolvement (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A]
       (P : Profile V A) (c : A) (ballot : LinearOrder A),
@@ -46,21 +49,27 @@ def WeakParticipation (E : ∀ {A : Type}, LinearOrder A → SetExtension A) (f 
     (∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v) →
     ¬ (E (Q.pref (newVoter (u := u) (V := V) hu))).strict (f Q) (f P)
 
+@[scAxiom]
 def OptimistParticipation (f : VotingRule) : Prop :=
   StrongParticipation (fun {A} r => OptimistExtension (A := A) r) f
 
+@[scAxiom]
 def PessimistParticipation (f : VotingRule) : Prop :=
   StrongParticipation (fun {A} r => PessimistExtension (A := A) r) f
 
+@[scAxiom]
 def StrongKellyParticipation (f : VotingRule) : Prop :=
   StrongParticipation (fun {A} r => KellyExtension (A := A) r) f
 
+@[scAxiom]
 def WeakKellyParticipation (f : VotingRule) : Prop :=
   WeakParticipation (fun {A} r => KellyExtension (A := A) r) f
 
+@[scAxiom]
 def StrongFishburnParticipation (f : VotingRule) : Prop :=
   StrongParticipation (fun {A} r => FishburnExtension (A := A) r) f
 
+@[scAxiom]
 def WeakFishburnParticipation (f : VotingRule) : Prop :=
   WeakParticipation (fun {A} r => FishburnExtension (A := A) r) f
 
@@ -109,6 +118,7 @@ lemma upperSet_mem_of_not_lt {A : Type} [DecidableEq A]
     | inl hlt => exact hS hlt hx
     | inr hgt => exact (False.elim (hnot hgt))
 
+@[scAxiom]
 def ResoluteParticipation (f : VotingRule) (_hf : Resolute f) : Prop :=
   ∀ {U A : Type} [DecidableEq U] [Fintype A]
       (V : Finset U) (u : U) (hu : u ∉ V)

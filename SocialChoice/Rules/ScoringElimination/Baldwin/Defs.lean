@@ -1,5 +1,6 @@
 import SocialChoice.Rules.ScoringElimination.Defs
 import SocialChoice.Rules.ScoringRules.Borda.Defs
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -17,6 +18,7 @@ When there are ties for elimination, we use parallel-universe tie-breaking.
 -/
 
 /-- Baldwin's method (Borda elimination). -/
+@[scRule]
 noncomputable def baldwin : VotingRule :=
   scoringEliminationRule bordaScore
 

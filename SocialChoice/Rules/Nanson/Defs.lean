@@ -1,4 +1,5 @@
 import SocialChoice.Rules.ScoringRules.Borda.C2Borda
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -27,6 +28,7 @@ noncomputable def nansonAux {V : Type} [Fintype V]
           · exact Finset.univ
 
 /-- Nanson's rule based on C2Borda scores. -/
+@[scRule]
 noncomputable def nanson : VotingRule :=
   fun {V A} _ _ (P : Profile V A) => by
     classical

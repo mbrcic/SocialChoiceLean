@@ -16,7 +16,9 @@ The project includes:
 ## Project Structure
 
 - `SocialChoice/`: The main library directory.
-    - `Basic.lean` / `Profile.lean`: Fundamental definitions for preference profiles and voting rules.
+    - `Basic.lean` / `Profile.lean` / `Margins.lean` / ...: Fundamental definitions for preference profiles and voting rules.
+    - `Meta.lean`: Meta-level predicates (`Refines`, `Implies`, etc.) and custom attributes.
+    - `ListBallot.lean`: Utilities for handling ballots as lists for counterexamples.
     - `Axioms/`: Formal definitions of social choice properties.
     - `Rules/`: Specific voting rule implementations and their properties.
         - `ScoringRules/`: Borda, Plurality, Veto, etc.
@@ -26,7 +28,12 @@ The project includes:
 - `lakefile.toml`: Configuration for the Lake build system.
 - `lean-toolchain`: Specifies the Lean 4 version used (currently `v4.27.0-rc1`).
 
-### Testing
+## Suggesting Next Steps
+
+When the agent suggests next steps, it should either only give 1 suggestion, or otherwise label one of its suggestions as "(primary suggestion)" or "(recommended)". This will help the user to focus on the most important next step. If the user responds positively (e.g. "continue"), the agent should interpret that as approval to proceed with the primary or recommended suggestion.
+
+## Testing
+
 No testing is required as the project focuses on formal proofs. Verification is done through Lean's type checker.
 
 ## Development Conventions
@@ -36,6 +43,40 @@ No testing is required as the project focuses on formal proofs. Verification is 
 - **Mathematical Style:** Uses `Fintype` for finite sets of voters and candidates, and `Finset` for result sets.
 - **Modularity:** New rules should be added to `SocialChoice/Rules/`, and their axioms to `SocialChoice/Axioms/`.
 
+## Meta-level Infrastructure
+
+The file `SocialChoice/Meta.lean` provides predicates and attributes for reasoning about relationships between rules and axioms.
+
+### Custom Attributes
+
+- `@[scAxiom]`: Tag a definition as a social choice axiom (used for documentation tooling).
+- `@[scRule]`: Tag a definition as a voting rule.
+
+Example usage:
+```lean
+@[scAxiom]
+def CondorcetConsistency (f : VotingRule) : Prop := ...
+
+@[scRule]
+noncomputable def splitCycle : VotingRule := ...
+```
+
+### Meta-level Predicates
+
+- `Refines f g`: Rule `f` refines `g` (f always returns a subset of winners of g). Forms a preorder.
+- `PreservedUnderRefinement Z`: Axiom `Z` transfers from coarser to finer rules.
+- `PreservedUnderCoarsening Z`: Axiom `Z` transfers from finer to coarser rules.
+- `Implies Z₁ Z₂`: Axiom `Z₁` implies axiom `Z₂` for all rules. Forms a preorder.
+
+These enable concise derived proofs. For example, if `schulze` refines `splitCycle` and `CondorcetConsistency` is preserved under refinement, then `CondorcetConsistency schulze` follows from `CondorcetConsistency splitCycle`.
+
+### Naming Conventions for Theorems
+
+- `[rule]_[axiom]`: Direct result, e.g., `splitCycle_condorcetConsistency`
+- `[rule]_refines_[rule]`: Refinement, e.g., `schulze_refines_splitCycle`
+- `[axiom]_preservedUnderRefinement`: Preservation, e.g., `condorcetConsistency_preservedUnderRefinement`
+- `[axiom]_implies_[axiom]`: Implication, e.g., `condorcetConsistency_implies_majorityCriterion`
+
 ## Using lean-lsp
 
 The user prefers that agents read files directly from the file system using their dedicated file read tool. For long files, it can be judicious to read them in chunks. Avoid using the `lean_file_contents` tool since its output is less readable.
@@ -43,6 +84,8 @@ The user prefers that agents read files directly from the file system using thei
 For most other tasks, the user prefers that agents use tools provided by the lean-lsp mcp plugin.
 
 When using lean-lsp for the first time, it is useful to call the `lean_diagnostics` tool to make sure that the Lean server is fully initialized and ready to respond to further requests. Occasionally a second call to `lean_diagnostics` may be needed if the first call returns `[]`. Agents should be suspicious of empty diagnostics results, especially if we expect the linter to complain about warnings that have not yet been fixed.
+
+Occasionally lean_diagnostics may be broken (transport closed, stale errors, displaying errors in other files). In that case the agent is allowed to run `lake build [filename]` as a fallback, even though this gives less-detailed output.
 
 ### Searching mathlib4
 
@@ -52,9 +95,13 @@ Note: these tools only search mathlib4, not the user's code base. For searching 
 
 ### Debugging
 
-When debugging Lean code, the user prefers that agents use the `lean_diagnostics` tool provided by the lean-lsp mcp plugin. This tool provides detailed diagnostics about errors in Lean code, which can be very helpful for debugging. For fixing those errors, the `lean_multi_attempt` tool should be used **whenever possible** as it can try multiple fixes in one go, which is often more efficient than trying out one fix, calling diagnostics again, noticing it is still broken, and repeating. If one fix attempt was made without multi-attempt, then the next attempts should definitely use multi-attempt.
+When debugging Lean code, the user prefers that agents use the `lean_diagnostics` tool provided by the lean-lsp mcp plugin. This tool provides detailed diagnostics about errors in Lean code, which can be very helpful for debugging.
 
 The agent should also be aware of the `lean_hover_info` and `lean_goal` tools.
+
+### Fixing "No goals to be solved" errors
+
+If encountering "No goals to be solved" errors at line X, the most common and easiest fix is to just delete line X, without making changes to any other lines. Only if this fails do we need to consider more complex fixes.
 
 ### Fixing unnecessary simpa warnings
 

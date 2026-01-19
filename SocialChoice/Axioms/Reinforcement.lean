@@ -1,9 +1,11 @@
 import SocialChoice.Profile
 import SocialChoice.Axioms.Participation
+import SocialChoice.Meta
 
 namespace SocialChoice
 
 
+@[scAxiom]
 def Reinforcement (f : VotingRule) : Prop :=
   ∀ {U A : Type} [DecidableEq U] [Fintype A] [DecidableEq A]
       (V W : Finset U) (hdisj : Disjoint V W)
@@ -15,6 +17,7 @@ def Reinforcement (f : VotingRule) : Prop :=
     (f P ∩ f Q).Nonempty →
       f R = f P ∩ f Q
 
+@[scAxiom]
 def SubsetReinforcement (f : VotingRule) : Prop :=
   ∀ {U A : Type} [DecidableEq U] [Fintype A] [DecidableEq A]
       (V W : Finset U) (hdisj : Disjoint V W)

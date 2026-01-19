@@ -1,5 +1,6 @@
 import SocialChoice.Profile
 import SocialChoice.Margin
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -11,6 +12,7 @@ def simpleLift {V A : Type} [Fintype V] [Fintype A]
     ∀ a v, (Prefers P v x a → Prefers P' v x a) ∧
       (Prefers P' v a x → Prefers P v a x)
 
+@[scAxiom]
 def Monotonicity (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A]
       (P P' : Profile V A) (x : A),

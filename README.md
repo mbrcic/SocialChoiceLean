@@ -30,6 +30,7 @@ lake build
 ```
 SocialChoice/
 ├── Profile.lean              # Core definitions: profiles, preferences, voting rules
+├── Meta.lean                 # Meta-level predicates and custom attributes
 ├── Rank.lean                 # Ranking and position utilities
 ├── Margin.lean               # Pairwise margin calculations
 ├── Cycles.lean               # Cycle detection in preference relations
@@ -111,6 +112,19 @@ The library formalizes the following axiomatic properties of voting rules:
 | **Dictatorship** | `Dictatorship.lean` | Some voter's top choice always wins |
 | **Reversal Symmetry** | `Reversal.lean` | Unique winner on `P` isn't unique winner on reversed `P` |
 | **Clone Independence** | `Clones.lean` | Adding clones doesn't change outcomes for non-clones |
+
+### Meta-level Infrastructure (`Meta.lean`)
+
+The library provides predicates for reasoning about relationships between rules and axioms:
+
+| Predicate | Description |
+|-----------|-------------|
+| `Refines f g` | Rule `f` always returns a subset of `g`'s winners |
+| `PreservedUnderRefinement Z` | Axiom `Z` transfers from coarser to finer rules |
+| `PreservedUnderCoarsening Z` | Axiom `Z` transfers from finer to coarser rules |
+| `Implies Z₁ Z₂` | Axiom `Z₁` implies axiom `Z₂` for all rules |
+
+Custom attributes `@[scAxiom]` and `@[scRule]` tag definitions for documentation tooling.
 
 ### Strategyproofness (`Strategyproofness.lean`)
 

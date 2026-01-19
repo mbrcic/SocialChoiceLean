@@ -3,6 +3,7 @@ import Mathlib.Data.Finset.Max
 import Mathlib.Data.Finset.Powerset
 import SocialChoice.Margin
 import SocialChoice.Rules.ScoringRules.Plurality.Defs
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -28,6 +29,7 @@ noncomputable def pluralityWithRunoffPairs {V A : Type} [Fintype V] [Fintype A] 
   · let T := secondPluralitySet P S
     exact (S.product T).image (fun p => ({p.1, p.2} : Finset A))
 
+@[scRule]
 noncomputable def pluralityWithRunoff : VotingRule :=
   fun {V A} _ _ (P : Profile V A) => by
     classical

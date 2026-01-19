@@ -1,9 +1,11 @@
 import SocialChoice.Rules
+import SocialChoice.Meta
 
 namespace SocialChoice
 
 def bordaScore (m r : Nat) : Int := Int.ofNat (m - 1 - r)
 
+@[scRule]
 noncomputable def borda : VotingRule :=
   scoringRule bordaScore
 
