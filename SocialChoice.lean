@@ -79,6 +79,10 @@ import SocialChoice.Rules.SplitCycle.Involvement
 import SocialChoice.Rules.SplitCycle.Monotonicity
 import SocialChoice.Rules.SplitCycle.Pareto
 import SocialChoice.Rules.SplitCycle.Reversal
+import SocialChoice.Rules.Schulze.Defs
+import SocialChoice.Rules.Schulze.Path
+import SocialChoice.Rules.Schulze.Transitivity
+import SocialChoice.Rules.Schulze.RefinesSplitCycle
 
 import SocialChoice.Impossibilities.CondorcetStrategyproofness
 import SocialChoice.Impossibilities.CondorcetParticipation
