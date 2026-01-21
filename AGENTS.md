@@ -79,7 +79,7 @@ These enable concise derived proofs. For example, if `schulze` refines `splitCyc
 
 ## Using lean-lsp
 
-The user prefers that agents read files directly from the file system using their dedicated file read tool. For long files, it can be judicious to read them in chunks. Avoid using the `lean_file_contents` tool since its output is less readable.
+The user prefers that agents read files directly from the file system using sed or cat. For long files, it can be judicious to read them in chunks. Avoid using the `lean_file_contents` tool since its output is less readable.
 
 For most other tasks, the user prefers that agents use tools provided by the lean-lsp mcp plugin.
 
@@ -91,7 +91,7 @@ Occasionally lean_diagnostics may be broken (transport closed, stale errors, dis
 
 When searching for definitions, the user prefers that agents use the `lean_loogle`, `lean_leansearch`, and `lean_leanfinder` tools provided by the lean-lsp mcp plugin. These tools should be used liberally as they can speed up exploration significantly. There are rate limits of several requests per 30 seconds. Given how agents are implemented, this means that for *every* turn, these rate limits will be available, so can be used. (e.g. if the user entered a message, this will have taken >30s so the rate limits will have reset; if the agent requested diagnostics, this also takes sufficient time to reset limits).
 
-Note: these tools only search mathlib4, not the user's code base. For searching the user's code base, the agent should use `rg`, its native file search tool, or `lean_local_search`.
+Note: these tools only search mathlib4, not the user's code base. For searching the user's code base, the agent should use `rg` and other command-line tools, or `lean_local_search`.
 
 ### Debugging
 

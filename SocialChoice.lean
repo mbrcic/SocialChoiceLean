@@ -91,3 +91,4 @@ import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Impossibilities.GibbardSatterthwaite.Main
 import SocialChoice.Impossibilities.DugganSchwartz.Main
+import SocialChoice.Impossibilities.Holliday.Main

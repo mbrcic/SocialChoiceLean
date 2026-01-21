@@ -130,6 +130,40 @@ def profileBallotRanking (ballots : Fin m → ListBallot n) (v : Fin m) : List (
 
 end ProfileOfListBallots
 
+/-! ## List-Based Ballot Utilities -/
+
+section ListBallotUtilities
+
+variable {n : ℕ}
+
+/-- Expand a ballot into a list with k identical copies. -/
+def ballotCopies (k : Nat) (b : ListBallot n) : List (ListBallot n) :=
+  List.replicate k b
+
+/-- Expand a list of (count, ballot) pairs into a list of ballots. -/
+def ballotList : List (Nat × ListBallot n) → List (ListBallot n)
+  | [] => []
+  | (k, b) :: t => ballotCopies k b ++ ballotList t
+
+/-- Convert a list of ballots into a function on Fin length. -/
+def ballotsOfList (l : List (ListBallot n)) : Fin l.length → ListBallot n :=
+  fun v => l.get v
+
+end ListBallotUtilities
+
+/-! ## Profiles from ballot blocks -/
+
+section ProfileOfBlocks
+
+variable {n : ℕ}
+
+/-- Build a profile from a block list by expanding the ballots. -/
+noncomputable def profileOfBlocks (blocks : List (Nat × ListBallot n)) :
+    Profile (Fin (ballotList blocks).length) (Fin n) :=
+  profileOfListBallots (ballotsOfList (ballotList blocks))
+
+end ProfileOfBlocks
+
 /-! ## Computable Predicates -/
 
 section ComputablePredicates
@@ -173,6 +207,227 @@ def marginList (ballots : Fin m → List (Fin n)) (a b : Fin n) : ℤ :=
   (countPrefers ballots a b : ℤ) - (countPrefers ballots b a : ℤ)
 
 end AggregateComputations
+
+/-! ## Margins from ballot blocks -/
+
+section BallotBlockMargins
+
+variable {n : ℕ}
+
+/-- Margin contribution of a single ballot for a pair (a,b). -/
+def marginOfBallot (b : ListBallot n) (a b' : Fin n) : Int :=
+  if prefersInList b.ranking a b' then 1 else -1
+
+/-- Margin computed from a list of (count, ballot) blocks. -/
+def marginBlocks (blocks : List (Nat × ListBallot n)) (a b' : Fin n) : Int :=
+  blocks.foldl (fun acc p => acc + (p.1 : Int) * marginOfBallot p.2 a b') 0
+
+end BallotBlockMargins
+
+/-! ## Margins from explicit ballot lists -/
+
+section BallotListMargins
+
+variable {n : ℕ}
+
+/-- Margin computed from an explicit list of ballots. -/
+def marginBallots (l : List (ListBallot n)) (a b : Fin n) : Int :=
+  (l.map (fun ballot => marginOfBallot ballot a b)).sum
+
+lemma idxOf_ne_of_ne (b : ListBallot n) {a c : Fin n} (hne : a ≠ c) :
+    b.ranking.idxOf a ≠ b.ranking.idxOf c := by
+  intro hidx
+  have h :=
+    (List.idxOf_inj (l := b.ranking) (x := a) (y := c) (b.complete a)).mp hidx
+  exact hne h
+
+lemma marginBallots_append (l₁ l₂ : List (ListBallot n)) (a b : Fin n) :
+    marginBallots (l₁ ++ l₂) a b = marginBallots l₁ a b + marginBallots l₂ a b := by
+  simp [marginBallots, List.map_append, List.sum_append]
+
+lemma marginBallots_replicate (k : Nat) (b : ListBallot n) (a b' : Fin n) :
+    marginBallots (List.replicate k b) a b' = (k : Int) * marginOfBallot b a b' := by
+  simp [marginBallots, List.map_replicate, List.sum_replicate]
+
+lemma marginBallots_ballotCopies (k : Nat) (b : ListBallot n) (a b' : Fin n) :
+    marginBallots (ballotCopies k b) a b' = (k : Int) * marginOfBallot b a b' := by
+  simp [ballotCopies, marginBallots_replicate]
+
+lemma marginBlocks_foldl (blocks : List (Nat × ListBallot n)) (a b : Fin n) (acc : Int) :
+    blocks.foldl (fun acc p => acc + (p.1 : Int) * marginOfBallot p.2 a b) acc =
+      acc + marginBlocks blocks a b := by
+  induction blocks generalizing acc with
+  | nil =>
+      simp [marginBlocks]
+  | cons head tail ih =>
+      cases head with
+      | mk k ballot =>
+          have ih1 :=
+            ih (acc := acc + (k : Int) * marginOfBallot ballot a b)
+          have ih2 :=
+            ih (acc := (k : Int) * marginOfBallot ballot a b)
+          calc
+            List.foldl (fun acc p => acc + (p.1 : Int) * marginOfBallot p.2 a b)
+                (acc + (k : Int) * marginOfBallot ballot a b) tail =
+              (acc + (k : Int) * marginOfBallot ballot a b) + marginBlocks tail a b := ih1
+            _ = acc + ((k : Int) * marginOfBallot ballot a b + marginBlocks tail a b) := by
+              ac_rfl
+            _ = acc + List.foldl (fun acc p => acc + (p.1 : Int) * marginOfBallot p.2 a b)
+                ((k : Int) * marginOfBallot ballot a b) tail := by
+              simpa [marginBlocks] using ih2.symm
+            _ = acc + marginBlocks ((k, ballot) :: tail) a b := by
+              simp [marginBlocks]
+
+lemma marginBlocks_cons (k : Nat) (ballot : ListBallot n) (tail : List (Nat × ListBallot n))
+    (a b : Fin n) :
+    marginBlocks ((k, ballot) :: tail) a b =
+      (k : Int) * marginOfBallot ballot a b + marginBlocks tail a b := by
+  have h :=
+    marginBlocks_foldl (blocks := tail) (a := a) (b := b)
+      (acc := (k : Int) * marginOfBallot ballot a b)
+  simpa [marginBlocks, add_assoc] using h
+
+lemma marginBallots_ballotList (blocks : List (Nat × ListBallot n)) (a b : Fin n) :
+    marginBallots (ballotList blocks) a b = marginBlocks blocks a b := by
+  induction blocks with
+  | nil =>
+      simp [marginBallots, marginBlocks, ballotList]
+  | cons head tail ih =>
+      cases head with
+      | mk k ballot =>
+          simp [ballotList, marginBallots_append, marginBallots_ballotCopies, marginBlocks_cons, ih]
+
+end BallotListMargins
+
+/-! ## Margins from blocks to profiles -/
+
+section MarginFromBlocks
+
+variable {m n : ℕ}
+
+lemma prefersInList_asymm (b : ListBallot n) {a c : Fin n}
+    (h : prefersInList b.ranking a c = true) : prefersInList b.ranking c a = false := by
+  have hlt : b.ranking.idxOf a < b.ranking.idxOf c := by
+    simp [prefersInList, decide_eq_true_eq] at h
+    exact h
+  cases hca : prefersInList b.ranking c a with
+  | true =>
+      have hgt : b.ranking.idxOf c < b.ranking.idxOf a := by
+        simp [prefersInList, decide_eq_true_eq] at hca
+        exact hca
+      exact (lt_asymm hlt hgt).elim
+  | false =>
+      rfl
+
+lemma prefersInList_total (b : ListBallot n) {a c : Fin n} (hne : a ≠ c)
+    (h : prefersInList b.ranking a c = false) : prefersInList b.ranking c a = true := by
+  have hnot : ¬ b.ranking.idxOf a < b.ranking.idxOf c := by
+    simpa [prefersInList, decide_eq_false_iff_not] using h
+  have hne_idx : b.ranking.idxOf a ≠ b.ranking.idxOf c :=
+    idxOf_ne_of_ne b hne
+  cases hlt : lt_or_gt_of_ne hne_idx with
+  | inl hlt' =>
+      exact (hnot hlt').elim
+  | inr hgt =>
+      simpa [prefersInList, decide_eq_true_eq] using hgt
+
+lemma marginOfBallot_eq_sub_indicators (b : ListBallot n) {a c : Fin n} (hne : a ≠ c) :
+    marginOfBallot b a c =
+      (if prefersInList b.ranking a c then 1 else 0) -
+        (if prefersInList b.ranking c a then 1 else 0) := by
+  cases h : prefersInList b.ranking a c with
+  | true =>
+      have h' : prefersInList b.ranking a c = true := by simp [h]
+      have hca : prefersInList b.ranking c a = false :=
+        prefersInList_asymm b h'
+      simp [marginOfBallot, h, hca]
+  | false =>
+      have h' : prefersInList b.ranking a c = false := by simp [h]
+      have hca : prefersInList b.ranking c a = true :=
+        prefersInList_total b hne h'
+      simp [marginOfBallot, h, hca]
+
+lemma marginList_eq_sum_marginOfBallot (ballots : Fin m → ListBallot n) {a c : Fin n}
+    (hne : a ≠ c) :
+    marginList (fun v => (ballots v).ranking) a c =
+      Finset.univ.sum (fun v => marginOfBallot (ballots v) a c) := by
+  classical
+  have hcount_ac :
+      (countPrefers (fun v => (ballots v).ranking) a c : Int) =
+        Finset.univ.sum (fun v => if prefersInList (ballots v).ranking a c then (1 : Int) else 0) := by
+    unfold countPrefers
+    simp
+  have hcount_ca :
+      (countPrefers (fun v => (ballots v).ranking) c a : Int) =
+        Finset.univ.sum (fun v => if prefersInList (ballots v).ranking c a then (1 : Int) else 0) := by
+    unfold countPrefers
+    simp
+  have hsum :
+      (Finset.univ.sum
+          (fun v => if prefersInList (ballots v).ranking a c then (1 : Int) else 0)) -
+        (Finset.univ.sum
+          (fun v => if prefersInList (ballots v).ranking c a then (1 : Int) else 0)) =
+        Finset.univ.sum
+          (fun v =>
+            (if prefersInList (ballots v).ranking a c then (1 : Int) else 0) -
+              (if prefersInList (ballots v).ranking c a then (1 : Int) else 0)) := by
+    symm
+    exact Finset.sum_sub_distrib _ _
+  have hsum' :
+      Finset.univ.sum
+          (fun v =>
+            (if prefersInList (ballots v).ranking a c then (1 : Int) else 0) -
+              (if prefersInList (ballots v).ranking c a then (1 : Int) else 0)) =
+        Finset.univ.sum (fun v => marginOfBallot (ballots v) a c) := by
+    refine Finset.sum_congr rfl ?_
+    intro v _hv
+    simp [marginOfBallot_eq_sub_indicators (b := ballots v) (hne := hne)]
+  calc
+    marginList (fun v => (ballots v).ranking) a c =
+        (countPrefers (fun v => (ballots v).ranking) a c : Int) -
+          (countPrefers (fun v => (ballots v).ranking) c a : Int) := by
+        simp [marginList]
+    _ =
+        (Finset.univ.sum
+          (fun v => if prefersInList (ballots v).ranking a c then (1 : Int) else 0)) -
+        (Finset.univ.sum
+          (fun v => if prefersInList (ballots v).ranking c a then (1 : Int) else 0)) := by
+        simp [hcount_ac, hcount_ca]
+    _ =
+        Finset.univ.sum
+          (fun v =>
+            (if prefersInList (ballots v).ranking a c then (1 : Int) else 0) -
+              (if prefersInList (ballots v).ranking c a then (1 : Int) else 0)) := hsum
+    _ = Finset.univ.sum (fun v => marginOfBallot (ballots v) a c) := hsum'
+
+lemma ballotsOfList_sum_marginOfBallot (l : List (ListBallot n)) (a b : Fin n) :
+    Finset.univ.sum (fun v => marginOfBallot (ballotsOfList l v) a b) =
+      marginBallots l a b := by
+  classical
+  induction l with
+  | nil =>
+      simp [marginBallots]
+  | cons head tail ih =>
+      have hcons' :
+          (fun v => marginOfBallot (ballotsOfList (head :: tail) v) a b) =
+            Fin.cons (marginOfBallot head a b)
+              (fun v => marginOfBallot (ballotsOfList tail v) a b) := by
+        funext v
+        refine Fin.cases ?h0 ?hs v
+        · simp [ballotsOfList]
+        · intro v
+          simp [ballotsOfList]
+      calc
+        Finset.univ.sum (fun v => marginOfBallot (ballotsOfList (head :: tail) v) a b) =
+            marginOfBallot head a b +
+              Finset.univ.sum (fun v => marginOfBallot (ballotsOfList tail v) a b) := by
+            rw [hcons']
+            simp
+        _ = marginOfBallot head a b + marginBallots tail a b := by simp [ih]
+        _ = marginBallots (head :: tail) a b := by
+            simp [marginBallots]
+
+end MarginFromBlocks
 
 /-! ## Bridge Lemmas -/
 
@@ -283,6 +538,30 @@ lemma margin_eq_marginList (ballots : Fin m → ListBallot n) (a b : Fin n) :
       prefersInList (ballots v).ranking b a = true :=
     fun v => prefers_iff_prefersInList ballots v b a
   simp only [h1, h2, Int.ofNat_eq_natCast]
+
+/-- Margins of a block-based profile reduce to `marginBlocks` for distinct candidates. -/
+lemma margin_profileOfBlocks {n : ℕ} (blocks : List (Nat × ListBallot n)) {a b : Fin n}
+    (hne : a ≠ b) :
+    margin (profileOfBlocks blocks) a b = marginBlocks blocks a b := by
+  classical
+  unfold profileOfBlocks
+  rw [margin_eq_marginList]
+  have hsum :
+      Finset.univ.sum
+          (fun v => marginOfBallot (ballotsOfList (ballotList blocks) v) a b) =
+        marginBallots (ballotList blocks) a b :=
+    ballotsOfList_sum_marginOfBallot (l := ballotList blocks) (a := a) (b := b)
+  have hmargin :
+      marginList (fun v => (ballotsOfList (ballotList blocks) v).ranking) a b =
+        Finset.univ.sum
+          (fun v => marginOfBallot (ballotsOfList (ballotList blocks) v) a b) :=
+    marginList_eq_sum_marginOfBallot (ballots := ballotsOfList (ballotList blocks)) (hne := hne)
+  calc
+    marginList (fun v => (ballotsOfList (ballotList blocks) v).ranking) a b =
+        Finset.univ.sum
+          (fun v => marginOfBallot (ballotsOfList (ballotList blocks) v) a b) := hmargin
+    _ = marginBallots (ballotList blocks) a b := hsum
+    _ = marginBlocks blocks a b := marginBallots_ballotList (blocks := blocks) (a := a) (b := b)
 
 /-- margin_pos in a list-based profile corresponds to positive marginList. -/
 lemma margin_pos_iff_marginList_pos (ballots : Fin m → ListBallot n) (a b : Fin n) :

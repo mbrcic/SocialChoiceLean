@@ -12,6 +12,11 @@ open Finset
 structure Profile (V A : Type) [Fintype V] [Fintype A] where
   pref : V → LinearOrder A
 
+-- Constant profile where every voter has the same ballot.
+def constantProfile {V A : Type} [Fintype V] [Fintype A]
+    (r : LinearOrder A) : Profile V A :=
+  { pref := fun _ => r }
+
 @[ext] lemma Profile.ext {V A : Type} [Fintype V] [Fintype A]
     {P Q : Profile V A} (h : ∀ v, P.pref v = Q.pref v) : P = Q := by
   cases P with

@@ -631,4 +631,96 @@ lemma margin_eq_margin_restrictProfile {V A : Type} [Fintype V] [Fintype A] [Dec
   dsimp [margin]
   simp [h1, h2]
 
+/-! ### Constant profiles and unions -/
+
+lemma margin_constantProfile_of_lt {V A : Type} [Fintype V] [Fintype A]
+    (r : LinearOrder A) {a b : A} (h : r.lt a b) :
+    margin (constantProfile (V := V) (A := A) r) a b = (Fintype.card V : Int) := by
+  classical
+  apply unanimous_margin_eq_card
+  intro v
+  simp [constantProfile, Prefers, h]
+
+lemma margin_constantProfile_of_gt {V A : Type} [Fintype V] [Fintype A]
+    (r : LinearOrder A) {a b : A} (h : r.lt b a) :
+    margin (constantProfile (V := V) (A := A) r) a b = -(Fintype.card V : Int) := by
+  classical
+  have hba :
+      margin (constantProfile (V := V) (A := A) r) b a = (Fintype.card V : Int) :=
+    margin_constantProfile_of_lt (V := V) (A := A) r h
+  have hskew :
+      margin (constantProfile (V := V) (A := A) r) a b =
+        - margin (constantProfile (V := V) (A := A) r) b a := by
+    simpa [skew_symmetric] using
+      (margin_antisymmetric (P := constantProfile (V := V) (A := A) r)) a b
+  calc
+    margin (constantProfile (V := V) (A := A) r) a b =
+        - margin (constantProfile (V := V) (A := A) r) b a := hskew
+    _ = -(Fintype.card V : Int) := by simp [hba]
+
+lemma card_votersPreferring_unionProfiles {V W A : Type} [Fintype V] [Fintype W] [Fintype A]
+    (P : Profile V A) (Q : Profile W A) (a b : A) :
+    (votersPreferring (unionProfiles P Q) a b).card =
+      (votersPreferring P a b).card + (votersPreferring Q a b).card := by
+  classical
+  let SV : Finset V := votersPreferring P a b
+  let SW : Finset W := votersPreferring Q a b
+  let S : Finset (V ⊕ W) := votersPreferring (unionProfiles P Q) a b
+  have hS :
+      S = SV.image Sum.inl ∪ SW.image Sum.inr := by
+    ext v
+    cases v with
+    | inl v =>
+        simp [S, SV, SW, votersPreferring, unionProfiles, Prefers, Finset.mem_image]
+    | inr w =>
+        simp [S, SV, SW, votersPreferring, unionProfiles, Prefers, Finset.mem_image]
+  have hdisj : Disjoint (SV.image Sum.inl) (SW.image Sum.inr) := by
+    refine Finset.disjoint_left.2 ?_
+    intro v hvL hvR
+    rcases Finset.mem_image.mp hvL with ⟨v1, _hv1, rfl⟩
+    rcases Finset.mem_image.mp hvR with ⟨v2, _hv2, hEq⟩
+    cases hEq
+  have hinjL : Function.Injective (Sum.inl : V → V ⊕ W) := by
+    intro v1 v2 hEq
+    cases hEq
+    rfl
+  have hinjR : Function.Injective (Sum.inr : W → V ⊕ W) := by
+    intro w1 w2 hEq
+    cases hEq
+    rfl
+  calc
+    S.card = (SV.image Sum.inl ∪ SW.image Sum.inr).card := by simp [hS]
+    _ = (SV.image Sum.inl).card + (SW.image Sum.inr).card :=
+      Finset.card_union_of_disjoint hdisj
+    _ = SV.card + SW.card := by
+      have hL : (SV.image Sum.inl).card = SV.card :=
+        Finset.card_image_of_injective (s := SV) (f := Sum.inl) hinjL
+      have hR : (SW.image Sum.inr).card = SW.card :=
+        Finset.card_image_of_injective (s := SW) (f := Sum.inr) hinjR
+      simp [hL, hR, SV, SW]
+
+lemma margin_unionProfiles {V W A : Type} [Fintype V] [Fintype W] [Fintype A]
+    (P : Profile V A) (Q : Profile W A) (a b : A) :
+    margin (unionProfiles P Q) a b = margin P a b + margin Q a b := by
+  classical
+  have h1 := card_votersPreferring_unionProfiles (P := P) (Q := Q) (a := a) (b := b)
+  have h2 := card_votersPreferring_unionProfiles (P := P) (Q := Q) (a := b) (b := a)
+  dsimp [margin]
+  have hUP :
+      (#{v | Prefers (unionProfiles P Q) v a b}) =
+        (votersPreferring (unionProfiles P Q) a b).card := by rfl
+  have hUP' :
+      (#{v | Prefers (unionProfiles P Q) v b a}) =
+        (votersPreferring (unionProfiles P Q) b a).card := by rfl
+  have hP :
+      (#{v | Prefers P v a b}) = (votersPreferring P a b).card := by rfl
+  have hP' :
+      (#{v | Prefers P v b a}) = (votersPreferring P b a).card := by rfl
+  have hQ :
+      (#{v | Prefers Q v a b}) = (votersPreferring Q a b).card := by rfl
+  have hQ' :
+      (#{v | Prefers Q v b a}) = (votersPreferring Q b a).card := by rfl
+  simp [hUP, hUP', hP, hP', hQ, hQ', h1, h2]
+  ring
+
 end SocialChoice

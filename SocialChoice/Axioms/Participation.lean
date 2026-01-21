@@ -13,7 +13,7 @@ instance (U : Type) [DecidableEq U] (S : Finset U) : Fintype (Electorate U S) :=
 
 def liftVoter {U : Type} [DecidableEq U] {V : Finset U} (u : U) (v : Electorate U V) :
     Electorate U (insert u V) :=
-  ⟨v.1, by simp [v.2]⟩
+  ⟨v.1, Finset.mem_insert.mpr (Or.inr v.2)⟩
 
 def newVoter {U : Type} [DecidableEq U] {V : Finset U} (u : U) (hu : u ∉ V) :
     Electorate U (insert u V) :=
@@ -131,6 +131,152 @@ lemma restrictElectorate_eq_of_subset_proof {U A : Type} [DecidableEq U] [Fintyp
         apply Subtype.ext
         rfl
       simp [hsub]
+
+noncomputable def castProfile {U A : Type} [DecidableEq U] [Fintype A] {S T : Finset U}
+    (h : S = T) (P : Profile (Electorate U S) A) : Profile (Electorate U T) A :=
+  { pref := fun v =>
+      P.pref ⟨v.1, by
+        have h' := congrArg (fun s => v.1 ∈ s) h.symm
+        exact Eq.mp h' v.2⟩ }
+
+@[simp] lemma castProfile_rfl {U A : Type} [DecidableEq U] [Fintype A] {S : Finset U}
+    (P : Profile (Electorate U S) A) : castProfile (S := S) (T := S) rfl P = P := by
+  ext v
+  rfl
+
+lemma votingRule_castProfile {f : VotingRule} {U A : Type} [DecidableEq U] [Fintype A]
+    {S T : Finset U} (h : S = T) (P : Profile (Electorate U S) A) :
+    f (castProfile h P) = f P := by
+  cases h
+  simp [castProfile_rfl]
+
+noncomputable def addCopiesProfile {U A : Type} [DecidableEq U] [Fintype A]
+    (V W : Finset U) (P : Profile (Electorate U V) A) (r : LinearOrder A) :
+    Profile (Electorate U (V ∪ W)) A :=
+  { pref := fun v => if h : v.1 ∈ V then P.pref ⟨v.1, h⟩ else r }
+lemma positiveInvolvement_addCopiesProfile {f : VotingRule} (hpos : PositiveInvolvement f) :
+    ∀ {U A : Type} [DecidableEq U] [Fintype A]
+        (V W : Finset U) (_ : Disjoint V W)
+        (P : Profile (Electorate U V) A) (r : LinearOrder A) (c : A),
+      BallotTop r c →
+      c ∈ f P →
+      c ∈ f (addCopiesProfile V W P r) := by
+  intro U A _ _ V W hVW P r c htop hc
+  classical
+  induction W using Finset.induction_on with
+  | empty =>
+      have hEq : V ∪ (∅ : Finset U) = V := by simp
+      let Q0 : Profile (Electorate U V) A :=
+        castProfile (S := V ∪ (∅ : Finset U)) (T := V) hEq (addCopiesProfile V (∅ : Finset U) P r)
+      have hEqprof : Q0 = P := by
+        apply Profile.ext
+        intro v
+        have hv : v.1 ∈ V := v.2
+        simp [Q0, castProfile, addCopiesProfile]
+      have hc' : c ∈ f Q0 := by
+        simpa [hEqprof] using hc
+      have hcast : f Q0 = f (addCopiesProfile V (∅ : Finset U) P r) := by
+        simpa [Q0] using
+          (votingRule_castProfile (f := f) hEq (addCopiesProfile V (∅ : Finset U) P r))
+      simpa [hcast] using hc'
+  | insert w s hw ih =>
+      have hVS : Disjoint V s := by
+        refine Finset.disjoint_left.mpr ?_
+        intro x hxV hxS
+        exact (Finset.disjoint_left.mp hVW) hxV (by simp [hxS])
+      have hwV : w ∉ V := by
+        intro hwV
+        exact (Finset.disjoint_left.mp hVW) hwV (by simp)
+      have hwV' : w ∉ V ∪ s := by
+        intro hwV'
+        rcases Finset.mem_union.mp hwV' with hwV' | hwS
+        · exact hwV hwV'
+        · exact hw hwS
+      have hEq : insert w (V ∪ s) = V ∪ insert w s := by
+        simp [Finset.union_insert]
+      let Qbig : Profile (Electorate U (insert w (V ∪ s))) A :=
+        castProfile (S := V ∪ insert w s) (T := insert w (V ∪ s)) hEq.symm
+          (addCopiesProfile (V := V) (W := insert w s) P r)
+      let Qsmall : Profile (Electorate U (V ∪ s)) A :=
+        addCopiesProfile (V := V) (W := s) P r
+      have hagree :
+          ∀ v : Electorate U (V ∪ s),
+            Qbig.pref (liftVoter (u := w) v) = Qsmall.pref v := by
+        intro v
+        by_cases hv : v.1 ∈ V
+        · simp [Qbig, Qsmall, castProfile, addCopiesProfile, liftVoter, hv]
+        · simp [Qbig, Qsmall, castProfile, addCopiesProfile, liftVoter, hv]
+      have hnew : Qbig.pref (newVoter (u := w) (V := V ∪ s) hwV') = r := by
+        simp [Qbig, castProfile, addCopiesProfile, newVoter, hwV]
+      have htop' :
+          BallotTop (Qbig.pref (newVoter (u := w) (V := V ∪ s) hwV')) c := by
+        simpa [hnew] using htop
+      have hc' : c ∈ f Qsmall := ih hVS
+      have hmem : c ∈ f Qbig := by
+        apply hpos (V := V ∪ s) (u := w) hwV' Qsmall Qbig c
+        · exact hagree
+        · exact hc'
+        · exact htop'
+      have hcast : f Qbig = f (addCopiesProfile V (insert w s) P r) := by
+        simpa [Qbig] using
+          (votingRule_castProfile (f := f) hEq.symm
+            (addCopiesProfile (V := V) (W := insert w s) P r))
+      simpa [hcast] using hmem
+
+lemma positiveInvolvement_add_copies {f : VotingRule} (hpos : PositiveInvolvement f) :
+    ∀ {U A : Type} [DecidableEq U] [Fintype A]
+        (V W : Finset U) (_ : Disjoint V W)
+        (P : Profile (Electorate U V) A)
+        (Q : Profile (Electorate U (V ∪ W)) A) (c : A) (r : LinearOrder A),
+      restrictElectorate Q V (by
+        intro x hx
+        exact Finset.mem_union.mpr (Or.inl hx)) = P →
+      (∀ w (hw : w ∈ W),
+        Q.pref ⟨w, Finset.mem_union.mpr (Or.inr hw)⟩ = r) →
+      BallotTop r c →
+      c ∈ f P →
+      c ∈ f Q := by
+  intro U A _ _ V W hVW P Q c r hrest hnew htop hc
+  classical
+  have hcanon : c ∈ f (addCopiesProfile V W P r) :=
+    positiveInvolvement_addCopiesProfile (f := f) hpos V W hVW P r c htop hc
+  have hQeq : Q = addCopiesProfile V W P r := by
+    apply Profile.ext
+    intro v
+    by_cases hv : v.1 ∈ V
+    · have hrestpref' :=
+        congrArg (fun prof => prof.pref ⟨v.1, hv⟩) hrest
+      have hrestpref :
+          Q.pref ⟨v.1, Finset.mem_union.mpr (Or.inl hv)⟩ = P.pref ⟨v.1, hv⟩ := by
+        simp [restrictElectorate] at hrestpref'
+        exact hrestpref'
+      have hvsub :
+          (⟨v.1, Finset.mem_union.mpr (Or.inl hv)⟩ : Electorate U (V ∪ W)) = v := by
+        apply Subtype.ext
+        rfl
+      have hQpref : Q.pref v = P.pref ⟨v.1, hv⟩ := by
+        cases hvsub
+        exact hrestpref
+      have hAddpref : (addCopiesProfile V W P r).pref v = P.pref ⟨v.1, hv⟩ := by
+        simp [addCopiesProfile, hv]
+      exact hQpref.trans hAddpref.symm
+    · have hWmem : v.1 ∈ W := by
+        rcases Finset.mem_union.mp v.2 with hv' | hw'
+        · exact (hv hv').elim
+        · exact hw'
+      have hnew' :
+          Q.pref ⟨v.1, Finset.mem_union.mpr (Or.inr hWmem)⟩ = r := hnew _ hWmem
+      have hvsub :
+          (⟨v.1, Finset.mem_union.mpr (Or.inr hWmem)⟩ : Electorate U (V ∪ W)) = v := by
+        apply Subtype.ext
+        rfl
+      have hQpref : Q.pref v = r := by
+        cases hvsub
+        exact hnew'
+      have hAddpref : (addCopiesProfile V W P r).pref v = r := by
+        simp [addCopiesProfile, hv]
+      exact hQpref.trans hAddpref.symm
+  simpa [hQeq] using hcanon
 
 def UpperSet {A : Type} [DecidableEq A] (r : LinearOrder A) (S : Finset A) : Prop :=
   ∀ ⦃x y : A⦄, r.lt x y → y ∈ S → x ∈ S
