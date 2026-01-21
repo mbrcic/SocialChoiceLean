@@ -10,7 +10,7 @@ import SocialChoice.Rules.Schulze.Transitivity
 
 namespace SocialChoice
 
-noncomputable local instance instDecidableEq {A : Type} : DecidableEq A := Classical.decEq _
+noncomputable local instance instDecidableEqSchulze {A : Type} : DecidableEq A := Classical.decEq _
 
 @[simp] lemma margin_removeClonesExcept
     {V A : Type} [Fintype V] [Fintype A]

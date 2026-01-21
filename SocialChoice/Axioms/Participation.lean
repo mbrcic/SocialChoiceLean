@@ -5,18 +5,6 @@ import SocialChoice.Meta
 
 namespace SocialChoice
 
-@[scAxiom]
-def PositiveInvolvement (f : VotingRule) : Prop :=
-  ∀ {V A : Type} [Fintype V] [Fintype A]
-      (P : Profile V A) (c : A) (ballot : LinearOrder A),
-    c ∈ f P → BallotTop ballot c → c ∈ f (addVoter P ballot)
-
-@[scAxiom]
-def NegativeInvolvement (f : VotingRule) : Prop :=
-  ∀ {V A : Type} [Fintype V] [Fintype A]
-      (P : Profile V A) (c : A) (ballot : LinearOrder A),
-    c ∉ f P → BallotBottom ballot c → c ∉ f (addVoter P ballot)
-
 abbrev Electorate (U : Type) (S : Finset U) := {u // u ∈ S}
 
 instance (U : Type) [DecidableEq U] (S : Finset U) : Fintype (Electorate U S) := by
@@ -30,6 +18,45 @@ def liftVoter {U : Type} [DecidableEq U] {V : Finset U} (u : U) (v : Electorate 
 def newVoter {U : Type} [DecidableEq U] {V : Finset U} (u : U) (hu : u ∉ V) :
     Electorate U (insert u V) :=
   ⟨u, by simp [hu]⟩
+
+lemma liftVoter_injective {U : Type} [DecidableEq U] {V : Finset U} (u : U) :
+    Function.Injective (liftVoter (u := u) : Electorate U V → Electorate U (insert u V)) := by
+  intro v w h
+  cases v with
+  | mk v hv =>
+      cases w with
+      | mk w hw =>
+          cases h
+          rfl
+
+lemma liftVoter_ne_newVoter {U : Type} [DecidableEq U] {V : Finset U} {u : U} (hu : u ∉ V)
+    (v : Electorate U V) :
+    liftVoter (u := u) v ≠ newVoter (u := u) (V := V) hu := by
+  intro h
+  have hval : v.1 = u := congrArg Subtype.val h
+  exact hu (by simpa [hval] using v.2)
+
+@[scAxiom]
+def PositiveInvolvement (f : VotingRule) : Prop :=
+  ∀ {U A : Type} [DecidableEq U] [Fintype A]
+      (V : Finset U) (u : U) (hu : u ∉ V)
+      (P : Profile (Electorate U V) A)
+      (Q : Profile (Electorate U (insert u V)) A) (c : A),
+    (∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v) →
+    c ∈ f P →
+    BallotTop (Q.pref (newVoter (u := u) (V := V) hu)) c →
+    c ∈ f Q
+
+@[scAxiom]
+def NegativeInvolvement (f : VotingRule) : Prop :=
+  ∀ {U A : Type} [DecidableEq U] [Fintype A]
+      (V : Finset U) (u : U) (hu : u ∉ V)
+      (P : Profile (Electorate U V) A)
+      (Q : Profile (Electorate U (insert u V)) A) (c : A),
+    (∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v) →
+    c ∉ f P →
+    BallotBottom (Q.pref (newVoter (u := u) (V := V) hu)) c →
+    c ∉ f Q
 
 def StrongParticipation (E : ∀ {A : Type}, LinearOrder A → SetExtension A) (f : VotingRule) :
     Prop :=

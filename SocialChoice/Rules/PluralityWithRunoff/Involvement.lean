@@ -72,12 +72,13 @@ private lemma mem_secondPluralitySet_of_max {V A : Type} [Fintype V] [Fintype A]
   simpa [secondPluralitySet, hR, R, scoreSet, maxScore] using hyMem
 
 theorem plurality_with_runoff_positive_involvement : PositiveInvolvement pluralityWithRunoff := by
-  intro V A _ _ P x ballot hx htop
+  intro U A _ _ V u hu P Q x hagree hx htop
   classical
   letI : DecidableEq A := Classical.decEq A
+  let ballot := Q.pref (newVoter (u := u) (V := V) hu)
   by_cases hcard : Fintype.card A ≤ 1
   · simp [pluralityWithRunoff, hcard]
-  · let P' := addVoter P ballot
+  · let P' := Q
     obtain ⟨y, hpair, hmargin⟩ := by
       simpa [pluralityWithRunoff, hcard] using hx
     have hpair_card : ({x, y} : Finset A).card = 2 :=
@@ -90,7 +91,7 @@ theorem plurality_with_runoff_positive_involvement : PositiveInvolvement plurali
     have hmargin' : 0 ≤ margin P' x y := by
       have hxylt : ballot.lt x y := htop y (by simpa [eq_comm] using hxy)
       have hmargin_eq : margin P' x y = margin P x y + 1 :=
-        margin_addVoter_eq_of_prefers P ballot x y hxylt
+        margin_add_newVoter_eq_of_prefers (u := u) (V := V) hu P Q hagree x y hxylt
       linarith
     have ballot_not_top : ∀ d : A, d ≠ x → ¬ BallotTop ballot d := by
       intro d hne htopd
@@ -98,37 +99,172 @@ theorem plurality_with_runoff_positive_involvement : PositiveInvolvement plurali
       have hdx : ballot.lt d x := htopd x (by simpa [eq_comm] using hne)
       let _ : Preorder A := ballot.toPreorder
       exact (lt_asymm (a := x) (b := d) hxd) hdx
-    let rightTop : A → Finset Unit :=
-      fun d => if BallotTop ballot d then {()} else ∅
-    have votersTop_addVoter :
-        ∀ d : A, votersTop P' d = (votersTop P d).disjSum (rightTop d) := by
+    have topCount_add_newVoter :
+        ∀ d : A, topCount P' d = topCount P d + (if BallotTop ballot d then 1 else 0) := by
       intro d
-      ext v
-      cases v with
-      | inl v =>
-          simp [votersTop, P', addVoter, TopRank, Prefers, rightTop,
-            Finset.inl_mem_disjSum]
-      | inr u =>
-          cases u
-          have hL : Sum.inr PUnit.unit ∈ votersTop P' d ↔ BallotTop ballot d := by
-            simp [votersTop, P', addVoter, TopRank, Prefers, BallotTop]
-          by_cases hbt : BallotTop ballot d
-          · simp [hL, rightTop, hbt, Finset.inr_mem_disjSum]
-          · simp [hL, rightTop, hbt]
-    have topCount_addVoter :
-        ∀ d : A, topCount P' d = topCount P d + (rightTop d).card := by
-      intro d
-      unfold topCount
-      simp [votersTop_addVoter, Finset.card_disjSum]
+      let S0 : Finset (Electorate U V) := votersTop P d
+      let S : Finset (Electorate U (insert u V)) := votersTop P' d
+      by_cases htopd : BallotTop ballot d
+      · have hS : S =
+            insert (newVoter (u := u) (V := V) hu) (S0.image (liftVoter (u := u))) := by
+          ext v
+          by_cases hv : v = newVoter (u := u) (V := V) hu
+          · subst hv
+            have hpref : TopRank P' (newVoter (u := u) (V := V) hu) d := by
+              simpa [TopRank, Prefers] using htopd
+            constructor
+            · intro _hmem
+              simp
+            · intro _hmem
+              exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hpref⟩
+          · have hv' : v.1 ∈ V := by
+              have hmem : v.1 ∈ insert u V := v.2
+              have hmem' : v.1 = u ∨ v.1 ∈ V := by
+                simpa using (Finset.mem_insert.mp hmem)
+              cases hmem' with
+              | inl h =>
+                  exact (hv (Subtype.ext h)).elim
+              | inr h => exact h
+            let v' : Electorate U V := ⟨v.1, hv'⟩
+            have hv_eq : v = liftVoter (u := u) v' := by
+              apply Subtype.ext
+              rfl
+            have htop' : TopRank P' v d ↔ TopRank P v' d := by
+              constructor
+              · intro h d1 hne
+                have h' := h d1 hne
+                simpa [P', Prefers, hv_eq, hagree] using h'
+              · intro h d1 hne
+                have h' := h d1 hne
+                simpa [P', Prefers, hv_eq, hagree] using h'
+            have himage : v ∈ S0.image (liftVoter (u := u)) ↔ v' ∈ S0 := by
+              constructor
+              · intro hvimg
+                rcases Finset.mem_image.mp hvimg with ⟨w, hw, hweq⟩
+                have hw' : w = v' := by
+                  apply (liftVoter_injective (u := u))
+                  simpa [hv_eq] using hweq
+                simpa [hw'] using hw
+              · intro hvS0
+                exact Finset.mem_image.mpr ⟨v', hvS0, hv_eq.symm⟩
+            have hvS : v ∈ S ↔ v' ∈ S0 := by
+              constructor
+              · intro hvS
+                have htopQ : TopRank P' v d := (Finset.mem_filter.mp hvS).2
+                have htopP : TopRank P v' d := (htop'.mp htopQ)
+                exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, htopP⟩
+              · intro hvS0
+                have htopP : TopRank P v' d := (Finset.mem_filter.mp hvS0).2
+                have htopQ : TopRank P' v d := (htop'.mpr htopP)
+                exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, htopQ⟩
+            have hinsert :
+                v ∈ insert (newVoter (u := u) (V := V) hu) (S0.image (liftVoter (u := u))) ↔
+                  v ∈ S0.image (liftVoter (u := u)) := by
+              simp [hv]
+            calc
+              v ∈ S ↔ v' ∈ S0 := hvS
+              _ ↔ v ∈ S0.image (liftVoter (u := u)) := himage.symm
+              _ ↔ v ∈ insert (newVoter (u := u) (V := V) hu) (S0.image (liftVoter (u := u))) :=
+                hinsert.symm
+        have hnotmem :
+            newVoter (u := u) (V := V) hu ∉ S0.image (liftVoter (u := u)) := by
+          intro hmem
+          rcases Finset.mem_image.mp hmem with ⟨v, _hv, hveq⟩
+          exact (liftVoter_ne_newVoter (u := u) (V := V) hu v) hveq
+        have hinj :
+            Function.Injective (liftVoter (u := u) : Electorate U V → Electorate U (insert u V)) :=
+          liftVoter_injective (u := u)
+        have hcard :
+            S.card = S0.card + 1 := by
+          have hcard' :
+              (insert (newVoter (u := u) (V := V) hu) (S0.image (liftVoter (u := u)))).card =
+                (S0.image (liftVoter (u := u))).card + 1 :=
+            Finset.card_insert_of_notMem hnotmem
+          calc
+            S.card = (S0.image (liftVoter (u := u))).card + 1 := by
+              simpa [hS] using hcard'
+            _ = S0.card + 1 := by
+              simpa using (Finset.card_image_of_injective S0 hinj)
+        simp [topCount, S, S0, hcard, htopd]
+      · have hS : S = S0.image (liftVoter (u := u)) := by
+          ext v
+          by_cases hv : v = newVoter (u := u) (V := V) hu
+          · subst hv
+            have hpref : ¬ TopRank P' (newVoter (u := u) (V := V) hu) d := by
+              intro htopQ
+              have htopB : BallotTop ballot d := by
+                intro x hx
+                have hprefQ : Prefers P' (newVoter (u := u) (V := V) hu) d x := htopQ x hx
+                simpa [Prefers, ballot] using hprefQ
+              exact htopd htopB
+            constructor
+            · intro hmem
+              have hpref' : TopRank P' (newVoter (u := u) (V := V) hu) d :=
+                (Finset.mem_filter.mp hmem).2
+              exact (hpref hpref').elim
+            · intro hmem
+              rcases Finset.mem_image.mp hmem with ⟨w, _hw, hweq⟩
+              exact (False.elim ((liftVoter_ne_newVoter (u := u) (V := V) hu w) hweq))
+          · have hv' : v.1 ∈ V := by
+              have hmem : v.1 ∈ insert u V := v.2
+              have hmem' : v.1 = u ∨ v.1 ∈ V := by
+                simpa using (Finset.mem_insert.mp hmem)
+              cases hmem' with
+              | inl h =>
+                  exact (hv (Subtype.ext h)).elim
+              | inr h => exact h
+            let v' : Electorate U V := ⟨v.1, hv'⟩
+            have hv_eq : v = liftVoter (u := u) v' := by
+              apply Subtype.ext
+              rfl
+            have htop' : TopRank P' v d ↔ TopRank P v' d := by
+              constructor
+              · intro h d1 hne
+                have h' := h d1 hne
+                simpa [P', Prefers, hv_eq, hagree] using h'
+              · intro h d1 hne
+                have h' := h d1 hne
+                simpa [P', Prefers, hv_eq, hagree] using h'
+            have himage : v ∈ S0.image (liftVoter (u := u)) ↔ v' ∈ S0 := by
+              constructor
+              · intro hvimg
+                rcases Finset.mem_image.mp hvimg with ⟨w, hw, hweq⟩
+                have hw' : w = v' := by
+                  apply (liftVoter_injective (u := u))
+                  simpa [hv_eq] using hweq
+                simpa [hw'] using hw
+              · intro hvS0
+                exact Finset.mem_image.mpr ⟨v', hvS0, hv_eq.symm⟩
+            have hvS : v ∈ S ↔ v' ∈ S0 := by
+              constructor
+              · intro hvS
+                have htopQ : TopRank P' v d := (Finset.mem_filter.mp hvS).2
+                have htopP : TopRank P v' d := (htop'.mp htopQ)
+                exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, htopP⟩
+              · intro hvS0
+                have htopP : TopRank P v' d := (Finset.mem_filter.mp hvS0).2
+                have htopQ : TopRank P' v d := (htop'.mpr htopP)
+                exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, htopQ⟩
+            calc
+              v ∈ S ↔ v' ∈ S0 := hvS
+              _ ↔ v ∈ S0.image (liftVoter (u := u)) := himage.symm
+        have hinj :
+            Function.Injective (liftVoter (u := u) : Electorate U V → Electorate U (insert u V)) :=
+          liftVoter_injective (u := u)
+        have hcard :
+            S.card = S0.card := by
+          calc
+            S.card = (S0.image (liftVoter (u := u))).card := by
+              simp [hS]
+            _ = S0.card := by
+              simpa using (Finset.card_image_of_injective S0 hinj)
+        simp [topCount, S, S0, hcard, htopd]
     have topCount_x : topCount P' x = topCount P x + 1 := by
-      have : rightTop x = {()} := by
-        simp [rightTop, htop]
-      simpa [this] using topCount_addVoter x
+      simpa [ballot, htop] using topCount_add_newVoter x
     have topCount_ne : ∀ d : A, d ≠ x → topCount P' d = topCount P d := by
       intro d hne
-      have : rightTop d = ∅ := by
-        simp [rightTop, ballot_not_top d hne]
-      simpa [this] using topCount_addVoter d
+      have hbt : ¬ BallotTop ballot d := ballot_not_top d hne
+      simpa [hbt] using topCount_add_newVoter d
     let S := plurality P
     let S' := plurality P'
     have hpair_new : ({x, y} : Finset A) ∈ pluralityWithRunoffPairs P' := by

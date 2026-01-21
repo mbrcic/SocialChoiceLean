@@ -5,7 +5,7 @@ import SocialChoice.Rules.SplitCycle.Clones
 
 namespace SocialChoice
 
-lemma isChain_of_le_pathStrength {V A : Type} [Fintype V] [Fintype A]
+private lemma isChain_of_le_pathStrength {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (m : Int) :
     ∀ l, m ≤ pathStrength P l →
       List.IsChain (fun a b => m ≤ margin P a b) l
