@@ -9,16 +9,6 @@ namespace SocialChoice
 open Finset
 open scoped BigOperators
 
-noncomputable def relabelBallotEquiv {A B : Type} (r : LinearOrder A) (e : A ≃ B) :
-    LinearOrder B := by
-  classical
-  let _ := r
-  exact LinearOrder.lift' e.symm e.symm.injective
-
-noncomputable def relabelProfile {V A B : Type} [Fintype V] [Fintype A] [Fintype B]
-    (P : Profile V A) (e : A ≃ B) : Profile V B :=
-  { pref := fun v => relabelBallotEquiv (P.pref v) e }
-
 lemma relabelProfile_perm {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (σ : Equiv.Perm A) :
     relabelProfile P σ = permuteCandidates P σ := by

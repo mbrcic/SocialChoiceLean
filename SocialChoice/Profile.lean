@@ -52,10 +52,21 @@ noncomputable def relabelBallot {α : Type} (r : LinearOrder α) (σ : Equiv.Per
   let _ := r
   exact LinearOrder.lift' σ σ.injective
 
+-- Relabel a linear order along an equivalence.
+noncomputable def relabelBallotEquiv {A B : Type} (r : LinearOrder A) (e : A ≃ B) :
+    LinearOrder B := by
+  classical
+  let _ := r
+  exact LinearOrder.lift' e.symm e.symm.injective
+
 -- Permute candidates by relabeling each ballot.
 noncomputable def permuteCandidates {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (σ : Equiv.Perm A) : Profile V A :=
   { pref := fun v => relabelBallot (P.pref v) σ.symm }
+
+noncomputable def relabelProfile {V A B : Type} [Fintype V] [Fintype A] [Fintype B]
+    (P : Profile V A) (e : A ≃ B) : Profile V B :=
+  { pref := fun v => relabelBallotEquiv (P.pref v) e }
 
 -- Add a voter via a sum type.
 def addVoter {V A : Type} [Fintype V] [Fintype A]

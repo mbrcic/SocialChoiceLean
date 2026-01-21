@@ -19,6 +19,38 @@ def margin_pos {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (a b : A) : Prop :=
   0 < margin P a b
 
+@[simp] lemma prefers_permuteCandidates_iff {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (σ : Equiv.Perm A) (v : V) (a b : A) :
+    Prefers (permuteCandidates P σ) v a b ↔ Prefers P v (σ.symm a) (σ.symm b) := by
+  rfl
+
+@[simp] lemma prefers_relabelProfile_iff {V A B : Type} [Fintype V] [Fintype A] [Fintype B]
+    (P : Profile V A) (e : A ≃ B) (v : V) (a b : B) :
+    Prefers (relabelProfile P e) v a b ↔ Prefers P v (e.symm a) (e.symm b) := by
+  rfl
+
+@[simp] lemma margin_permuteCandidates {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (σ : Equiv.Perm A) (a b : A) :
+    margin (permuteCandidates P σ) a b = margin P (σ.symm a) (σ.symm b) := by
+  classical
+  simp [margin]
+
+@[simp] lemma margin_relabelProfile {V A B : Type} [Fintype V] [Fintype A] [Fintype B]
+    (P : Profile V A) (e : A ≃ B) (a b : B) :
+    margin (relabelProfile P e) a b = margin P (e.symm a) (e.symm b) := by
+  classical
+  simp [margin]
+
+@[simp] lemma margin_pos_permuteCandidates_iff {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (σ : Equiv.Perm A) (a b : A) :
+    margin_pos (permuteCandidates P σ) a b ↔ margin_pos P (σ.symm a) (σ.symm b) := by
+  simp [margin_pos]
+
+@[simp] lemma margin_pos_relabelProfile_iff {V A B : Type} [Fintype V] [Fintype A] [Fintype B]
+    (P : Profile V A) (e : A ≃ B) (a b : B) :
+    margin_pos (relabelProfile P e) a b ↔ margin_pos P (e.symm a) (e.symm b) := by
+  simp [margin_pos]
+
 def skew_symmetric {A : Type} (M : A -> A -> Int) : Prop :=
   forall a b, M a b = -(M b a)
 

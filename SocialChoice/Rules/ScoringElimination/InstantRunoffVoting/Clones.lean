@@ -144,34 +144,6 @@ lemma mem_liftWinners_iff {A : Type} [DecidableEq A] {p : A → Prop} [Decidable
   -- `liftWinners` is `image Subtype.val`.
   simp [liftWinners, Finset.mem_image, ha]
 
-lemma cloneSet_restrictProfile
-    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P : Profile V A) (X : Set A) (ℓ : A) (hX : CloneSet P X)
-    (hXne : ∃ x ∈ X, x ≠ ℓ) :
-    CloneSet (restrictProfile P ℓ) (restrictCloneSet X ℓ) := by
-  classical
-  rcases hX with ⟨_hXnonempty, hclone⟩
-  refine ⟨restrictCloneSet_nonempty (X := X) (ℓ := ℓ) hXne, ?_⟩
-  intro v c hc
-  have hc' : (c : A) ∉ X := by
-    intro hmem
-    apply hc
-    simpa [restrictCloneSet] using hmem
-  have hcase := hclone v (c : A) hc'
-  cases hcase with
-  | inl hall =>
-    left
-    intro x hx
-    have hx' : (x : A) ∈ X := by
-      simpa [restrictCloneSet] using hx
-    simpa using (hall x hx')
-  | inr hall =>
-    right
-    intro x hx
-    have hx' : (x : A) ∈ X := by
-      simpa [restrictCloneSet] using hx
-    simpa using (hall x hx')
-
 lemma scoringEliminationAux_swap_rep
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
     (P : Profile V A) (X : Set A) (x x' : A)
@@ -703,82 +675,6 @@ lemma relabelProfile_restrictProfile_removeClonesExcept_of_nonclone
   · intro b
     rfl
   -- Unfold both sides; the induced restricted orders coincide definitionally.
-  ext v
-  rfl
-
-/-- If `ℓ` is a clone different from the representative `x`, then deleting `ℓ` before
-removing clones is redundant (up to relabeling). -/
-lemma relabelProfile_removeClonesExcept_restrictProfile_of_clone
-  {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-  (P : Profile V A) (X : Set A) (x ℓ : A)
-  (hℓ : ℓ ∈ X) (hxℓ : x ≠ ℓ) :
-  ∃ e,
-    (∀ t,
-      (((e t).1 : {a : A // a ≠ ℓ}).1) = t.1) ∧
-    (∀ b,
-      (e.symm b).1 = b.1.1) ∧
-    relabelProfile (removeClonesExcept P X x) e =
-      removeClonesExcept (restrictProfile P ℓ) (restrictCloneSet X ℓ)
-        (⟨x, hxℓ⟩ : {a : A // a ≠ ℓ}) := by
-  classical
-  -- Build an explicit equivalence between the two restricted candidate types.
-  let xℓ' : {a : A // a ≠ ℓ} := ⟨x, hxℓ⟩
-  let e : {a : A // clonePred X x a} ≃
-    {a : {a : A // a ≠ ℓ} // clonePred (restrictCloneSet X ℓ) xℓ' a} :=
-    { toFun := fun t =>
-        -- `t.1` cannot be `ℓ`, since `ℓ ∈ X` and `x ≠ ℓ`.
-        let hne : (t.1 : A) ≠ ℓ := by
-          intro hEq
-          have htX : clonePred X x ℓ := by
-            simpa [hEq] using t.2
-          -- But `clonePred X x ℓ` would imply `ℓ ∉ X` or `ℓ = x`.
-          rcases htX with htX | htX
-          · exact htX hℓ
-          · exact hxℓ (htX.symm)
-        have hp' : clonePred (restrictCloneSet X ℓ) xℓ' (⟨t.1, hne⟩ : {a : A // a ≠ ℓ}) := by
-          -- Convert the predicate using the simp lemma.
-          have hpred :
-              clonePred (restrictCloneSet X ℓ) xℓ' (⟨t.1, hne⟩ : {a : A // a ≠ ℓ}) ↔
-                clonePred X x (t.1 : A) := by
-            have := congrArg (fun f => f (⟨t.1, hne⟩ : {a : A // a ≠ ℓ}))
-              (clonePred_restrictCloneSet_eq (X := X) (x := x) (ℓ := ℓ) (hxℓ := hxℓ))
-            exact Iff.of_eq this
-          exact (hpred.mpr t.2)
-        ⟨⟨t.1, hne⟩, hp'⟩
-      invFun := fun s =>
-        -- Forget the extra `≠ ℓ` packaging.
-        let hpred : clonePred X x (s.1.1 : A) := by
-          have hpred' :
-              clonePred (restrictCloneSet X ℓ) xℓ' (s.1 : {a : A // a ≠ ℓ}) ↔
-                clonePred X x (s.1.1 : A) := by
-            have := congrArg (fun f => f (s.1 : {a : A // a ≠ ℓ}))
-              (clonePred_restrictCloneSet_eq (X := X) (x := x) (ℓ := ℓ) (hxℓ := hxℓ))
-            exact Iff.of_eq this
-          exact (hpred'.1 s.2)
-        ⟨s.1.1, hpred⟩
-      left_inv := by
-        intro t
-        ext
-        rfl
-      right_inv := by
-        intro s
-        ext
-        rfl }
-  refine ⟨e, ?_, ?_, ?_⟩
-  · intro t
-    rfl
-  · intro b
-    rfl
-  ext v
-  rfl
-
-lemma relabelProfile_restrictCandidates_subtypeSubtypeEquivSubtypeInter
-  {V A : Type} [Fintype V] [Fintype A]
-  (P : Profile V A)
-  (p q : A → Prop) [DecidablePred p] [DecidablePred q] :
-  relabelProfile (restrictCandidates (restrictCandidates P p) (fun x : {a : A // p a} => q x.1))
-    (Equiv.subtypeSubtypeEquivSubtypeInter p q) =
-    restrictCandidates P (fun a : A => p a ∧ q a) := by
   ext v
   rfl
 

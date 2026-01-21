@@ -5,6 +5,7 @@ import SocialChoice.Profile
 import SocialChoice.Margin
 import SocialChoice.Cycles
 import SocialChoice.Rules.SplitCycle.Defs
+import SocialChoice.Rules.SplitCycle.Neutrality
 import SocialChoice.Rules.SplitCycle.Reversal
 import SocialChoice.Axioms.Clones
 
@@ -12,9 +13,88 @@ namespace SocialChoice
 
 open Finset
 
-noncomputable local instance {A : Type} [Fintype A] (c : A) : Fintype {x : A // x ≠ c} := by
+/--
+  This file proves that Split Cycle satisfies independence of clones.
+  The proof follows the paper "Split Cycle: A New Condorcet Consistent Voting Method Independent of Clones and Immune to Spoilers" by Holliday and Pacuit.
+  Its formalization is based on a translation from the lean3 package `Formalized-Voting`.
+  The proof reasons about deleting just one clone from the clone set.
+  This is then later translated to the official definition where all but one clone are removed at once.
+-/
+
+noncomputable local instance instDecidableEq {A : Type} : DecidableEq A := Classical.decEq _
+
+/-- Remove a single candidate (Holliday–Pacuit). -/
+noncomputable def minusCandidate {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) (c : A) : Profile V {x : A // x ≠ c} := by
   classical
-  infer_instance
+  exact restrictCandidates P (fun x => x ≠ c)
+
+def clones {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c}) : Prop :=
+  D.Nonempty ∧
+    ∀ (c' : {x : A // x ≠ c}), c' ∈ D →
+      ∀ (x : {x : A // x ≠ c}) (v : V), x ∉ D →
+        (Prefers P v c x ↔ Prefers P v c' x) ∧
+          (Prefers P v x c ↔ Prefers P v x c')
+
+lemma clones_of_cloneSet
+    {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (X : Set A) (x : A)
+    (hX : CloneSet P X) (hx : x ∈ X) (hXne : ∃ y ∈ X, y ≠ x) :
+    clones P x (restrictCloneSet X x) := by
+  classical
+  rcases hX with ⟨_, hclone⟩
+  refine ⟨restrictCloneSet_nonempty (X := X) (ℓ := x) hXne, ?_⟩
+  intro c' hc' y v hy
+  have hc'X : (c' : A) ∈ X := by
+    simpa [restrictCloneSet] using hc'
+  have hyX : (y : A) ∉ X := by
+    intro hyX
+    apply hy
+    simpa [restrictCloneSet] using hyX
+  let _ := P.pref v
+  have hcase := hclone v (y : A) hyX
+  cases hcase with
+  | inl hall =>
+      have hxpref : Prefers P v x y := hall x hx
+      have hc'pref : Prefers P v c' y := hall c' hc'X
+      have hxfalse : ¬ Prefers P v y x := by
+        intro h
+        exact lt_asymm hxpref h
+      have hc'false : ¬ Prefers P v y c' := by
+        intro h
+        exact lt_asymm hc'pref h
+      refine ⟨?_, ?_⟩
+      · exact ⟨(fun _ => hc'pref), (fun _ => hxpref)⟩
+      · exact ⟨(fun h => (hxfalse h).elim), (fun h => (hc'false h).elim)⟩
+  | inr hall =>
+      have hxpref : Prefers P v y x := hall x hx
+      have hc'pref : Prefers P v y c' := hall c' hc'X
+      have hxfalse : ¬ Prefers P v x y := by
+        intro h
+        exact lt_asymm h hxpref
+      have hc'false : ¬ Prefers P v c' y := by
+        intro h
+        exact lt_asymm h hc'pref
+      refine ⟨?_, ?_⟩
+      · exact ⟨(fun h => (hxfalse h).elim), (fun h => (hc'false h).elim)⟩
+      · exact ⟨(fun _ => hc'pref), (fun _ => hxpref)⟩
+
+@[scAxiom]
+def NonCloneChoiceIndependenceOfClones (f : VotingRule) : Prop :=
+  ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+      (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c}),
+    clones P c D →
+      ∀ a : {x : A // x ≠ c},
+        a ∉ D → (a.1 ∈ f P ↔ a ∈ f (minusCandidate P c))
+
+@[scAxiom]
+def CloneChoiceIndependenceOfClones (f : VotingRule) : Prop :=
+  ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+      (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c}),
+    clones P c D →
+      ((c ∉ f P ∧ ∀ c' : {x : A // x ≠ c}, c' ∈ D → (c' : A) ∉ f P) ↔
+        ∀ c' : {x : A // x ≠ c}, c' ∈ D → c' ∉ f (minusCandidate P c))
 
 @[simp] lemma prefers_minusCandidate_iff {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) (v : V) (a b : {x : A // x ≠ c}) :
@@ -1914,7 +1994,7 @@ lemma cycle_of_forall_defeater {X : Type} [Fintype X]
 variable {V A : Type} [Fintype V] [Fintype A]
 
 theorem split_cycle_non_clone_choice_independence_of_clones : NonCloneChoiceIndependenceOfClones splitCycle := by
-  intro V A _ _ P c D clone a ha
+  intro V A _ _ _ P c D clone a ha
   classical
   constructor
   · intro haP
@@ -1954,7 +2034,7 @@ theorem split_cycle_non_clone_choice_independence_of_clones : NonCloneChoiceInde
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ a.1, hcond'⟩
 
 theorem split_cycle_clone_choice_independence_of_clones : CloneChoiceIndependenceOfClones splitCycle := by
-  intro V A _ _ P c D clone
+  intro V A _ _ _ P c D clone
   classical
   constructor
   · intro hnone
@@ -2063,6 +2143,254 @@ theorem split_cycle_clone_choice_independence_of_clones : CloneChoiceIndependenc
       have hcond : ∀ y, ¬ splitCycleDefeats P y e := (Finset.mem_filter.mp he_mem).2
       exact (hcond a) hdefP_e
     exact ⟨hc_not, hD_not⟩
+
+/-! ## Independence of Clones -/
+
+/-- Combined clone properties for induction. -/
+def split_cycle_clone_independence_props
+    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) (X : Set A) (x : A) : Prop :=
+  (∀ c (hc : c ∉ X),
+      (c ∈ splitCycle P ↔
+        (⟨c, Or.inl hc⟩ : {a : A // clonePred X x a}) ∈
+          splitCycle (removeClonesExcept P X x))) ∧
+  ((∃ y, y ∈ X ∧ y ∈ splitCycle P) ↔
+    (⟨x, Or.inr rfl⟩ : {a : A // clonePred X x a}) ∈
+      splitCycle (removeClonesExcept P X x))
+
+theorem split_cycle_independence_of_clones : IndependenceOfClones splitCycle := by
+  unfold IndependenceOfClones
+  intro V A instV instA instDecEq P X x hX hx
+  classical
+  -- Strong induction on the number of candidates.
+  set n := Fintype.card A with hn
+  let Motive : Nat → Prop := fun k =>
+    ∀ {A' : Type} [Fintype A'] [DecidableEq A'],
+      Fintype.card A' = k →
+        ∀ {V' : Type} [Fintype V'] (P' : Profile V' A') (X' : Set A') (x' : A'),
+          CloneSet P' X' → x' ∈ X' → split_cycle_clone_independence_props P' X' x'
+  have hStrong : Motive n := by
+    classical
+    refine Nat.strongRecOn (motive := Motive) n ?_
+    intro k ih A' _ _ hcard V' _ P' X' x' hX' hx'
+    by_cases hX_singleton : ∀ y ∈ X', y = x'
+    · -- X' = {x'}: removeClonesExcept is just a relabeling of P'
+      have hpred : ∀ a : A', clonePred X' x' a := by
+        intro a
+        by_cases hax : a = x'
+        · subst hax
+          exact Or.inr rfl
+        · left
+          intro haX
+          exact hax (hX_singleton a haX)
+      let e : A' ≃ {a : A' // clonePred X' x' a} :=
+        { toFun := fun a => ⟨a, hpred a⟩
+          invFun := fun s => (s : A')
+          left_inv := by intro a; rfl
+          right_inv := by intro s; ext; rfl }
+      have hrelabel : relabelProfile P' e = removeClonesExcept P' X' x' := by
+        ext v
+        rfl
+      refine ⟨?_, ?_⟩
+      · intro c hc
+        have hmem :
+            (⟨c, Or.inl hc⟩ : {a : A' // clonePred X' x' a}) ∈
+                splitCycle (removeClonesExcept P' X' x') ↔
+              c ∈ splitCycle P' := by
+          simpa [hrelabel] using
+            (mem_splitCycle_relabelProfile_iff (P := P') (e := e)
+              (b := (⟨c, Or.inl hc⟩ : {a : A' // clonePred X' x' a})))
+        exact hmem.symm
+      · have hxmem :
+            (⟨x', Or.inr rfl⟩ : {a : A' // clonePred X' x' a}) ∈
+                splitCycle (removeClonesExcept P' X' x') ↔
+              x' ∈ splitCycle P' := by
+          simpa [hrelabel] using
+            (mem_splitCycle_relabelProfile_iff (P := P') (e := e)
+              (b := (⟨x', Or.inr rfl⟩ : {a : A' // clonePred X' x' a})))
+        constructor
+        · intro h
+          rcases h with ⟨y, hyX, hywin⟩
+          have hy : y = x' := hX_singleton y hyX
+          subst hy
+          exact hxmem.mpr hywin
+        · intro hxwin
+          exact ⟨x', hx', hxmem.mp hxwin⟩
+    · -- Pick a distinct clone ℓ in X'
+      have hXne : ∃ y ∈ X', y ≠ x' := by
+        by_contra h
+        push_neg at h
+        exact hX_singleton h
+      rcases hXne with ⟨ℓ, hℓX, hxℓ⟩
+      have hxℓ' : x' ≠ ℓ := hxℓ.symm
+      let xℓ : {a : A' // a ≠ ℓ} := ⟨x', hxℓ'⟩
+      have hcloneℓ :
+          clones P' ℓ (restrictCloneSet X' ℓ) :=
+        clones_of_cloneSet (P := P') (X := X') (x := ℓ) hX' hℓX ⟨x', hx', hxℓ'⟩
+      have hklt : Fintype.card {a : A' // a ≠ ℓ} < k := by
+        simpa [hcard] using (card_subtype_ne_lt (x := ℓ))
+      have hM : Motive (Fintype.card {a : A' // a ≠ ℓ}) := ih _ hklt
+      have hX_restr :
+          CloneSet (restrictProfile P' ℓ) (restrictCloneSet X' ℓ) :=
+        cloneSet_restrictProfile (P := P') (X := X') (ℓ := ℓ) (hX := hX')
+          ⟨x', hx', hxℓ'⟩
+      have hxℓ_mem : xℓ ∈ restrictCloneSet X' ℓ := by
+        simpa [restrictCloneSet, xℓ] using hx'
+      have hrec :
+          split_cycle_clone_independence_props
+            (restrictProfile P' ℓ) (restrictCloneSet X' ℓ) xℓ :=
+        hM (A' := {a : A' // a ≠ ℓ}) rfl
+          (P' := restrictProfile P' ℓ)
+          (X' := restrictCloneSet X' ℓ) (x' := xℓ) hX_restr hxℓ_mem
+      rcases relabelProfile_removeClonesExcept_restrictProfile_of_clone
+        (P := P') (X := X') (x := x') (ℓ := ℓ) hℓX hxℓ' with
+        ⟨e, he1, he2, hrelabel⟩
+      refine ⟨?_, ?_⟩
+      · intro c hc
+        have hcℓ : c ≠ ℓ := by
+          intro h
+          apply hc
+          simpa [h] using hℓX
+        have hnot : (⟨c, hcℓ⟩ : {a : A' // a ≠ ℓ}) ∉ restrictCloneSet X' ℓ := by
+          intro hmem
+          apply hc
+          simpa [restrictCloneSet] using hmem
+        have hnon :
+            c ∈ splitCycle P' ↔
+              (⟨c, hcℓ⟩ : {a : A' // a ≠ ℓ}) ∈ splitCycle (restrictProfile P' ℓ) := by
+          have hnon' :=
+            split_cycle_non_clone_choice_independence_of_clones
+              (P := P') (c := ℓ) (D := restrictCloneSet X' ℓ) hcloneℓ
+              (a := (⟨c, hcℓ⟩ : {a : A' // a ≠ ℓ})) hnot
+          simpa [minusCandidate] using hnon'
+        have hrec_non :
+            (⟨c, hcℓ⟩ : {a : A' // a ≠ ℓ}) ∈ splitCycle (restrictProfile P' ℓ) ↔
+              (⟨⟨c, hcℓ⟩, Or.inl hnot⟩ :
+                  {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}) ∈
+                splitCycle (removeClonesExcept (restrictProfile P' ℓ) (restrictCloneSet X' ℓ) xℓ) :=
+          (hrec.1 (c := (⟨c, hcℓ⟩ : {a : A' // a ≠ ℓ})) hnot)
+        let b :
+            {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a} :=
+          ⟨⟨c, hcℓ⟩, Or.inl hnot⟩
+        have hmem :
+            b ∈ splitCycle (removeClonesExcept (restrictProfile P' ℓ) (restrictCloneSet X' ℓ) xℓ) ↔
+              (⟨c, Or.inl hc⟩ : {a : A' // clonePred X' x' a}) ∈
+                splitCycle (removeClonesExcept P' X' x') := by
+          have hmem' :
+              b ∈ splitCycle (relabelProfile (removeClonesExcept P' X' x') e) ↔
+                e.symm b ∈ splitCycle (removeClonesExcept P' X' x') := by
+            simpa using
+              (mem_splitCycle_relabelProfile_iff (P := removeClonesExcept P' X' x') (e := e) (b := b))
+          have hsymm :
+              e.symm b = (⟨c, Or.inl hc⟩ : {a : A' // clonePred X' x' a}) := by
+            apply Subtype.ext
+            have hval : (e.symm b).1 = b.1.1 := he2 b
+            simpa [b] using hval
+          simpa [hrelabel, hsymm] using hmem'
+        exact hnon.trans (hrec_non.trans hmem)
+      · have hnone_left :
+            (∀ y ∈ X', y ∉ splitCycle P') ↔
+              (ℓ ∉ splitCycle P' ∧
+                ∀ c' : {x : A' // x ≠ ℓ},
+                  c' ∈ restrictCloneSet X' ℓ → (c' : A') ∉ splitCycle P') := by
+          constructor
+          · intro hnone
+            refine ⟨?_, ?_⟩
+            · exact hnone ℓ hℓX
+            · intro c' hc'
+              exact hnone c' (by simpa [restrictCloneSet] using hc')
+          · intro hnone
+            rcases hnone with ⟨hℓ, hall⟩
+            intro y hyX hywin
+            by_cases hyℓ : y = ℓ
+            · subst hyℓ
+              exact hℓ hywin
+            · have hy' : (⟨y, hyℓ⟩ : {x : A' // x ≠ ℓ}) ∈ restrictCloneSet X' ℓ := by
+                simpa [restrictCloneSet] using hyX
+              exact hall _ hy' hywin
+        have hclone_choice :=
+          split_cycle_clone_choice_independence_of_clones
+            (P := P') (c := ℓ) (D := restrictCloneSet X' ℓ) hcloneℓ
+        have hnone :
+            (∀ y ∈ X', y ∉ splitCycle P') ↔
+              ∀ c' : {x : A' // x ≠ ℓ},
+                c' ∈ restrictCloneSet X' ℓ →
+                  c' ∉ splitCycle (restrictProfile P' ℓ) := by
+          have hnone' :
+              (ℓ ∉ splitCycle P' ∧
+                ∀ c' : {x : A' // x ≠ ℓ},
+                  c' ∈ restrictCloneSet X' ℓ → (c' : A') ∉ splitCycle P') ↔
+                ∀ c' : {x : A' // x ≠ ℓ},
+                  c' ∈ restrictCloneSet X' ℓ →
+                    c' ∉ splitCycle (minusCandidate P' ℓ) := by
+            simpa [minusCandidate] using hclone_choice
+          exact hnone_left.trans hnone'
+        have hexists :
+            (∃ y, y ∈ X' ∧ y ∈ splitCycle P') ↔
+              ∃ c' : {x : A' // x ≠ ℓ},
+                c' ∈ restrictCloneSet X' ℓ ∧ c' ∈ splitCycle (restrictProfile P' ℓ) := by
+          constructor
+          · intro h
+            by_contra hnot
+            have hnone_restr :
+                ∀ c' : {x : A' // x ≠ ℓ},
+                  c' ∈ restrictCloneSet X' ℓ →
+                    c' ∉ splitCycle (restrictProfile P' ℓ) := by
+              intro c' hc' hwin
+              exact hnot ⟨c', hc', hwin⟩
+            have hnone_orig : ∀ y ∈ X', y ∉ splitCycle P' := hnone.mpr hnone_restr
+            rcases h with ⟨y, hyX, hywin⟩
+            exact (hnone_orig y hyX) hywin
+          · intro h
+            by_contra hnot
+            have hnone_orig : ∀ y ∈ X', y ∉ splitCycle P' := by
+              intro y hyX hywin
+              exact hnot ⟨y, hyX, hywin⟩
+            have hnone_restr :
+                ∀ c' : {x : A' // x ≠ ℓ},
+                  c' ∈ restrictCloneSet X' ℓ →
+                    c' ∉ splitCycle (restrictProfile P' ℓ) := hnone.mp hnone_orig
+            rcases h with ⟨c', hc'X, hc'win⟩
+            exact (hnone_restr c' hc'X) hc'win
+        have hrec_clone :
+            (∃ y, y ∈ restrictCloneSet X' ℓ ∧ y ∈ splitCycle (restrictProfile P' ℓ)) ↔
+              (⟨xℓ, Or.inr rfl⟩ :
+                {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}) ∈
+                splitCycle (removeClonesExcept (restrictProfile P' ℓ) (restrictCloneSet X' ℓ) xℓ) :=
+          hrec.2
+        have hrep :
+            (⟨xℓ, Or.inr rfl⟩ :
+                {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}) ∈
+              splitCycle (removeClonesExcept (restrictProfile P' ℓ) (restrictCloneSet X' ℓ) xℓ) ↔
+                (⟨x', Or.inr rfl⟩ : {a : A' // clonePred X' x' a}) ∈
+                  splitCycle (removeClonesExcept P' X' x') := by
+          have hmem' :
+              (⟨xℓ, Or.inr rfl⟩ :
+                  {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}) ∈
+                splitCycle (relabelProfile (removeClonesExcept P' X' x') e) ↔
+                  e.symm (⟨xℓ, Or.inr rfl⟩ :
+                    {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}) ∈
+                      splitCycle (removeClonesExcept P' X' x') := by
+            simpa using
+              (mem_splitCycle_relabelProfile_iff (P := removeClonesExcept P' X' x') (e := e)
+                (b := (⟨xℓ, Or.inr rfl⟩ :
+                  {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})))
+          have hsymm :
+              e.symm (⟨xℓ, Or.inr rfl⟩ :
+                  {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}) =
+                (⟨x', Or.inr rfl⟩ : {a : A' // clonePred X' x' a}) := by
+            apply Subtype.ext
+            have hval :
+                (e.symm (⟨xℓ, Or.inr rfl⟩ :
+                  {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a})).1 =
+                  (⟨xℓ, Or.inr rfl⟩ :
+                    {a : {a : A' // a ≠ ℓ} // clonePred (restrictCloneSet X' ℓ) xℓ a}).1.1 := by
+              exact he2 _
+            simpa [xℓ] using hval
+          simpa [hrelabel, hsymm] using hmem'
+        exact (hexists.trans (hrec_clone.trans hrep))
+  have hFinal := hStrong (A' := A) rfl (P' := P) (X' := X) (x' := x) hX hx
+  simpa [split_cycle_clone_independence_props] using hFinal
 
 end Final
 
