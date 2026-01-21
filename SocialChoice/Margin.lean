@@ -2,6 +2,7 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Data.Int.Basic
 import Mathlib.Tactic
 import SocialChoice.Profile
+import SocialChoice.Axioms.Participation
 import SocialChoice.Axioms.Reversal
 
 namespace SocialChoice
@@ -271,6 +272,254 @@ lemma margin_addVoter_eq_of_prefers {V A : Type} [Fintype V] [Fintype A]
   dsimp [margin]
   simp [hcard_ab, hcard_ba]
   ring
+
+lemma margin_add_newVoter_eq_of_prefers {U A : Type} [DecidableEq U] [Fintype A]
+    {V : Finset U} {u : U} (hu : u ∉ V)
+    (P : Profile (Electorate U V) A)
+    (Q : Profile (Electorate U (insert u V)) A)
+    (hagree : ∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v)
+    (a b : A) (h : (Q.pref (newVoter (u := u) (V := V) hu)).lt a b) :
+    margin Q a b = margin P a b + 1 := by
+  classical
+  let S0 : Finset (Electorate U V) := Finset.univ.filter (fun v => Prefers P v a b)
+  let S : Finset (Electorate U (insert u V)) :=
+    Finset.univ.filter (fun v => Prefers Q v a b)
+  have hS : S =
+      insert (newVoter (u := u) (V := V) hu) (S0.image (liftVoter (u := u))) := by
+    ext v
+    by_cases hv : v = newVoter (u := u) (V := V) hu
+    · subst hv
+      have hpref : Prefers Q (newVoter (u := u) (V := V) hu) a b := by
+        simpa [Prefers] using h
+      constructor
+      · intro _hmem
+        simp
+      · intro _hmem
+        exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hpref⟩
+    · have hv' : v.1 ∈ V := by
+        have hmem : v.1 ∈ insert u V := v.2
+        have hmem' : v.1 = u ∨ v.1 ∈ V := by
+          simpa using (Finset.mem_insert.mp hmem)
+        cases hmem' with
+        | inl h =>
+            exact (hv (Subtype.ext h)).elim
+        | inr h => exact h
+      let v' : Electorate U V := ⟨v.1, hv'⟩
+      have hv_eq : v = liftVoter (u := u) v' := by
+        apply Subtype.ext
+        rfl
+      have hpref : Prefers Q v a b ↔ Prefers P v' a b := by
+        simp [Prefers, hv_eq, hagree]
+      have himage : v ∈ S0.image (liftVoter (u := u)) ↔ v' ∈ S0 := by
+        constructor
+        · intro hvimg
+          rcases Finset.mem_image.mp hvimg with ⟨w, hw, hweq⟩
+          have hw' : w = v' := by
+            apply (liftVoter_injective (u := u))
+            simpa [hv_eq] using hweq
+          simpa [hw'] using hw
+        · intro hvS0
+          exact Finset.mem_image.mpr ⟨v', hvS0, hv_eq.symm⟩
+      have hvS : v ∈ S ↔ v' ∈ S0 := by
+        constructor
+        · intro hvS
+          have hprefQ : Prefers Q v a b := (Finset.mem_filter.mp hvS).2
+          have hprefP : Prefers P v' a b := (hpref.mp hprefQ)
+          exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hprefP⟩
+        · intro hvS0
+          have hprefP : Prefers P v' a b := (Finset.mem_filter.mp hvS0).2
+          have hprefQ : Prefers Q v a b := (hpref.mpr hprefP)
+          exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hprefQ⟩
+      have hinsert :
+          v ∈ insert (newVoter (u := u) (V := V) hu) (S0.image (liftVoter (u := u))) ↔
+            v ∈ S0.image (liftVoter (u := u)) := by
+        simp [hv]
+      calc
+        v ∈ S ↔ v' ∈ S0 := hvS
+        _ ↔ v ∈ S0.image (liftVoter (u := u)) := himage.symm
+        _ ↔ v ∈ insert (newVoter (u := u) (V := V) hu) (S0.image (liftVoter (u := u))) :=
+          hinsert.symm
+  have hnotmem :
+      newVoter (u := u) (V := V) hu ∉ S0.image (liftVoter (u := u)) := by
+    intro hmem
+    rcases Finset.mem_image.mp hmem with ⟨v, _hv, hveq⟩
+    exact (liftVoter_ne_newVoter (u := u) (V := V) hu v) hveq
+  have hinj : Function.Injective (liftVoter (u := u) : Electorate U V → Electorate U (insert u V)) :=
+    liftVoter_injective (u := u)
+  have hcard_ab :
+      S.card = S0.card + 1 := by
+    have hcard' :
+        (insert (newVoter (u := u) (V := V) hu) (S0.image (liftVoter (u := u)))).card =
+          (S0.image (liftVoter (u := u))).card + 1 :=
+      Finset.card_insert_of_notMem hnotmem
+    calc
+      S.card = (S0.image (liftVoter (u := u))).card + 1 := by
+        simpa [hS] using hcard'
+      _ = S0.card + 1 := by
+        simpa using (Finset.card_image_of_injective S0 hinj)
+  let ballot := Q.pref (newVoter (u := u) (V := V) hu)
+  have hba : ¬ ballot.lt b a := by
+    let _ : Preorder A := ballot.toPreorder
+    intro hba
+    exact (lt_asymm (a := a) (b := b) (by simpa using h) (by simpa using hba))
+  let T0 : Finset (Electorate U V) := Finset.univ.filter (fun v => Prefers P v b a)
+  let T : Finset (Electorate U (insert u V)) :=
+    Finset.univ.filter (fun v => Prefers Q v b a)
+  have hT : T = T0.image (liftVoter (u := u)) := by
+    ext v
+    by_cases hv : v = newVoter (u := u) (V := V) hu
+    · subst hv
+      have hpref : ¬ Prefers Q (newVoter (u := u) (V := V) hu) b a := by
+        simpa [Prefers, ballot] using hba
+      constructor
+      · intro hmem
+        have hpref' : Prefers Q (newVoter (u := u) (V := V) hu) b a :=
+          (Finset.mem_filter.mp hmem).2
+        exact (hpref hpref').elim
+      · intro hmem
+        rcases Finset.mem_image.mp hmem with ⟨w, _hw, hweq⟩
+        exact (False.elim ((liftVoter_ne_newVoter (u := u) (V := V) hu w) hweq))
+    · have hv' : v.1 ∈ V := by
+        have hmem : v.1 ∈ insert u V := v.2
+        have hmem' : v.1 = u ∨ v.1 ∈ V := by
+          simpa using (Finset.mem_insert.mp hmem)
+        cases hmem' with
+        | inl h =>
+            exact (hv (Subtype.ext h)).elim
+        | inr h => exact h
+      let v' : Electorate U V := ⟨v.1, hv'⟩
+      have hv_eq : v = liftVoter (u := u) v' := by
+        apply Subtype.ext
+        rfl
+      have hpref : Prefers Q v b a ↔ Prefers P v' b a := by
+        simp [Prefers, hv_eq, hagree]
+      have himage : v ∈ T0.image (liftVoter (u := u)) ↔ v' ∈ T0 := by
+        constructor
+        · intro hvimg
+          rcases Finset.mem_image.mp hvimg with ⟨w, hw, hweq⟩
+          have hw' : w = v' := by
+            apply (liftVoter_injective (u := u))
+            simpa [hv_eq] using hweq
+          simpa [hw'] using hw
+        · intro hvT0
+          exact Finset.mem_image.mpr ⟨v', hvT0, hv_eq.symm⟩
+      have hvT : v ∈ T ↔ v' ∈ T0 := by
+        constructor
+        · intro hvT
+          have hprefQ : Prefers Q v b a := (Finset.mem_filter.mp hvT).2
+          have hprefP : Prefers P v' b a := (hpref.mp hprefQ)
+          exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hprefP⟩
+        · intro hvT0
+          have hprefP : Prefers P v' b a := (Finset.mem_filter.mp hvT0).2
+          have hprefQ : Prefers Q v b a := (hpref.mpr hprefP)
+          exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hprefQ⟩
+      calc
+        v ∈ T ↔ v' ∈ T0 := hvT
+        _ ↔ v ∈ T0.image (liftVoter (u := u)) := himage.symm
+  have hcard_ba :
+      T.card = T0.card := by
+    calc
+      T.card = (T0.image (liftVoter (u := u))).card := by
+        simp [hT]
+      _ = T0.card := by
+        simpa using (Finset.card_image_of_injective T0 hinj)
+  have hcard_ab' :
+      (Finset.univ.filter (fun v : Electorate U (insert u V) => Prefers Q v a b)).card =
+        (Finset.univ.filter (fun v : Electorate U V => Prefers P v a b)).card + 1 := by
+    simpa [S, S0] using hcard_ab
+  have hcard_ba' :
+      (Finset.univ.filter (fun v : Electorate U (insert u V) => Prefers Q v b a)).card =
+        (Finset.univ.filter (fun v : Electorate U V => Prefers P v b a)).card := by
+    simpa [T, T0] using hcard_ba
+  dsimp [margin]
+  change
+      (Int.ofNat
+            (Finset.univ.filter
+                  (fun v : Electorate U (insert u V) => Prefers Q v a b)).card) -
+          Int.ofNat
+            (Finset.univ.filter
+                  (fun v : Electorate U (insert u V) => Prefers Q v b a)).card =
+        Int.ofNat
+            (Finset.univ.filter
+                  (fun v : Electorate U V => Prefers P v a b)).card -
+          Int.ofNat
+            (Finset.univ.filter
+                  (fun v : Electorate U V => Prefers P v b a)).card +
+            1
+  rw [hcard_ab', hcard_ba']
+  simp [sub_eq_add_neg, add_assoc, add_comm]
+
+lemma margin_add_newVoter_eq_of_prefers_rev {U A : Type} [DecidableEq U] [Fintype A]
+    {V : Finset U} {u : U} (hu : u ∉ V)
+    (P : Profile (Electorate U V) A)
+    (Q : Profile (Electorate U (insert u V)) A)
+    (hagree : ∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v)
+    (a b : A) (h : (Q.pref (newVoter (u := u) (V := V) hu)).lt b a) :
+    margin Q a b = margin P a b - 1 := by
+  have hswap :
+      margin Q b a = margin P b a + 1 :=
+    margin_add_newVoter_eq_of_prefers (u := u) (V := V) hu P Q hagree b a h
+  have hskewP : margin P a b = - margin P b a := by
+    simpa [skew_symmetric] using (margin_antisymmetric (P := P)) a b
+  have hskewQ : margin Q a b = - margin Q b a := by
+    simpa [skew_symmetric] using (margin_antisymmetric (P := Q)) a b
+  calc
+    margin Q a b = - margin Q b a := hskewQ
+    _ = - (margin P b a + 1) := by simp [hswap]
+    _ = (- margin P b a) - 1 := by ring
+    _ = margin P a b - 1 := by simp [hskewP]
+
+lemma margin_le_add_newVoter {U A : Type} [DecidableEq U] [Fintype A]
+    {V : Finset U} {u : U} (hu : u ∉ V)
+    (P : Profile (Electorate U V) A)
+    (Q : Profile (Electorate U (insert u V)) A)
+    (hagree : ∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v)
+    (a b : A) :
+    margin P a b ≤ margin Q a b + 1 := by
+  classical
+  by_cases hEq : a = b
+  · subst hEq
+    simp [self_margin_zero]
+  · let ballot := Q.pref (newVoter (u := u) (V := V) hu)
+    let _ : Preorder A := ballot.toPreorder
+    have htr : ballot.lt a b ∨ ballot.lt b a := lt_or_gt_of_ne hEq
+    cases htr with
+    | inl hlt =>
+        have hmargin :
+            margin Q a b = margin P a b + 1 :=
+          margin_add_newVoter_eq_of_prefers (u := u) (V := V) hu P Q hagree a b hlt
+        linarith [hmargin]
+    | inr hgt =>
+        have hmargin :
+            margin Q a b = margin P a b - 1 :=
+          margin_add_newVoter_eq_of_prefers_rev (u := u) (V := V) hu P Q hagree a b hgt
+        linarith [hmargin]
+
+lemma margin_add_newVoter_le {U A : Type} [DecidableEq U] [Fintype A]
+    {V : Finset U} {u : U} (hu : u ∉ V)
+    (P : Profile (Electorate U V) A)
+    (Q : Profile (Electorate U (insert u V)) A)
+    (hagree : ∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v)
+    (a b : A) :
+    margin Q a b ≤ margin P a b + 1 := by
+  classical
+  by_cases hEq : a = b
+  · subst hEq
+    simp [self_margin_zero]
+  · let ballot := Q.pref (newVoter (u := u) (V := V) hu)
+    let _ : Preorder A := ballot.toPreorder
+    have htr : ballot.lt a b ∨ ballot.lt b a := lt_or_gt_of_ne hEq
+    cases htr with
+    | inl hlt =>
+        have hmargin :
+            margin Q a b = margin P a b + 1 :=
+          margin_add_newVoter_eq_of_prefers (u := u) (V := V) hu P Q hagree a b hlt
+        linarith [hmargin]
+    | inr hgt =>
+        have hmargin :
+            margin Q a b = margin P a b - 1 :=
+          margin_add_newVoter_eq_of_prefers_rev (u := u) (V := V) hu P Q hagree a b hgt
+        linarith [hmargin]
 
 lemma margin_addVoter_eq_of_prefers_rev {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (ballot : LinearOrder A) (a b : A) (h : ballot.lt b a) :

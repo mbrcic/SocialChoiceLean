@@ -15,6 +15,7 @@ import SocialChoice.Axioms.Condorcet
 import SocialChoice.Axioms.Core
 import SocialChoice.Axioms.Independence
 import SocialChoice.Axioms.Participation
+import SocialChoice.Axioms.Resolvability
 import SocialChoice.Axioms.Majority
 import SocialChoice.Axioms.Monotonicity
 import SocialChoice.Axioms.Neutrality
