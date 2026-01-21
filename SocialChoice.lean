@@ -83,6 +83,7 @@ import SocialChoice.Rules.Schulze.Defs
 import SocialChoice.Rules.Schulze.Path
 import SocialChoice.Rules.Schulze.Transitivity
 import SocialChoice.Rules.Schulze.RefinesSplitCycle
+import SocialChoice.Rules.Schulze.Clones
 
 import SocialChoice.Impossibilities.CondorcetStrategyproofness
 import SocialChoice.Impossibilities.CondorcetParticipation
