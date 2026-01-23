@@ -7,9 +7,12 @@ import SocialChoice.Rules.ScoringRules.Neutrality
 import SocialChoice.Rules.ScoringRules.Pareto
 import SocialChoice.Rules.ScoringRules.Participation
 import SocialChoice.Rules.ScoringRules.Reinforcement
+import SocialChoice.Rules.ScoringRules.Borda.Condorcet
 import SocialChoice.Rules.ScoringRules.Borda.Defs
 import SocialChoice.Rules.ScoringRules.Borda.Independence
+import SocialChoice.Rules.ScoringRules.Borda.Majority
 import SocialChoice.Rules.ScoringRules.Borda.Pareto
+import SocialChoice.Rules.ScoringRules.Borda.Reversal
 
 namespace SocialChoice
 
@@ -80,5 +83,22 @@ theorem borda_pareto : ParetoEfficiency borda := by
 
 theorem borda_not_condorcet : ¬ CondorcetConsistency borda := by
   simpa [borda] using (scoringRule_not_condorcet (score := bordaScore))
+
+theorem borda_singleton_reversal_symmetry : SingletonReversalSymmetry borda := by
+  apply Implies.apply reversalSymmetry_implies_singletonReversalSymmetry (f := borda)
+  · exact borda_isVotingRule
+  · exact borda_reversal_symmetry
+
+theorem borda_majority_loser_criterion : MajorityLoserCriterion borda := by
+  apply Implies.apply condorcetLoserCriterion_implies_majorityLoserCriterion (f := borda)
+  · exact borda_isVotingRule
+  · exact borda_CondorcetLoser_criterion
+
+theorem borda_not_mutualMajorityCriterion : ¬ MutualMajorityCriterion borda := by
+  intro hmut
+  have hmaj : MajorityCriterion borda :=
+    Implies.apply mutualMajorityCriterion_implies_majorityCriterion_Imp
+      (f := borda) borda_isVotingRule hmut
+  exact borda_not_majority_criterion hmaj
 
 end SocialChoice

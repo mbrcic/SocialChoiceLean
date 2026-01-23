@@ -102,4 +102,11 @@ theorem plurality_not_condorcet : ¬ CondorcetConsistency plurality := by
     simpa [plurality_eq_scoringRule_app] using h
   exact (scoringRule_not_condorcet (score := pluralityScore)) hcond'
 
+theorem plurality_not_mutualMajorityCriterion : ¬ MutualMajorityCriterion plurality := by
+  intro hmut
+  have hmajloser : MajorityLoserCriterion plurality :=
+    Implies.apply mutualMajorityCriterion_implies_majorityLoserCriterion_Imp
+      (f := plurality) plurality_isVotingRule hmut
+  exact plurality_not_majority_loser_criterion hmajloser
+
 end SocialChoice

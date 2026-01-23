@@ -6,6 +6,7 @@ import SocialChoice.Axioms.Majority
 import SocialChoice.Axioms.Condorcet
 import SocialChoice.Axioms.Independence
 import SocialChoice.Axioms.Reinforcement
+import SocialChoice.Axioms.Reversal
 
 namespace SocialChoice
 
@@ -145,6 +146,33 @@ theorem condorcetLoserCriterion_implies_majorityLoserCriterion :
       Nat.lt_of_lt_of_le hlt hle'
     simpa [StrictMajority] using hlt'
   exact hcond P c hloser
+
+theorem reversalSymmetry_implies_singletonReversalSymmetry :
+    Implies ReversalSymmetry SingletonReversalSymmetry := by
+  intro f _ hrev V A _ _ P x hnontriv hx
+  classical
+  letI : DecidableEq A := Classical.decEq A
+  have hnot_univ : f P ≠ (Finset.univ : Finset A) := by
+    rcases hnontriv with ⟨y, hy⟩
+    intro hEq
+    have hy_mem : y ∈ f P := by
+      simpa [hEq] using (Finset.mem_univ y)
+    have hy_mem_singleton : y ∈ ({x} : Finset A) := by
+      simpa [hx] using hy_mem
+    have hy' : y = x := by
+      simpa using (Finset.mem_singleton.mp hy_mem_singleton)
+    have hxy : x = y := by
+      simpa [eq_comm] using hy'
+    exact hy hxy
+  have hdisj := hrev (P := P) hnot_univ
+  have hxmem : x ∈ f P := by
+    simpa [hx] using (Finset.mem_singleton.mpr rfl)
+  intro hxrev
+  have hxinter : x ∈ f P ∩ f (reverse_profile P) := by
+    exact Finset.mem_inter.mpr ⟨hxmem, hxrev⟩
+  have : x ∈ (∅ : Finset A) := by
+    simpa [hdisj] using hxinter
+  simpa using this
 
 theorem reinforcement_implies_subsetReinforcement :
     Implies Reinforcement SubsetReinforcement := by

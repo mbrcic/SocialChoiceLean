@@ -3,6 +3,7 @@ import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Rules.Nanson.Defs
 import SocialChoice.Rules.Nanson.Condorcet
 import SocialChoice.Rules.Nanson.CondorcetLoser
+import SocialChoice.Rules.Nanson.Reversal
 
 namespace SocialChoice
 
@@ -30,5 +31,10 @@ theorem nanson_not_reinforcement : ¬ Reinforcement nanson := by
   intro hrein
   exact no_condorcet_reinforcement nanson
     nanson_isVotingRule nanson_condorcet_consistency hrein
+
+theorem nanson_singleton_reversal_symmetry : SingletonReversalSymmetry nanson := by
+  apply Implies.apply reversalSymmetry_implies_singletonReversalSymmetry (f := nanson)
+  · exact nanson_isVotingRule
+  · exact nanson_reversal_symmetry
 
 end SocialChoice
