@@ -179,6 +179,31 @@ termination_by A inst_fin _ _ => @Fintype.card A inst_fin
 decreasing_by
   exact hterm c
 
+lemma liftWinners_scoringEliminationAux_restrictCandidates_congr
+    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (score : Nat → Nat → Int) (P : Profile V A)
+    {p q : A → Prop} [DecidablePred p] [DecidablePred q]
+    (h : p = q) :
+    liftWinners (scoringEliminationAux score _ (restrictCandidates P p)) =
+      liftWinners (scoringEliminationAux score _ (restrictCandidates P q)) := by
+  classical
+  cases h
+  rename_i instP instQ
+  have hinst : instP = instQ := Subsingleton.elim _ _
+  cases hinst
+  rfl
+
+lemma scoringEliminationAux_decidableEq_congr
+    {V A : Type} [Fintype V] [Fintype A]
+    (score : Nat → Nat → Int) (P : Profile V A)
+    (inst1 inst2 : DecidableEq A) :
+    @scoringEliminationAux V _ score A _ inst1 P =
+      @scoringEliminationAux V _ score A _ inst2 P := by
+  classical
+  have hinst : inst1 = inst2 := Subsingleton.elim _ _
+  cases hinst
+  rfl
+
 -- The scoring elimination rule as a VotingRule
 noncomputable def scoringEliminationRule (score : Nat → Nat → Int) : VotingRule :=
   fun {V A} _ _ (P : Profile V A) => by

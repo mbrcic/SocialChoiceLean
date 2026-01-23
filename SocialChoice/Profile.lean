@@ -100,6 +100,33 @@ noncomputable def restrictCandidates {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (p : A → Prop) [DecidablePred p] : Profile V {a // p a} :=
   { pref := fun v => restrictBallot (P.pref v) p }
 
+noncomputable def castCandidates {V A : Type} [Fintype V] [Fintype A]
+    {p q : A → Prop} [DecidablePred p] [DecidablePred q]
+    (h : p = q) (P : Profile V {a // p a}) : Profile V {a // q a} := by
+  classical
+  cases h
+  rename_i instP instQ
+  have hinst : instP = instQ := Subsingleton.elim _ _
+  cases hinst
+  exact P
+
+@[simp] lemma castCandidates_rfl {V A : Type} [Fintype V] [Fintype A]
+    {p : A → Prop} [DecidablePred p]
+    (P : Profile V {a // p a}) : castCandidates (p := p) (q := p) rfl P = P := by
+  classical
+  simp [castCandidates]
+
+@[simp] lemma castCandidates_restrictCandidates {V A : Type} [Fintype V] [Fintype A]
+    {p q : A → Prop} [DecidablePred p] [DecidablePred q]
+    (P : Profile V A) (h : p = q) :
+    castCandidates (p := p) (q := q) h (restrictCandidates P p) = restrictCandidates P q := by
+  classical
+  cases h
+  rename_i instP instQ
+  have hinst : instP = instQ := Subsingleton.elim _ _
+  cases hinst
+  rfl
+
 -- Helper instance for restricted candidate types
 noncomputable instance instFintypeNeq {A : Type} [Fintype A] [DecidableEq A] (c : A) :
     Fintype {x : A // x ≠ c} := by
