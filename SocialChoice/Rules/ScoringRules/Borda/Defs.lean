@@ -9,6 +9,12 @@ def bordaScore (m r : Nat) : Int := Int.ofNat (m - 1 - r)
 noncomputable def borda : VotingRule :=
   scoringRule bordaScore
 
+theorem borda_isVotingRule : IsVotingRule borda := by
+  intro V A _ _ _ P
+  classical
+  simpa [borda] using
+    (scoringRule_isVotingRule (score := bordaScore) (V := V) (A := A) (P := P))
+
 lemma bordaScore_strictlyDecreasing : strictlyDecreasingScore bordaScore := by
   intro m r s hrs hrm hsm
   cases m with

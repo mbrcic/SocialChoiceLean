@@ -39,6 +39,10 @@ theorem gs_base_case {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
     ∃ d : V, ∀ P : Profile V A, f P = {topChoice P d} := by
   -- There's exactly one voter, so pick it
   classical
+  have hnonempty : Nonempty V := by
+    refine Fintype.card_pos_iff.mp ?_
+    simp [hcard_V]
+  let _ : Nonempty V := hnonempty
   have hunique := Fintype.card_eq_one_iff.mp hcard_V
   obtain ⟨d, hd⟩ := hunique
   use d

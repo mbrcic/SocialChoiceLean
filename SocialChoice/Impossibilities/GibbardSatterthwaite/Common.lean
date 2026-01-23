@@ -91,6 +91,7 @@ lemma clonedRule_unanimity {V A : Type} [Fintype V] [Fintype A] [DecidableEq V]
       clonedRule f v₁ v₂ hne P' = {c} := by
   intro P' c htop
   unfold clonedRule
+  let _ : Nonempty V := ⟨v₂⟩
   apply hf_unan
   intro v
   by_cases hv : v = v₂

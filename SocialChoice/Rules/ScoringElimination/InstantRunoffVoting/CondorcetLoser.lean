@@ -4,6 +4,7 @@ import Mathlib.Data.Finset.Max
 import Mathlib.Data.Fintype.EquivFin
 import Mathlib.Tactic
 import SocialChoice.Rules.ScoringElimination.Basic
+import SocialChoice.Rules.ScoringRules.Plurality.Defs
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
 import SocialChoice.Axioms.Condorcet
 
@@ -34,117 +35,13 @@ Therefore `c` has higher plurality score, contradicting that `c` was eliminated.
 
 variable {V A : Type} [Fintype V] [Fintype A]
 
-/-! ### Two-candidate election lemmas -/
-
-/-- In a two-candidate election, TopRank is equivalent to pairwise preference -/
-lemma topRank_iff_prefers_of_two (P : Profile V A) (hcard : Fintype.card A = 2)
-    (c d : A) (hcd : c ≠ d) (v : V) :
-    TopRank P v c ↔ Prefers P v c d := by
-  constructor
-  · intro htop
-    exact htop d hcd.symm
-  · intro hpref e he
-    rcases two_elems_eq_or_eq hcard c d hcd e with rfl | rfl
-    · exact (he rfl).elim
-    · exact hpref
-
-/-- In a two-candidate election, the number of top-ranks equals
-    the number of voters who prefer that candidate -/
-lemma votersTop_eq_votersPreferring_of_two (P : Profile V A) (hcard : Fintype.card A = 2)
-    (c d : A) (hcd : c ≠ d) :
-    votersTop P c = votersPreferring P c d := by
-  classical
-  ext v
-  simp only [votersTop, votersPreferring, Finset.mem_filter, Finset.mem_univ, true_and]
-  exact topRank_iff_prefers_of_two P hcard c d hcd v
-
-/-- Plurality score equals cards of votersTop -/
-lemma pluralityScore_eq_votersTop_card (P : Profile V A) (c : A) :
-    scoreCandidate P (fun r => if r = 0 then 1 else 0) c =
-      (votersTop P c).card := by
-  classical
-  -- rank = 0 iff TopRank
-  have hrankTop : ∀ v, rank (P.pref v) c = 0 ↔ TopRank P v c := by
-    intro v
-    constructor
-    · intro hr d hd
-      -- rank c = 0 means no one is above c
-      unfold rank at hr
-      have hempty : (Finset.univ.filter (fun x => (P.pref v).lt x c)) = ∅ := by
-        exact Finset.card_eq_zero.mp hr
-      have hd_not_above : d ∉ Finset.univ.filter (fun x => (P.pref v).lt x c) := by
-        simp [hempty]
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hd_not_above
-      -- d is not above c, and d ≠ c, so c < d
-      let _ := P.pref v
-      have hord : c < d ∨ d < c := lt_or_gt_of_ne (Ne.symm hd)
-      cases hord with
-      | inl hlt => exact hlt
-      | inr hgt => exact (hd_not_above hgt).elim
-    · intro htop
-      unfold rank
-      apply Finset.card_eq_zero.mpr
-      apply Finset.eq_empty_iff_forall_notMem.mpr
-      intro d hd
-      have hdlt : (P.pref v).lt d c := (Finset.mem_filter.mp hd).2
-      have hdc : d ≠ c := by
-        intro heq; subst heq
-        let _ := P.pref v
-        exact lt_irrefl _ hdlt
-      have hcd : (P.pref v).lt c d := htop d hdc
-      let _ := P.pref v
-      exact lt_asymm hcd hdlt
-  -- Rewrite to use TopRank instead of rank = 0
-  have heq : (∑ v : V, (fun r => if r = 0 then (1 : Int) else 0) (rank (P.pref v) c)) =
-             ∑ v : V, if TopRank P v c then 1 else 0 := by
-    apply Finset.sum_congr rfl
-    intro v _
-    simp only [hrankTop v]
-  have hsum :
-      (∑ v : V, if TopRank P v c then (1 : Int) else 0) =
-    ((Finset.univ.filter (fun v => TopRank P v c)).card : Int) := by
-    classical
-    have hsum_univ :
-        (∑ v : V, if TopRank P v c then (1 : Int) else 0) =
-          (Finset.univ : Finset V).sum (fun v => if TopRank P v c then (1 : Int) else 0) := by
-      simp
-    have hsum_filtered :
-        ((Finset.univ : Finset V).sum (fun v => if TopRank P v c then (1 : Int) else 0)) =
-          (Finset.univ.filter (fun v => TopRank P v c)).sum (fun _ => (1 : Int)) := by
-      have h := (Finset.sum_filter
-        (s := (Finset.univ : Finset V))
-        (p := fun v => TopRank P v c)
-        (f := fun _ => (1 : Int)))
-      exact h.symm
-    have hsum_card :
-        ((Finset.univ.filter (fun v => TopRank P v c)).sum (fun _ => (1 : Int))) =
-          ((Finset.univ.filter (fun v => TopRank P v c)).card : Int) := by
-      simp
-    exact hsum_univ.trans (hsum_filtered.trans hsum_card)
-  have hscore : scoreCandidate P (fun r => if r = 0 then 1 else 0) c =
-      ∑ v : V, if TopRank P v c then (1 : Int) else 0 := by
-    simpa [scoreCandidate] using heq
-  calc
-    scoreCandidate P (fun r => if r = 0 then 1 else 0) c
-        = ∑ v : V, if TopRank P v c then (1 : Int) else 0 := hscore
-    _ = ((Finset.univ.filter fun v => TopRank P v c).card : Int) := hsum
-    _ = (votersTop P c).card := by
-            simp [votersTop]
-
-/-- In two candidates, plurality score = number preferring you to the other -/
-lemma pluralityScore_eq_votersPreferring_of_two (P : Profile V A) (hcard : Fintype.card A = 2)
-    (c d : A) (hcd : c ≠ d) :
-    scoreCandidate P (fun r => if r = 0 then 1 else 0) c =
-      (votersPreferring P c d).card := by
-  rw [pluralityScore_eq_votersTop_card, votersTop_eq_votersPreferring_of_two P hcard c d hcd]
-
 /-! ### Condorcet loser in two-candidate election -/
 
 /-- A Condorcet loser in a 2-candidate election has strictly fewer first-place votes -/
 lemma CondorcetLoser_lower_plurality_two (P : Profile V A) (hcard : Fintype.card A = 2)
     (c d : A) (hcd : c ≠ d) (hloser : CondorcetLoser P d) :
-    scoreCandidate P (fun r => if r = 0 then 1 else 0) d <
-      scoreCandidate P (fun r => if r = 0 then 1 else 0) c := by
+    scoreCandidate P (fun r => pluralityScore (Fintype.card A) r) d <
+      scoreCandidate P (fun r => pluralityScore (Fintype.card A) r) c := by
   rw [pluralityScore_eq_votersPreferring_of_two P hcard d c (Ne.symm hcd)]
   rw [pluralityScore_eq_votersPreferring_of_two P hcard c d hcd]
   -- hloser says margin_pos P c d (since c ≠ d and d is Condorcet loser)
@@ -217,7 +114,7 @@ theorem irv_CondorcetLoser_criterion : CondorcetLoserCriterion instantRunoffVoti
           scoreCandidate P (fun r => pluralityScore 2 r) d <
             scoreCandidate P (fun r => pluralityScore 2 r) c := by
         -- `pluralityScore 2` is the usual plurality scoring vector.
-        simpa [pluralityScore] using
+        simpa [htwo] using
           (CondorcetLoser_lower_plurality_two (V := V) (A := A) (P := P) (hcard := htwo)
             (c := c) (d := d) (hcd := hcd) (hloser := hloser))
       -- But `c` is lowest-scoring, so its score is ≤ `d`'s score.

@@ -25,6 +25,41 @@ def CondorcetLoserCriterion (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A) (c : A),
     CondorcetLoser P c → c ∉ f P
 
+theorem condorcetConsistency_preservedUnderRefinement :
+    PreservedUnderRefinement CondorcetConsistency := by
+  intro f g hf_total _ hfg hZg V A _ _ P c hcw
+  classical
+  let _ : Nonempty A := ⟨c⟩
+  have hsubset : f P ⊆ ({c} : Finset A) := by
+    intro x hx
+    have hxg : x ∈ g P := hfg P hx
+    simpa [hZg P c hcw] using hxg
+  have hnonempty : (f P).Nonempty := hf_total P
+  rcases hnonempty with ⟨x, hx⟩
+  have hx' : x = c := by
+    have : x ∈ ({c} : Finset A) := hsubset hx
+    simpa using this
+  have hc : c ∈ f P := by
+    simpa [hx'] using hx
+  have hsup : ({c} : Finset A) ⊆ f P := by
+    intro y hy
+    have hy' : y = c := by
+      simpa using hy
+    subst hy'
+    exact hc
+  apply Finset.ext
+  intro y
+  constructor
+  · intro hy
+    exact hsubset hy
+  · intro hy
+    exact hsup hy
+
+theorem condorcetLoserCriterion_preservedUnderRefinement :
+    PreservedUnderRefinement CondorcetLoserCriterion := by
+  intro f g _ _ hfg hZg V A _ _ P c hloser hc
+  exact (hZg P c hloser) (hfg P hc)
+
 lemma strictMajority_votersPreferring_iff_margin_pos {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) {c d : A} (hcd : c ≠ d) :
     StrictMajority (votersPreferring P c d) ↔ margin_pos P c d := by

@@ -22,11 +22,53 @@ def MutualMajorityCriterion (f : VotingRule) : Prop :=
     (∀ v ∈ S, ∀ a ∈ T, ∀ b ∉ T, Prefers P v a b) →
     f P ⊆ T
 
+theorem majorityCriterion_preservedUnderRefinement :
+    PreservedUnderRefinement MajorityCriterion := by
+  intro f g hf_total _ hfg hZg V A _ _ P c hmaj
+  classical
+  let _ : Nonempty A := ⟨c⟩
+  have hsubset : f P ⊆ ({c} : Finset A) := by
+    intro x hx
+    have hxg : x ∈ g P := hfg P hx
+    simpa [hZg P c hmaj] using hxg
+  have hnonempty : (f P).Nonempty := hf_total P
+  rcases hnonempty with ⟨x, hx⟩
+  have hx' : x = c := by
+    have : x ∈ ({c} : Finset A) := hsubset hx
+    simpa using this
+  have hc : c ∈ f P := by
+    simpa [hx'] using hx
+  have hsup : ({c} : Finset A) ⊆ f P := by
+    intro y hy
+    have hy' : y = c := by
+      simpa using hy
+    subst hy'
+    exact hc
+  apply Finset.ext
+  intro y
+  constructor
+  · intro hy
+    exact hsubset hy
+  · intro hy
+    exact hsup hy
+
+theorem majorityLoserCriterion_preservedUnderRefinement :
+    PreservedUnderRefinement MajorityLoserCriterion := by
+  intro f g _ _ hfg hZg V A _ _ P c hmaj hne hc
+  let _ : Nonempty A := ⟨c⟩
+  exact (hZg P c hmaj hne) (hfg P hc)
+
+theorem mutualMajorityCriterion_preservedUnderRefinement :
+    PreservedUnderRefinement MutualMajorityCriterion := by
+  intro f g _ _ hfg hZg V A _ _ P S T hmaj hT hpref
+  exact Finset.Subset.trans (hfg P) (hZg P S T hmaj hT hpref)
+
 lemma mutualMajorityCriterion_implies_majorityCriterion (f : VotingRule)
     (hf : MutualMajorityCriterion f) (hf_total : IsVotingRule f) :
     MajorityCriterion f := by
   intro V A _ _ P c hmaj
   classical
+  let _ : Nonempty A := ⟨c⟩
   have hsubset : f P ⊆ ({c} : Finset A) := by
     apply hf (P := P) (S := votersTop P c) (T := {c}) hmaj
     · simp

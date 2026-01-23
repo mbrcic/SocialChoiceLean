@@ -12,5 +12,11 @@ noncomputable def black : VotingRule :=
     · exact {Classical.choose h}
     · exact borda P
 
-end SocialChoice
+theorem black_isVotingRule : IsVotingRule black := by
+  intro V A _ _ _ P
+  classical
+  by_cases h : ∃ x, CondorcetWinner P x
+  · simp [black, h]
+  · simpa [black, h] using (borda_isVotingRule (V := V) (A := A) (P := P))
 
+end SocialChoice

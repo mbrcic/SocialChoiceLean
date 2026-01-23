@@ -31,7 +31,7 @@ abbrev VotingRule :=
   ∀ {V A : Type} [Fintype V] [Fintype A], Profile V A → Finset A
 
 def IsVotingRule (f : VotingRule) : Prop :=
-  ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A), (f P).Nonempty
+  ∀ {V A : Type} [Fintype V] [Fintype A] [Nonempty A] (P : Profile V A), (f P).Nonempty
 
 -- Basic preference predicates.
 def Prefers {V A : Type} [Fintype V] [Fintype A]

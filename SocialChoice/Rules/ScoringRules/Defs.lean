@@ -66,6 +66,24 @@ noncomputable def scoringRule (score : Nat → Nat → Int) : VotingRule :=
   fun {V A} _ _ (P : Profile V A) =>
     scoringWinners P (fun r => score (Fintype.card A) r)
 
+lemma scoringWinners_nonempty {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
+    (P : Profile V A) (score : Nat → Int) : (scoringWinners P score).Nonempty := by
+  classical
+  have hA : (Finset.univ : Finset A).Nonempty := Finset.univ_nonempty
+  let scoreSet : Finset Int := (Finset.univ.image (fun c => scoreCandidate P score c))
+  have hscoreSet : scoreSet.Nonempty := hA.image (fun c => scoreCandidate P score c)
+  let maxScore : Int := scoreSet.max' hscoreSet
+  have hmaxmem : maxScore ∈ scoreSet := Finset.max'_mem scoreSet hscoreSet
+  rcases Finset.mem_image.mp hmaxmem with ⟨c, _hc, hscore⟩
+  refine ⟨c, ?_⟩
+  simp [scoringWinners, hA, scoreSet, maxScore, hscore]
+
+theorem scoringRule_isVotingRule (score : Nat → Nat → Int) : IsVotingRule (scoringRule score) := by
+  intro V A _ _ _ P
+  classical
+  simpa [scoringRule] using
+    (scoringWinners_nonempty (P := P) (score := fun r => score (Fintype.card A) r))
+
 def weaklyDecreasingScore (score : Nat → Nat → Int) : Prop :=
   ∀ m r s, r ≤ s → r < m → s < m → score m s ≤ score m r
 

@@ -113,6 +113,29 @@ lemma splitCycleDefeats_acyclic {V A : Type} [Fintype V] [Fintype A]
     · exact hymemL
   exact hnocycle ⟨l, hxmem, hymem, hcycle'⟩
 
+lemma splitCycle_nonempty {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
+    (P : Profile V A) : (splitCycle P).Nonempty := by
+  classical
+  by_contra hne
+  have hforall : ∀ x : A, ∃ y : A, splitCycleDefeats P y x := by
+    intro x
+    by_contra hnone
+    have hx : x ∈ splitCycle P := by
+      refine Finset.mem_filter.mpr ?_
+      refine ⟨Finset.mem_univ x, ?_⟩
+      intro y hy
+      exact (hnone ⟨y, hy⟩).elim
+    exact hne ⟨x, hx⟩
+  let x0 : A := Classical.choice (inferInstance : Nonempty A)
+  rcases cycle_of_forall_defeater (x0 := x0)
+      (R := fun a b => splitCycleDefeats P a b) hforall with ⟨c, hcycle⟩
+  exact (splitCycleDefeats_acyclic (P := P)) _ hcycle
+
+theorem splitCycle_isVotingRule : IsVotingRule splitCycle := by
+  intro V A _ _ _ P
+  classical
+  simpa using (splitCycle_nonempty (P := P))
+
 theorem split_cycle_singleton_reversal_symmetry : SingletonReversalSymmetry splitCycle := by
   intro V A _ _ P x hnontriv hxwin
   classical

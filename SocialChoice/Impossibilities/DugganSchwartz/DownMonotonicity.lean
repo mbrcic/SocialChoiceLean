@@ -1257,6 +1257,7 @@ theorem downMonotonicity_of_opt_pess_sp (f : VotingRule)
     by_cases h : u = v <;> simp [h]
   have hP : updateProfile P' v (P.pref v) = P := by
     simpa [P'] using (profile_eq_update_of_swap P v x y).symm
+  let _ : Nonempty A := ⟨w⟩
   have hnonempty : (f P').Nonempty := hf_total P'
   have hex_ne : ∃ v' ∈ f P', v' ≠ w := by
     by_cases hw : w ∈ f P'

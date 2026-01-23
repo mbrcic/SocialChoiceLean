@@ -63,7 +63,7 @@ lemma clonedVotingRule_unanimity
     {V A0 : Type} [Fintype V] [Fintype A0] [DecidableEq V]
     (f : VotingRule) (hf_unan : Unanimity f) (v₁ v₂ : V) (hne : v₁ ≠ v₂) :
     Unanimity (@clonedVotingRule V A0 _ _ _ f v₁ v₂ hne) := by
-  intro V' A' instV' instA' P c htop
+  intro V' A' instV' instA' _ P c htop
   letI : Fintype V' := instV'
   letI : Fintype A' := instA'
   classical

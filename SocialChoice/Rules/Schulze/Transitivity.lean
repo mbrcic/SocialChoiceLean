@@ -292,4 +292,9 @@ lemma schulze_nonempty
   refine ⟨a, ?_⟩
   simp [schulze, hmax', Finset.mem_univ]
 
+theorem schulze_isVotingRule : IsVotingRule schulze := by
+  intro V A _ _ _ P
+  classical
+  simpa using (schulze_nonempty (P := P))
+
 end SocialChoice

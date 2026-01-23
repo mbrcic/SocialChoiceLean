@@ -860,6 +860,7 @@ lemma aXb_partition_of_opt_pess_viable (f : VotingRule)
     have hc' : c ∉ f P := by
       intro hc
       exact h (Or.inr hc)
+    let _ : Nonempty A := ⟨a⟩
     obtain ⟨x, hx⟩ := hf_total P
     have hxabc : x ∈ abc := hsubsetP hx
     have hx' : x = a ∨ x = b ∨ x = c := by

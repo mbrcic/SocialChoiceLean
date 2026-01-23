@@ -124,4 +124,10 @@ lemma scoringEliminationAux_nonempty
   -- Specialize the strong induction result.
   simpa [hn] using (hStrong (P' := P) rfl)
 
+theorem scoringEliminationRule_isVotingRule
+    (score : Nat → Nat → Int) : IsVotingRule (scoringEliminationRule score) := by
+  intro V A _ _ _ P
+  classical
+  simpa [scoringEliminationRule] using (scoringEliminationAux_nonempty (score := score) (P := P))
+
 end SocialChoice

@@ -1,4 +1,5 @@
 import SocialChoice.Rules.ScoringElimination.Defs
+import SocialChoice.Rules.ScoringElimination.Basic
 import SocialChoice.Rules.ScoringRules.Veto.Defs
 import SocialChoice.Meta
 
@@ -24,5 +25,15 @@ noncomputable def coombs : VotingRule :=
 
 /-- Alias for Coombs' method. -/
 noncomputable abbrev vetoElimination : VotingRule := coombs
+
+theorem coombs_isVotingRule : IsVotingRule coombs := by
+  intro V A _ _ _ P
+  classical
+  simpa [coombs] using
+    (scoringEliminationRule_isVotingRule (score := vetoScore) (V := V) (A := A) (P := P))
+
+theorem vetoElimination_isVotingRule : IsVotingRule vetoElimination := by
+  intro V A _ _ _ P
+  simpa [vetoElimination] using (coombs_isVotingRule (V := V) (A := A) (P := P))
 
 end SocialChoice

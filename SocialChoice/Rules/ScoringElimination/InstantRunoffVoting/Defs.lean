@@ -1,4 +1,5 @@
 import SocialChoice.Rules.ScoringElimination.Defs
+import SocialChoice.Rules.ScoringElimination.Basic
 import SocialChoice.Rules.ScoringRules.Plurality.Defs
 import SocialChoice.Meta
 
@@ -27,5 +28,19 @@ noncomputable abbrev irv : VotingRule := instantRunoffVoting
 
 /-- Alias for IRV (Alternative Vote). -/
 noncomputable abbrev alternativeVote : VotingRule := instantRunoffVoting
+
+theorem instantRunoffVoting_isVotingRule : IsVotingRule instantRunoffVoting := by
+  intro V A _ _ _ P
+  classical
+  simpa [instantRunoffVoting] using
+    (scoringEliminationRule_isVotingRule (score := pluralityScore) (V := V) (A := A) (P := P))
+
+theorem irv_isVotingRule : IsVotingRule irv := by
+  intro V A _ _ _ P
+  simpa [irv] using (instantRunoffVoting_isVotingRule (V := V) (A := A) (P := P))
+
+theorem alternativeVote_isVotingRule : IsVotingRule alternativeVote := by
+  intro V A _ _ _ P
+  simpa [alternativeVote] using (instantRunoffVoting_isVotingRule (V := V) (A := A) (P := P))
 
 end SocialChoice

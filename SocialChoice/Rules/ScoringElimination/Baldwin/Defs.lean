@@ -1,4 +1,5 @@
 import SocialChoice.Rules.ScoringElimination.Defs
+import SocialChoice.Rules.ScoringElimination.Basic
 import SocialChoice.Rules.ScoringRules.Borda.Defs
 import SocialChoice.Meta
 
@@ -24,5 +25,15 @@ noncomputable def baldwin : VotingRule :=
 
 /-- Alias for Baldwin's method. -/
 noncomputable abbrev bordaElimination : VotingRule := baldwin
+
+theorem baldwin_isVotingRule : IsVotingRule baldwin := by
+  intro V A _ _ _ P
+  classical
+  simpa [baldwin] using
+    (scoringEliminationRule_isVotingRule (score := bordaScore) (V := V) (A := A) (P := P))
+
+theorem bordaElimination_isVotingRule : IsVotingRule bordaElimination := by
+  intro V A _ _ _ P
+  simpa [bordaElimination] using (baldwin_isVotingRule (V := V) (A := A) (P := P))
 
 end SocialChoice

@@ -40,24 +40,6 @@ noncomputable def pluralityWithRunoff : VotingRule :=
         (Finset.univ.filter (fun x =>
           ∃ y : A, ({x, y} : Finset A) ∈ pairs ∧ 0 ≤ margin P x y))
 
-lemma plurality_nonempty {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty A]
-    (P : Profile V A) : (plurality P).Nonempty := by
-  classical
-  let scoreSet : Finset Nat := (Finset.univ.image (fun c => topCount P c))
-  have hscoreSet : scoreSet.Nonempty :=
-    (Finset.univ_nonempty : (Finset.univ : Finset A).Nonempty).image (fun c => topCount P c)
-  let maxScore : Nat := scoreSet.max' hscoreSet
-  have hmaxmem : maxScore ∈ scoreSet := Finset.max'_mem scoreSet hscoreSet
-  rcases Finset.mem_image.mp hmaxmem with ⟨c, _hc, hscore⟩
-  have hmax : ∀ d : A, topCount P d ≤ topCount P c := by
-    intro d
-    have hmem : topCount P d ∈ scoreSet := by
-      exact Finset.mem_image.mpr ⟨d, by simp, rfl⟩
-    have hle : topCount P d ≤ maxScore := Finset.le_max' scoreSet _ hmem
-    simpa [hscore] using hle
-  refine ⟨c, ?_⟩
-  simp [plurality, hmax]
-
 theorem plurality_with_runoff_nonempty
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty A]
     (P : Profile V A) : (pluralityWithRunoff P).Nonempty := by
@@ -156,5 +138,10 @@ theorem plurality_with_runoff_nonempty
           refine ⟨t, ?_⟩
           simp [pluralityWithRunoff, hcard]
           exact ⟨s, by simpa [Finset.pair_comm] using hpair, hle_ts⟩
+
+theorem pluralityWithRunoff_isVotingRule : IsVotingRule pluralityWithRunoff := by
+  intro V A _ _ _ P
+  classical
+  simpa using (plurality_with_runoff_nonempty (P := P))
 
 end SocialChoice
