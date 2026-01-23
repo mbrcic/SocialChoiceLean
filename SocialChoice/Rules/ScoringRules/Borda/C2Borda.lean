@@ -15,7 +15,6 @@ noncomputable def c2BordaScore {V A : Type} [Fintype V] [Fintype A]
   classical
   exact (Finset.univ.sum (fun y => margin P x y))
 
-@[scRule]
 noncomputable def c2BordaRule : VotingRule :=
   fun {V A} _ _ (P : Profile V A) => by
     classical

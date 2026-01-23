@@ -23,6 +23,7 @@ import SocialChoice.Axioms.Pareto
 import SocialChoice.Axioms.Reinforcement
 import SocialChoice.Axioms.Unanimity
 import SocialChoice.Axioms.Strategyproofness
+import SocialChoice.Axioms.Implications
 
 import SocialChoice.Rules.ScoringRules.Anonymity
 import SocialChoice.Rules.ScoringRules.Neutrality
@@ -35,6 +36,7 @@ import SocialChoice.Rules.ScoringRules.Plurality.Defs
 import SocialChoice.Rules.ScoringRules.Plurality.Involvement
 import SocialChoice.Rules.ScoringRules.Plurality.Majority
 import SocialChoice.Rules.ScoringRules.Plurality.Pareto
+import SocialChoice.Rules.ScoringRules.Plurality.Derived
 import SocialChoice.Rules.ScoringRules.Borda.Defs
 import SocialChoice.Rules.ScoringRules.Borda.C2Borda
 import SocialChoice.Rules.ScoringRules.Borda.Condorcet
@@ -42,8 +44,11 @@ import SocialChoice.Rules.ScoringRules.Borda.Pareto
 import SocialChoice.Rules.ScoringRules.Borda.Monotonicity
 import SocialChoice.Rules.ScoringRules.Borda.Majority
 import SocialChoice.Rules.ScoringRules.Borda.Reversal
+import SocialChoice.Rules.ScoringRules.Borda.Derived
 import SocialChoice.Rules.ScoringRules.Veto.Defs
 import SocialChoice.Rules.ScoringRules.Veto.Majority
+import SocialChoice.Rules.ScoringRules.Veto.Derived
+import SocialChoice.Rules.ScoringRules.Derived
 import SocialChoice.Rules.ScoringElimination.Defs
 import SocialChoice.Rules.ScoringElimination.Basic
 import SocialChoice.Rules.ScoringElimination.Neutrality
@@ -51,15 +56,19 @@ import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Clones
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.MutualMajority
+import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Derived
 import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
 import SocialChoice.Rules.ScoringElimination.Baldwin.CondorcetLoser
+import SocialChoice.Rules.ScoringElimination.Baldwin.Derived
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
 import SocialChoice.Rules.ScoringElimination.Coombs.Majority
+import SocialChoice.Rules.ScoringElimination.Coombs.Derived
 import SocialChoice.Rules.Nanson.Defs
 import SocialChoice.Rules.Nanson.Condorcet
 import SocialChoice.Rules.Nanson.CondorcetLoser
 import SocialChoice.Rules.Nanson.Reversal
+import SocialChoice.Rules.Nanson.Derived
 import SocialChoice.Rules.PluralityWithRunoff.Defs
 import SocialChoice.Rules.PluralityWithRunoff.CondorcetLoser
 import SocialChoice.Rules.PluralityWithRunoff.Pareto
@@ -68,11 +77,13 @@ import SocialChoice.Rules.PluralityWithRunoff.Involvement
 import SocialChoice.Rules.Minimax.Defs
 import SocialChoice.Rules.Minimax.Condorcet
 import SocialChoice.Rules.Minimax.Monotonicity
+import SocialChoice.Rules.Minimax.Derived
 import SocialChoice.Rules.Black.Defs
 import SocialChoice.Rules.Black.Condorcet
 import SocialChoice.Rules.Black.CondorcetLoser
 import SocialChoice.Rules.Black.Pareto
 import SocialChoice.Rules.Black.Monotonicity
+import SocialChoice.Rules.Black.Derived
 import SocialChoice.Rules.SplitCycle.Defs
 import SocialChoice.Rules.SplitCycle.Clones
 import SocialChoice.Rules.SplitCycle.Condorcet
@@ -80,11 +91,13 @@ import SocialChoice.Rules.SplitCycle.Involvement
 import SocialChoice.Rules.SplitCycle.Monotonicity
 import SocialChoice.Rules.SplitCycle.Pareto
 import SocialChoice.Rules.SplitCycle.Reversal
+import SocialChoice.Rules.SplitCycle.Derived
 import SocialChoice.Rules.Schulze.Defs
 import SocialChoice.Rules.Schulze.Path
 import SocialChoice.Rules.Schulze.Transitivity
 import SocialChoice.Rules.Schulze.RefinesSplitCycle
 import SocialChoice.Rules.Schulze.Clones
+import SocialChoice.Rules.Schulze.Derived
 
 import SocialChoice.Impossibilities.CondorcetStrategyproofness
 import SocialChoice.Impossibilities.CondorcetParticipation

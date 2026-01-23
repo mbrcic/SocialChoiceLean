@@ -33,17 +33,19 @@ theorem independenceOfDominated_implies_paretoEfficiency :
 
 theorem independenceOfDominated_implies_independenceOfUniversallyLeastPreferred :
     Implies IndependenceOfDominated IndependenceOfUniversallyLeastPreferred := by
-  intro f _ hInd V A _ _ _ P c d hcd hbot
+  intro f _ hInd V A _ _ _ _ P c d hcd hbot
   exact hInd (P := P) (c := c) (d := d) (fun v => hbot v c hcd)
 
 theorem paretoEfficiency_implies_unanimity :
     Implies ParetoEfficiency Unanimity := by
   intro f hf hPar V A _ _ _ P c htop
   classical
+  let _ : Nonempty A := ⟨c⟩
   have hsubset : f P ⊆ ({c} : Finset A) := by
     intro x hx
     by_contra hxne
-    have hxne' : x ≠ c := Ne.symm hxne
+    have hxne' : x ≠ c := by
+      simpa using hxne
     have hxnot : x ∉ f P := by
       have hpref : ∀ v : V, Prefers P v c x := by
         intro v
@@ -95,7 +97,9 @@ theorem majorityCriterion_implies_unanimity :
   have hmaj' : StrictMajority (votersTop P c) := by
     have hpos : 0 < Fintype.card V := Fintype.card_pos_iff.mpr ‹Nonempty V›
     have hlt : Fintype.card V < 2 * Fintype.card V := by
-      simpa [Nat.two_mul] using (Nat.lt_add_of_pos_right hpos)
+      have hlt' : Fintype.card V < Fintype.card V + Fintype.card V :=
+        Nat.lt_add_of_pos_right (n := Fintype.card V) (k := Fintype.card V) hpos
+      simpa [Nat.two_mul] using hlt'
     simpa [StrictMajority, htop_set] using hlt
   exact hmaj P c hmaj'
 

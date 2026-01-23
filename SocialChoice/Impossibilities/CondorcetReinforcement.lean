@@ -148,7 +148,7 @@ end CondorcetReinforcement
 open CondorcetReinforcement
 
 /-- No Condorcet-consistent rule satisfying subset reinforcement on 9 voters. -/
-theorem no_condorcet_subset_reinforcement_9
+theorem no_condorcet_subset_reinforcement
     (f : VotingRule) (hf : IsVotingRule f)
     (hcond : CondorcetConsistency f) (hsub : SubsetReinforcement f) : False := by
   classical
@@ -191,5 +191,12 @@ theorem no_condorcet_subset_reinforcement_9
     simpa using this
   have hneq : prevCandidate w ≠ w := prev_ne_self w
   exact hneq (this.symm)
+
+/-- No Condorcet-consistent rule satisfying reinforcement on 9 voters. -/
+theorem no_condorcet_reinforcement
+    (f : VotingRule) (hf : IsVotingRule f)
+    (hcond : CondorcetConsistency f) (hrein : Reinforcement f) : False := by
+  apply no_condorcet_subset_reinforcement f hf hcond
+  exact reinforcement_subset hrein
 
 end SocialChoice

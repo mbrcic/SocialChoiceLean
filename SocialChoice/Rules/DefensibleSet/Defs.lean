@@ -10,7 +10,6 @@ noncomputable def defensibleSet {V A : Type} [Fintype V] [Fintype A]
   classical
   exact Finset.univ.filter (fun x => ∀ y, ∃ z, margin P z y ≥ margin P y x)
 
-@[scRule]
 noncomputable def DefensibleSet : VotingRule := by
   intro V A _ _ P
   classical

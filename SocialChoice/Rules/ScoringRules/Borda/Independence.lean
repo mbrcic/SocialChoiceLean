@@ -82,7 +82,7 @@ theorem borda_independence_of_universally_least_preferred_nonempty :
       _ = (Int.ofNat below.card) - 1 := by
         simpa using (Int.ofNat_sub hpos)
       _ = score (rank (P.pref v) a) - 1 := by
-        simpa [hscore]
+        simp [hscore]
   have hscoreCandidate (a : A) (hne : a ≠ d) :
       scoreCandidate P' score' ⟨a, hne⟩ =
         scoreCandidate P score a - (Fintype.card V : Int) := by
@@ -142,7 +142,7 @@ theorem borda_independence_of_universally_least_preferred_nonempty :
           score (rank (P.pref v) d) = Int.ofNat below.card := by
         simpa [score, below] using
           (bordaScore_eq_card_prefers (r := P.pref v) (x := d))
-      simpa [hscore_d', hbelow_empty]
+      simp [hscore_d', hbelow_empty]
     simp [hzero]
   have hscore_pos (a : A) (hne : a ≠ d) : 0 < scoreCandidate P score a := by
     unfold scoreCandidate

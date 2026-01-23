@@ -80,7 +80,6 @@ lemma clones_of_cloneSet
       · exact ⟨(fun h => (hxfalse h).elim), (fun h => (hc'false h).elim)⟩
       · exact ⟨(fun _ => hc'pref), (fun _ => hxpref)⟩
 
-@[scAxiom]
 def NonCloneChoiceIndependenceOfClones (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
       (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c}),
@@ -88,7 +87,6 @@ def NonCloneChoiceIndependenceOfClones (f : VotingRule) : Prop :=
       ∀ a : {x : A // x ≠ c},
         a ∉ D → (a.1 ∈ f P ↔ a ∈ f (minusCandidate P c))
 
-@[scAxiom]
 def CloneChoiceIndependenceOfClones (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
       (P : Profile V A) (c : A) (D : Set {x : A // x ≠ c}),

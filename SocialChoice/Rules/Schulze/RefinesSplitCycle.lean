@@ -2,6 +2,7 @@ import SocialChoice.Rules.Schulze.Defs
 import SocialChoice.Rules.Schulze.Path
 import SocialChoice.Rules.SplitCycle.Defs
 import SocialChoice.Rules.SplitCycle.Clones
+import SocialChoice.Meta
 
 namespace SocialChoice
 
@@ -84,5 +85,9 @@ lemma schulze_subset_splitCycle {V A : Type} [Fintype V] [Fintype A]
   intro b hdef
   have hsch : schulzeDefeats P b a := splitCycleDefeats_imp_schulzeDefeats (P := P) hdef
   exact (hcond b) hsch
+
+theorem schulze_refines_splitCycle : Refines schulze splitCycle := by
+  intro V A _ _ P
+  exact schulze_subset_splitCycle (P := P)
 
 end SocialChoice
