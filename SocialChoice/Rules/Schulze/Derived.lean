@@ -3,6 +3,7 @@ import SocialChoice.Axioms.Pareto
 import SocialChoice.Axioms.Condorcet
 import SocialChoice.Axioms.Majority
 import SocialChoice.Impossibilities.CondorcetReinforcement
+import SocialChoice.Rules.Schulze.InformationalBasis
 import SocialChoice.Rules.Schulze.Transitivity
 import SocialChoice.Rules.Schulze.RefinesSplitCycle
 import SocialChoice.Rules.SplitCycle.Condorcet
@@ -53,6 +54,11 @@ theorem schulze_majority_loser_criterion : MajorityLoserCriterion schulze := by
   apply Implies.apply condorcetLoserCriterion_implies_majorityLoserCriterion (f := schulze)
   · exact schulze_isVotingRule
   · exact schulze_condorcetLoser_criterion
+
+theorem schulze_anonymous : Anonymity schulze := by
+  apply Implies.apply marginBased_implies_anonymity (f := schulze)
+  · exact schulze_isVotingRule
+  · exact schulze_marginBased
 
 theorem schulze_not_subsetReinforcement : ¬ SubsetReinforcement schulze := by
   intro hsub

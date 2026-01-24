@@ -5,6 +5,8 @@ import SocialChoice.Axioms.Unanimity
 import SocialChoice.Axioms.Majority
 import SocialChoice.Axioms.Condorcet
 import SocialChoice.Axioms.Independence
+import SocialChoice.Axioms.InformationalBasis
+import SocialChoice.Axioms.Anonymity
 import SocialChoice.Axioms.Reinforcement
 import SocialChoice.Axioms.Reversal
 
@@ -139,7 +141,8 @@ theorem condorcetLoserCriterion_implies_majorityLoserCriterion :
     have hle : (votersBottom P c).card ≤ (votersPreferring P d c).card :=
       Finset.card_le_card hsubset
     have hlt : Fintype.card V < 2 * (votersBottom P c).card := by
-      simpa [StrictMajority] using hmaj
+      simp [StrictMajority] at hmaj
+      exact hmaj
     have hle' : 2 * (votersBottom P c).card ≤ 2 * (votersPreferring P d c).card :=
       Nat.mul_le_mul_left 2 hle
     have hlt' : Fintype.card V < 2 * (votersPreferring P d c).card :=
@@ -156,27 +159,41 @@ theorem reversalSymmetry_implies_singletonReversalSymmetry :
     rcases hnontriv with ⟨y, hy⟩
     intro hEq
     have hy_mem : y ∈ f P := by
-      simpa [hEq] using (Finset.mem_univ y)
-    have hy_mem_singleton : y ∈ ({x} : Finset A) := by
-      simpa [hx] using hy_mem
+      simp [hEq]
     have hy' : y = x := by
-      simpa using (Finset.mem_singleton.mp hy_mem_singleton)
-    have hxy : x = y := by
-      simpa [eq_comm] using hy'
-    exact hy hxy
+      simp [hx] at hy_mem
+      exact hy_mem
+    exact hy hy'.symm
   have hdisj := hrev (P := P) hnot_univ
   have hxmem : x ∈ f P := by
-    simpa [hx] using (Finset.mem_singleton.mpr rfl)
+    simp [hx]
   intro hxrev
   have hxinter : x ∈ f P ∩ f (reverse_profile P) := by
     exact Finset.mem_inter.mpr ⟨hxmem, hxrev⟩
   have : x ∈ (∅ : Finset A) := by
-    simpa [hdisj] using hxinter
-  simpa using this
+    rw [hdisj] at hxinter
+    exact hxinter
+  simp at this
 
 theorem reinforcement_implies_subsetReinforcement :
     Implies Reinforcement SubsetReinforcement := by
   intro f _ href
   exact reinforcement_subset (f := f) href
+
+theorem marginBased_implies_anonymity :
+    Implies MarginBased Anonymity := by
+  intro f _ hmargin V A _ _ P σ
+  classical
+  apply hmargin (P₁ := permuteVoters P σ) (P₂ := P)
+  intro x y
+  simp
+
+theorem topsOnly_implies_anonymity :
+    Implies TopsOnly Anonymity := by
+  intro f _ htops V A _ _ P σ
+  classical
+  apply htops (P₁ := permuteVoters P σ) (P₂ := P)
+  intro a
+  simp
 
 end SocialChoice

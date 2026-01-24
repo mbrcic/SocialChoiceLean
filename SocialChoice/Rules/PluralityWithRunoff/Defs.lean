@@ -40,6 +40,24 @@ noncomputable def pluralityWithRunoff : VotingRule :=
         (Finset.univ.filter (fun x =>
           ∃ y : A, ({x, y} : Finset A) ∈ pairs ∧ 0 ≤ margin P x y))
 
+lemma pluralityWithRunoffPairs_decEq_congr
+    {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (inst1 inst2 : DecidableEq A) :
+    @pluralityWithRunoffPairs V A _ _ inst1 P =
+      @pluralityWithRunoffPairs V A _ _ inst2 P := by
+  classical
+  cases Subsingleton.elim inst1 inst2
+  rfl
+
+lemma mem_pluralityWithRunoffPairs_decEq_congr
+    {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (inst1 inst2 : DecidableEq A) (s : Finset A) :
+    s ∈ @pluralityWithRunoffPairs V A _ _ inst1 P ↔
+      s ∈ @pluralityWithRunoffPairs V A _ _ inst2 P := by
+  classical
+  cases Subsingleton.elim inst1 inst2
+  simp
+
 theorem plurality_with_runoff_nonempty
     {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] [Nonempty A]
     (P : Profile V A) : (pluralityWithRunoff P).Nonempty := by

@@ -3,6 +3,7 @@ import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Rules.Nanson.Defs
 import SocialChoice.Rules.Nanson.Condorcet
 import SocialChoice.Rules.Nanson.CondorcetLoser
+import SocialChoice.Rules.Nanson.InformationalBasis
 import SocialChoice.Rules.Nanson.Reversal
 
 namespace SocialChoice
@@ -21,6 +22,11 @@ theorem nanson_majority_loser_criterion : MajorityLoserCriterion nanson := by
   apply Implies.apply condorcetLoserCriterion_implies_majorityLoserCriterion (f := nanson)
   · exact nanson_isVotingRule
   · exact nanson_CondorcetLoser_criterion
+
+theorem nanson_anonymous : Anonymity nanson := by
+  apply Implies.apply marginBased_implies_anonymity (f := nanson)
+  · exact nanson_isVotingRule
+  · exact nanson_marginBased
 
 theorem nanson_not_subsetReinforcement : ¬ SubsetReinforcement nanson := by
   intro hsub

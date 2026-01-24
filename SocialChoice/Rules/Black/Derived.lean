@@ -3,6 +3,7 @@ import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Rules.Black.Defs
 import SocialChoice.Rules.Black.Condorcet
 import SocialChoice.Rules.Black.CondorcetLoser
+import SocialChoice.Rules.Black.InformationalBasis
 import SocialChoice.Rules.Black.Pareto
 
 namespace SocialChoice
@@ -21,6 +22,11 @@ theorem black_majority_loser_criterion : MajorityLoserCriterion black := by
   apply Implies.apply condorcetLoserCriterion_implies_majorityLoserCriterion (f := black)
   · exact black_isVotingRule
   · exact black_CondorcetLoser_criterion
+
+theorem black_anonymous : Anonymity black := by
+  apply Implies.apply marginBased_implies_anonymity (f := black)
+  · exact black_isVotingRule
+  · exact black_marginBased
 
 theorem black_not_subsetReinforcement : ¬ SubsetReinforcement black := by
   intro hsub

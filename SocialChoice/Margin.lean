@@ -36,6 +36,52 @@ def margin_pos {V A : Type} [Fintype V] [Fintype A]
   classical
   simp [margin]
 
+@[simp] lemma margin_permuteVoters {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (σ : Equiv.Perm V) (a b : A) :
+    margin (permuteVoters P σ) a b = margin P a b := by
+  classical
+  have hcard_ab :
+      (Finset.univ.filter (fun v => Prefers (permuteVoters P σ) v a b)).card =
+        (Finset.univ.filter (fun v => Prefers P v a b)).card := by
+    refine Finset.card_bij
+      (s := Finset.univ.filter (fun v => Prefers (permuteVoters P σ) v a b))
+      (t := Finset.univ.filter (fun v => Prefers P v a b))
+      (i := fun v _ => σ v) ?_ ?_ ?_
+    · intro v hv
+      have hv' : Prefers (permuteVoters P σ) v a b := (Finset.mem_filter.mp hv).2
+      have hv'' : Prefers P (σ v) a b := by
+        simpa [permuteVoters, Prefers] using hv'
+      exact Finset.mem_filter.mpr ⟨by simp, hv''⟩
+    · intro v1 hv1 v2 hv2 h
+      exact σ.injective h
+    · intro v hv
+      have hv' : Prefers P v a b := (Finset.mem_filter.mp hv).2
+      refine ⟨σ.symm v, ?_, by simp⟩
+      have : Prefers (permuteVoters P σ) (σ.symm v) a b := by
+        simpa [permuteVoters, Prefers] using hv'
+      exact Finset.mem_filter.mpr ⟨by simp, this⟩
+  have hcard_ba :
+      (Finset.univ.filter (fun v => Prefers (permuteVoters P σ) v b a)).card =
+        (Finset.univ.filter (fun v => Prefers P v b a)).card := by
+    refine Finset.card_bij
+      (s := Finset.univ.filter (fun v => Prefers (permuteVoters P σ) v b a))
+      (t := Finset.univ.filter (fun v => Prefers P v b a))
+      (i := fun v _ => σ v) ?_ ?_ ?_
+    · intro v hv
+      have hv' : Prefers (permuteVoters P σ) v b a := (Finset.mem_filter.mp hv).2
+      have hv'' : Prefers P (σ v) b a := by
+        simpa [permuteVoters, Prefers] using hv'
+      exact Finset.mem_filter.mpr ⟨by simp, hv''⟩
+    · intro v1 hv1 v2 hv2 h
+      exact σ.injective h
+    · intro v hv
+      have hv' : Prefers P v b a := (Finset.mem_filter.mp hv).2
+      refine ⟨σ.symm v, ?_, by simp⟩
+      have : Prefers (permuteVoters P σ) (σ.symm v) b a := by
+        simpa [permuteVoters, Prefers] using hv'
+      exact Finset.mem_filter.mpr ⟨by simp, this⟩
+  simp [margin, hcard_ab, hcard_ba]
+
 @[simp] lemma margin_relabelProfile {V A B : Type} [Fintype V] [Fintype A] [Fintype B]
     (P : Profile V A) (e : A ≃ B) (a b : B) :
     margin (relabelProfile P e) a b = margin P (e.symm a) (e.symm b) := by

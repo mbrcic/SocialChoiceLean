@@ -2,6 +2,7 @@ import SocialChoice.Axioms.Implications
 import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Rules.Minimax.Defs
 import SocialChoice.Rules.Minimax.Condorcet
+import SocialChoice.Rules.Minimax.InformationalBasis
 
 namespace SocialChoice
 
@@ -14,6 +15,11 @@ theorem minimax_unanimity : Unanimity minimax := by
   apply Implies.apply majorityCriterion_implies_unanimity (f := minimax)
   · exact minimax_isVotingRule
   · exact minimax_majority_criterion
+
+theorem minimax_anonymous : Anonymity minimax := by
+  apply Implies.apply marginBased_implies_anonymity (f := minimax)
+  · exact minimax_isVotingRule
+  · exact minimax_marginBased
 
 theorem minimax_not_subsetReinforcement : ¬ SubsetReinforcement minimax := by
   intro hsub
