@@ -6,6 +6,7 @@ import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Rules.Schulze.InformationalBasis
 import SocialChoice.Rules.Schulze.Transitivity
 import SocialChoice.Rules.Schulze.RefinesSplitCycle
+import SocialChoice.Rules.Schulze.Neutrality
 import SocialChoice.Rules.SplitCycle.Condorcet
 import SocialChoice.Rules.SplitCycle.Pareto
 import SocialChoice.Rules.SplitCycle.Reversal

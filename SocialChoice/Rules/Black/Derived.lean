@@ -4,6 +4,7 @@ import SocialChoice.Rules.Black.Defs
 import SocialChoice.Rules.Black.Condorcet
 import SocialChoice.Rules.Black.CondorcetLoser
 import SocialChoice.Rules.Black.InformationalBasis
+import SocialChoice.Rules.Black.Neutrality
 import SocialChoice.Rules.Black.Pareto
 
 namespace SocialChoice

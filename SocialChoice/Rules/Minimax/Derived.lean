@@ -3,6 +3,7 @@ import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Rules.Minimax.Defs
 import SocialChoice.Rules.Minimax.Condorcet
 import SocialChoice.Rules.Minimax.InformationalBasis
+import SocialChoice.Rules.Minimax.Neutrality
 
 namespace SocialChoice
 

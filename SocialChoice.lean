@@ -69,6 +69,7 @@ import SocialChoice.Rules.ScoringElimination.Baldwin.Derived
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
 import SocialChoice.Rules.ScoringElimination.Coombs.Majority
 import SocialChoice.Rules.ScoringElimination.Coombs.Condorcet
+import SocialChoice.Rules.ScoringElimination.Coombs.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.Coombs.Derived
 import SocialChoice.Rules.Nanson.Defs
 import SocialChoice.Rules.Nanson.Condorcet
@@ -83,12 +84,15 @@ import SocialChoice.Rules.PluralityWithRunoff.Pareto
 import SocialChoice.Rules.PluralityWithRunoff.Majority
 import SocialChoice.Rules.PluralityWithRunoff.Involvement
 import SocialChoice.Rules.PluralityWithRunoff.EqualsIRVForThreeCandidates
+import SocialChoice.Rules.PluralityWithRunoff.Derived
 import SocialChoice.Rules.Minimax.Defs
+import SocialChoice.Rules.Minimax.Neutrality
 import SocialChoice.Rules.Minimax.Condorcet
 import SocialChoice.Rules.Minimax.Monotonicity
 import SocialChoice.Rules.Minimax.InformationalBasis
 import SocialChoice.Rules.Minimax.Derived
 import SocialChoice.Rules.Black.Defs
+import SocialChoice.Rules.Black.Neutrality
 import SocialChoice.Rules.Black.Condorcet
 import SocialChoice.Rules.Black.CondorcetLoser
 import SocialChoice.Rules.Black.Pareto

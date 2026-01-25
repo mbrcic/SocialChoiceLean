@@ -5,6 +5,7 @@ import SocialChoice.Rules.Nanson.Condorcet
 import SocialChoice.Rules.Nanson.CondorcetLoser
 import SocialChoice.Rules.Nanson.InformationalBasis
 import SocialChoice.Rules.Nanson.Reversal
+import SocialChoice.Rules.Nanson.Neutrality
 
 namespace SocialChoice
 
