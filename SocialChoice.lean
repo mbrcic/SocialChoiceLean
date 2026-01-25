@@ -119,6 +119,7 @@ import SocialChoice.Rules.Schulze.Derived
 import SocialChoice.Impossibilities.CondorcetStrategyproofness
 import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Impossibilities.CondorcetReinforcement
+import SocialChoice.Impossibilities.AnonymousNeutralResolute
 import SocialChoice.Impossibilities.GibbardSatterthwaite.Main
 import SocialChoice.Impossibilities.DugganSchwartz.Main
 import SocialChoice.Impossibilities.Holliday.Main
