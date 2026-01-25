@@ -33,12 +33,12 @@ lemma ballot_bdeac_top_b : BallotTop ballot_bdeac.toLinearOrder b := by
     simpa using (idxOf_head_lt_idxOf_of_ne (x := x) (c := b) (rest := [d, e, a, c]) hx)
   exact (ListBallot.lt_iff_idxOf (b := ballot_bdeac) (a := b) (c := x)).2 hidx
 
-lemma ballot_dbcae_top_d : BallotTop ballot_dbcae.toLinearOrder d := by
+lemma ballot_dbace_top_d : BallotTop ballot_dbace.toLinearOrder d := by
   intro x hx
-  have hidx : ballot_dbcae.ranking.idxOf d < ballot_dbcae.ranking.idxOf x := by
-    change List.idxOf d [d, b, c, a, e] < List.idxOf x [d, b, c, a, e]
-    simpa using (idxOf_head_lt_idxOf_of_ne (x := x) (c := d) (rest := [b, c, a, e]) hx)
-  exact (ListBallot.lt_iff_idxOf (b := ballot_dbcae) (a := d) (c := x)).2 hidx
+  have hidx : ballot_dbace.ranking.idxOf d < ballot_dbace.ranking.idxOf x := by
+    change List.idxOf d [d, b, a, c, e] < List.idxOf x [d, b, a, c, e]
+    simpa using (idxOf_head_lt_idxOf_of_ne (x := x) (c := d) (rest := [b, a, c, e]) hx)
+  exact (ListBallot.lt_iff_idxOf (b := ballot_dbace) (a := d) (c := x)).2 hidx
 
 lemma not_mem_addCopiesProfile_of_not_mem {f : VotingRule} (hpos : PositiveInvolvement f)
     {U A : Type} [DecidableEq U] [Fintype A]
@@ -117,16 +117,16 @@ lemma not_mem_P5_of_not_mem_P4 {f : VotingRule} (hpos : PositiveInvolvement f)
     (hd : d ∉ f P4Profile) : d ∉ f P5Profile := by
   intro hd5
   have hmem :
-      d ∈ f (addCopiesProfile votersP5 votersP1_7 P5Profile ballot_dbcae.toLinearOrder) :=
+      d ∈ f (addCopiesProfile votersP5 votersP1_7 P5Profile ballot_dbace.toLinearOrder) :=
     positiveInvolvement_addCopiesProfile (f := f) hpos votersP5 votersP1_7
-      votersP5_disjoint_votersP1_7 P5Profile ballot_dbcae.toLinearOrder d
-      ballot_dbcae_top_d hd5
+      votersP5_disjoint_votersP1_7 P5Profile ballot_dbace.toLinearOrder d
+      ballot_dbace_top_d hd5
   have hmem' :
       d ∈ f (castProfile (h := votersP4_eq_union_votersP5_votersP1_7)
-        (addCopiesProfile votersP5 votersP1_7 P5Profile ballot_dbcae.toLinearOrder)) := by
+        (addCopiesProfile votersP5 votersP1_7 P5Profile ballot_dbace.toLinearOrder)) := by
     have hcast :=
       votingRule_castProfile (f := f) (h := votersP4_eq_union_votersP5_votersP1_7)
-        (P := addCopiesProfile votersP5 votersP1_7 P5Profile ballot_dbcae.toLinearOrder)
+        (P := addCopiesProfile votersP5 votersP1_7 P5Profile ballot_dbace.toLinearOrder)
     rw [hcast]
     exact hmem
   have hmem'' : d ∈ f P4Profile := by

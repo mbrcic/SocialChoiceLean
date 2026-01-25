@@ -52,7 +52,7 @@ lemma hgap_P3Profile_add_newVoter
     have hm_ge : (6 : Int) ≤ margin P3Profile y x := edgeWeights_P3_ge_6 hm_mem
     linarith
   have hk_le : k ≤ (168 : Int) := by
-    have hm_le' : margin P3Profile y x ≤ (107 : Int) := edgeWeights_P3_le_107 hm_mem
+    have hm_le' : margin P3Profile y x ≤ (102 : Int) := edgeWeights_P3_le_102 hm_mem
     linarith
   have hk_nat : k.toNat ≤ 168 := (Int.toNat_le (m := k) (n := 168)).2 hk_le
   obtain ⟨W, hdisj, hcard⟩ :=
@@ -191,7 +191,7 @@ lemma hgap_P5Profile_add_twoVoters
     have hm_ge : (6 : Int) ≤ margin P5Profile y x := edgeWeights_P5_ge_6 hm_mem
     linarith
   have hk_le : k ≤ (168 : Int) := by
-    have hm_le' : margin P5Profile y x ≤ (138 : Int) := edgeWeights_P5_le_138 hm_mem
+    have hm_le' : margin P5Profile y x ≤ (118 : Int) := edgeWeights_P5_le_118 hm_mem
     linarith
   have hk_nat : k.toNat ≤ 168 := (Int.toNat_le (m := k) (n := 168)).2 hk_le
   obtain ⟨W, hdisj, hcard⟩ :=

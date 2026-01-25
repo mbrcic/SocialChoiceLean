@@ -9,35 +9,35 @@ open scoped BigOperators
 
 namespace Holliday
 
-lemma margin_P1Profile_c_a : margin P1Profile c a = (-86 : Int) := by
+lemma margin_P1Profile_c_a : margin P1Profile c a = (-83 : Int) := by
   calc
     margin P1Profile c a = - margin P1Profile a c :=
       (margin_antisymmetric (P := P1Profile)) c a
-    _ = (-86 : Int) := by simp [margin_P1Profile_a_c]
+    _ = (-83 : Int) := by simp [margin_P1Profile_a_c]
 
-lemma margin_P1Profile_d_a : margin P1Profile d a = (-2 : Int) := by
+lemma margin_P1Profile_d_a : margin P1Profile d a = (-1 : Int) := by
   calc
     margin P1Profile d a = - margin P1Profile a d :=
       (margin_antisymmetric (P := P1Profile)) d a
-    _ = (-2 : Int) := by simp [margin_P1Profile_a_d]
+    _ = (-1 : Int) := by simp [margin_P1Profile_a_d]
 
-lemma margin_P1Profile_e_a : margin P1Profile e a = (-46 : Int) := by
+lemma margin_P1Profile_e_a : margin P1Profile e a = (-47 : Int) := by
   calc
     margin P1Profile e a = - margin P1Profile a e :=
       (margin_antisymmetric (P := P1Profile)) e a
-    _ = (-46 : Int) := by simp [margin_P1Profile_a_e]
+    _ = (-47 : Int) := by simp [margin_P1Profile_a_e]
 
-lemma margin_P1Profile_e_b : margin P1Profile e b = 92 := by
+lemma margin_P1Profile_e_b : margin P1Profile e b = 91 := by
   calc
     margin P1Profile e b = - margin P1Profile b e :=
       (margin_antisymmetric (P := P1Profile)) e b
-    _ = 92 := by simp [margin_P1Profile_b_e]
+    _ = 91 := by simp [margin_P1Profile_b_e]
 
-lemma margin_P1Profile_e_d : margin P1Profile e d = 8 := by
+lemma margin_P1Profile_e_d : margin P1Profile e d = 5 := by
   calc
     margin P1Profile e d = - margin P1Profile d e :=
       (margin_antisymmetric (P := P1Profile)) e d
-    _ = 8 := by simp [margin_P1Profile_d_e]
+    _ = 5 := by simp [margin_P1Profile_d_e]
 
 lemma P1_condorcetLoser_d : CondorcetLoser P1Profile d := by
   refine (CondorcetLoser_iff_margin_pos (P := P1Profile) (c := d)).2 ?_

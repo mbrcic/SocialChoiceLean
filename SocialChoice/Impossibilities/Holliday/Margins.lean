@@ -131,7 +131,7 @@ lemma sum_Ico_marginOfBallot_of_mem_block (a b : A5) {lo hi : U450} {ballot : Li
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_1 (a b : A5) :
     (Finset.Ico (0 : U450) p1_cut1_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (63 : Int) * marginOfBallot ballot_daceb a b := by
+      (62 : Int) * marginOfBallot ballot_daceb a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := 0) (hi := p1_cut1_fin)
       (ballot := ballot_daceb) (by simp [p1_cut1_fin]))
@@ -140,7 +140,7 @@ lemma sum_Ico_marginOfBallot_of_mem_block (a b : A5) {lo hi : U450} {ballot : Li
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_2 (a b : A5) :
     (Finset.Ico p1_cut1_fin p1_cut2_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (6 : Int) * marginOfBallot ballot_daceb a b := by
+      (7 : Int) * marginOfBallot ballot_daceb a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := p1_cut1_fin) (hi := p1_cut2_fin)
       (ballot := ballot_daceb) (by simp [p1_cut1_fin, p1_cut2_fin]))
@@ -149,7 +149,7 @@ lemma sum_Ico_marginOfBallot_of_mem_block (a b : A5) {lo hi : U450} {ballot : Li
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_3 (a b : A5) :
     (Finset.Ico p1_cut2_fin p1_cut3_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (67 : Int) * marginOfBallot ballot_ebacd a b := by
+      (64 : Int) * marginOfBallot ballot_ebacd a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := p1_cut2_fin) (hi := p1_cut3_fin)
       (ballot := ballot_ebacd) (by simp [p1_cut2_fin, p1_cut3_fin]))
@@ -158,7 +158,7 @@ lemma sum_Ico_marginOfBallot_of_mem_block (a b : A5) {lo hi : U450} {ballot : Li
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_4 (a b : A5) :
     (Finset.Ico p1_cut3_fin p1_cut4_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (27 : Int) * marginOfBallot ballot_bcaed a b := by
+      (46 : Int) * marginOfBallot ballot_bcaed a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := p1_cut3_fin) (hi := p1_cut4_fin)
       (ballot := ballot_bcaed) (by simp [p1_cut3_fin, p1_cut4_fin]))
@@ -167,43 +167,43 @@ lemma sum_Ico_marginOfBallot_of_mem_block (a b : A5) {lo hi : U450} {ballot : Li
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_5 (a b : A5) :
     (Finset.Ico p1_cut4_fin p1_cut5_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (21 : Int) * marginOfBallot ballot_cedba a b := by
+      (20 : Int) * marginOfBallot ballot_cdeba a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := p1_cut4_fin) (hi := p1_cut5_fin)
-      (ballot := ballot_cedba) (by simp [p1_cut4_fin, p1_cut5_fin]))
+      (ballot := ballot_cdeba) (by simp [p1_cut4_fin, p1_cut5_fin]))
   simp [Fin.card_Ico] at h
   exact h
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_6 (a b : A5) :
     (Finset.Ico p1_cut5_fin p1_cut6_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (13 : Int) * marginOfBallot ballot_dbcae a b := by
+      (11 : Int) * marginOfBallot ballot_dbace a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := p1_cut5_fin) (hi := p1_cut6_fin)
-      (ballot := ballot_dbcae) (by simp [p1_cut5_fin, p1_cut6_fin]))
+      (ballot := ballot_dbace) (by simp [p1_cut5_fin, p1_cut6_fin]))
   simp [Fin.card_Ico] at h
   exact h
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_7 (a b : A5) :
     (Finset.Ico p1_cut6_fin p1_cut7_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (7 : Int) * marginOfBallot ballot_dbcae a b := by
+      (7 : Int) * marginOfBallot ballot_dbace a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := p1_cut6_fin) (hi := p1_cut7_fin)
-      (ballot := ballot_dbcae) (by simp [p1_cut6_fin, p1_cut7_fin]))
+      (ballot := ballot_dbace) (by simp [p1_cut6_fin, p1_cut7_fin]))
   simp [Fin.card_Ico] at h
   exact h
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_8 (a b : A5) :
     (Finset.Ico p1_cut7_fin p1_cut8_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (18 : Int) * marginOfBallot ballot_bacde a b := by
+      (2 : Int) * marginOfBallot ballot_edcba a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := p1_cut7_fin) (hi := p1_cut8_fin)
-      (ballot := ballot_bacde) (by simp [p1_cut7_fin, p1_cut8_fin]))
+      (ballot := ballot_edcba) (by simp [p1_cut7_fin, p1_cut8_fin]))
   simp [Fin.card_Ico] at h
   exact h
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_9 (a b : A5) :
     (Finset.Ico p1_cut8_fin p1_cut9_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (27 : Int) * marginOfBallot ballot_adbec a b := by
+      (26 : Int) * marginOfBallot ballot_adbec a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := p1_cut8_fin) (hi := p1_cut9_fin)
       (ballot := ballot_adbec) (by simp [p1_cut8_fin, p1_cut9_fin]))
@@ -212,7 +212,7 @@ lemma sum_Ico_marginOfBallot_of_mem_block (a b : A5) {lo hi : U450} {ballot : Li
 
 @[simp] lemma sum_Ico_marginOfBallot_p1_10 (a b : A5) :
     (Finset.Ico p1_cut9_fin p1_cut10_fin).sum (fun v => marginOfBallot (ballotsAll v) a b) =
-      (24 : Int) * marginOfBallot ballot_bdeac a b := by
+      (23 : Int) * marginOfBallot ballot_bdeac a b := by
   have h :=
     (sum_Ico_marginOfBallot_of_mem_block (a := a) (b := b) (lo := p1_cut9_fin)
       (hi := p1_cut10_fin) (ballot := ballot_bdeac) (by simp [p1_cut9_fin, p1_cut10_fin]))
@@ -355,49 +355,49 @@ lemma margin_P5Profile_eq_blocks {a b : A5} (hne : a ≠ b) :
         (margin_restrictElectorate_eq_sum_marginOfBallot (S := votersP5) (a := a) (b := b) (hne := hne))
     _ = marginBlocks blocksP5 a b := votersP5_sum_marginOfBallot_eq_marginBlocks (a := a) (b := b)
 
-lemma marginBlocks_P1_a_b : marginBlocks blocksP1 a b = (-84 : Int) := by
+lemma marginBlocks_P1_a_b : marginBlocks blocksP1 a b = (-81 : Int) := by
   decide
 
-lemma marginBlocks_P1_a_c : marginBlocks blocksP1 a c = 86 := by
+lemma marginBlocks_P1_a_c : marginBlocks blocksP1 a c = 83 := by
   decide
 
-lemma marginBlocks_P1_a_d : marginBlocks blocksP1 a d = 2 := by
+lemma marginBlocks_P1_a_d : marginBlocks blocksP1 a d = 1 := by
   decide
 
-lemma marginBlocks_P1_a_e : marginBlocks blocksP1 a e = 46 := by
+lemma marginBlocks_P1_a_e : marginBlocks blocksP1 a e = 47 := by
   decide
 
-lemma marginBlocks_P1_b_c : marginBlocks blocksP1 b c = 42 := by
+lemma marginBlocks_P1_b_c : marginBlocks blocksP1 b c = 37 := by
   decide
 
-lemma marginBlocks_P1_b_d : marginBlocks blocksP1 b d = 2 := by
+lemma marginBlocks_P1_b_d : marginBlocks blocksP1 b d = 1 := by
   decide
 
-lemma marginBlocks_P1_b_e : marginBlocks blocksP1 b e = (-92 : Int) := by
+lemma marginBlocks_P1_b_e : marginBlocks blocksP1 b e = (-91 : Int) := by
   decide
 
-lemma marginBlocks_P1_c_d : marginBlocks blocksP1 c d = 44 := by
+lemma marginBlocks_P1_c_d : marginBlocks blocksP1 c d = 41 := by
   decide
 
-lemma marginBlocks_P1_c_e : marginBlocks blocksP1 c e = 88 := by
+lemma marginBlocks_P1_c_e : marginBlocks blocksP1 c e = 87 := by
   decide
 
-lemma marginBlocks_P1_d_e : marginBlocks blocksP1 d e = (-8 : Int) := by
+lemma marginBlocks_P1_d_e : marginBlocks blocksP1 d e = (-5 : Int) := by
   decide
 
-lemma marginBlocks_P2_a_b : marginBlocks blocksP2 a b = (-57 : Int) := by
+lemma marginBlocks_P2_a_b : marginBlocks blocksP2 a b = (-55 : Int) := by
   decide
 
-lemma marginBlocks_P2_a_c : marginBlocks blocksP2 a c = 113 := by
+lemma marginBlocks_P2_a_c : marginBlocks blocksP2 a c = 109 := by
   decide
 
-lemma marginBlocks_P2_a_d : marginBlocks blocksP2 a d = 29 := by
+lemma marginBlocks_P2_a_d : marginBlocks blocksP2 a d = 27 := by
   decide
 
 lemma marginBlocks_P2_a_e : marginBlocks blocksP2 a e = 73 := by
   decide
 
-lemma marginBlocks_P2_b_c : marginBlocks blocksP2 b c = 69 := by
+lemma marginBlocks_P2_b_c : marginBlocks blocksP2 b c = 63 := by
   decide
 
 lemma marginBlocks_P2_b_d : marginBlocks blocksP2 b d = (-25 : Int) := by
@@ -406,49 +406,49 @@ lemma marginBlocks_P2_b_d : marginBlocks blocksP2 b d = (-25 : Int) := by
 lemma marginBlocks_P2_b_e : marginBlocks blocksP2 b e = (-65 : Int) := by
   decide
 
-lemma marginBlocks_P2_c_d : marginBlocks blocksP2 c d = 17 := by
+lemma marginBlocks_P2_c_d : marginBlocks blocksP2 c d = 15 := by
   decide
 
 lemma marginBlocks_P2_c_e : marginBlocks blocksP2 c e = 61 := by
   decide
 
-lemma marginBlocks_P2_d_e : marginBlocks blocksP2 d e = 19 := by
+lemma marginBlocks_P2_d_e : marginBlocks blocksP2 d e = 21 := by
   decide
 
-lemma marginBlocks_P3_a_b : marginBlocks blocksP3 a b = (-63 : Int) := by
+lemma marginBlocks_P3_a_b : marginBlocks blocksP3 a b = (-62 : Int) := by
   decide
 
-lemma marginBlocks_P3_a_c : marginBlocks blocksP3 a c = 107 := by
+lemma marginBlocks_P3_a_c : marginBlocks blocksP3 a c = 102 := by
   decide
 
-lemma marginBlocks_P3_a_d : marginBlocks blocksP3 a d = 35 := by
+lemma marginBlocks_P3_a_d : marginBlocks blocksP3 a d = 34 := by
   decide
 
-lemma marginBlocks_P3_a_e : marginBlocks blocksP3 a e = 67 := by
+lemma marginBlocks_P3_a_e : marginBlocks blocksP3 a e = 66 := by
   decide
 
-lemma marginBlocks_P3_b_c : marginBlocks blocksP3 b c = 75 := by
+lemma marginBlocks_P3_b_c : marginBlocks blocksP3 b c = 70 := by
   decide
 
-lemma marginBlocks_P3_b_d : marginBlocks blocksP3 b d = (-19 : Int) := by
+lemma marginBlocks_P3_b_d : marginBlocks blocksP3 b d = (-18 : Int) := by
   decide
 
-lemma marginBlocks_P3_b_e : marginBlocks blocksP3 b e = (-59 : Int) := by
+lemma marginBlocks_P3_b_e : marginBlocks blocksP3 b e = (-58 : Int) := by
   decide
 
-lemma marginBlocks_P3_c_d : marginBlocks blocksP3 c d = 23 := by
+lemma marginBlocks_P3_c_d : marginBlocks blocksP3 c d = 22 := by
   decide
 
-lemma marginBlocks_P3_c_e : marginBlocks blocksP3 c e = 55 := by
+lemma marginBlocks_P3_c_e : marginBlocks blocksP3 c e = 54 := by
   decide
 
-lemma marginBlocks_P3_d_e : marginBlocks blocksP3 d e = 13 := by
+lemma marginBlocks_P3_d_e : marginBlocks blocksP3 d e = 14 := by
   decide
 
-lemma marginBlocks_P4_a_b : marginBlocks blocksP4 a b = (-87 : Int) := by
+lemma marginBlocks_P4_a_b : marginBlocks blocksP4 a b = (-85 : Int) := by
   decide
 
-lemma marginBlocks_P4_a_c : marginBlocks blocksP4 a c = 131 := by
+lemma marginBlocks_P4_a_c : marginBlocks blocksP4 a c = 125 := by
   decide
 
 lemma marginBlocks_P4_a_d : marginBlocks blocksP4 a d = 11 := by
@@ -457,7 +457,7 @@ lemma marginBlocks_P4_a_d : marginBlocks blocksP4 a d = 11 := by
 lemma marginBlocks_P4_a_e : marginBlocks blocksP4 a e = 43 := by
   decide
 
-lemma marginBlocks_P4_b_c : marginBlocks blocksP4 b c = 99 := by
+lemma marginBlocks_P4_b_c : marginBlocks blocksP4 b c = 93 := by
   decide
 
 lemma marginBlocks_P4_b_d : marginBlocks blocksP4 b d = 5 := by
@@ -475,10 +475,10 @@ lemma marginBlocks_P4_c_e : marginBlocks blocksP4 c e = 31 := by
 lemma marginBlocks_P4_d_e : marginBlocks blocksP4 d e = 37 := by
   decide
 
-lemma marginBlocks_P5_a_b : marginBlocks blocksP5 a b = (-80 : Int) := by
+lemma marginBlocks_P5_a_b : marginBlocks blocksP5 a b = (-78 : Int) := by
   decide
 
-lemma marginBlocks_P5_a_c : marginBlocks blocksP5 a c = 138 := by
+lemma marginBlocks_P5_a_c : marginBlocks blocksP5 a c = 118 := by
   decide
 
 lemma marginBlocks_P5_a_d : marginBlocks blocksP5 a d = 18 := by
@@ -487,7 +487,7 @@ lemma marginBlocks_P5_a_d : marginBlocks blocksP5 a d = 18 := by
 lemma marginBlocks_P5_a_e : marginBlocks blocksP5 a e = 36 := by
   decide
 
-lemma marginBlocks_P5_b_c : marginBlocks blocksP5 b c = 92 := by
+lemma marginBlocks_P5_b_c : marginBlocks blocksP5 b c = 86 := by
   decide
 
 lemma marginBlocks_P5_b_d : marginBlocks blocksP5 b d = 12 := by
@@ -505,83 +505,83 @@ lemma marginBlocks_P5_c_e : marginBlocks blocksP5 c e = 24 := by
 lemma marginBlocks_P5_d_e : marginBlocks blocksP5 d e = 30 := by
   decide
 
-lemma margin_P1Profile_a_b : margin P1Profile a b = (-84 : Int) := by
+lemma margin_P1Profile_a_b : margin P1Profile a b = (-81 : Int) := by
   calc
     margin P1Profile a b = marginBlocks blocksP1 a b := margin_P1Profile_eq_blocks (a := a) (b := b)
       (by decide)
-    _ = (-84 : Int) := by simpa using marginBlocks_P1_a_b
+    _ = (-81 : Int) := by simpa using marginBlocks_P1_a_b
 
-lemma margin_P1Profile_a_c : margin P1Profile a c = 86 := by
+lemma margin_P1Profile_a_c : margin P1Profile a c = 83 := by
   calc
     margin P1Profile a c = marginBlocks blocksP1 a c := margin_P1Profile_eq_blocks (a := a) (b := c)
       (by decide)
-    _ = 86 := by simpa using marginBlocks_P1_a_c
+    _ = 83 := by simpa using marginBlocks_P1_a_c
 
-lemma margin_P1Profile_a_d : margin P1Profile a d = 2 := by
+lemma margin_P1Profile_a_d : margin P1Profile a d = 1 := by
   calc
     margin P1Profile a d = marginBlocks blocksP1 a d := margin_P1Profile_eq_blocks (a := a) (b := d)
       (by decide)
-    _ = 2 := by simpa using marginBlocks_P1_a_d
+    _ = 1 := by simpa using marginBlocks_P1_a_d
 
-lemma margin_P1Profile_a_e : margin P1Profile a e = 46 := by
+lemma margin_P1Profile_a_e : margin P1Profile a e = 47 := by
   calc
     margin P1Profile a e = marginBlocks blocksP1 a e := margin_P1Profile_eq_blocks (a := a) (b := e)
       (by decide)
-    _ = 46 := by simpa using marginBlocks_P1_a_e
+    _ = 47 := by simpa using marginBlocks_P1_a_e
 
-lemma margin_P1Profile_b_c : margin P1Profile b c = 42 := by
+lemma margin_P1Profile_b_c : margin P1Profile b c = 37 := by
   calc
     margin P1Profile b c = marginBlocks blocksP1 b c := margin_P1Profile_eq_blocks (a := b) (b := c)
       (by decide)
-    _ = 42 := by simpa using marginBlocks_P1_b_c
+    _ = 37 := by simpa using marginBlocks_P1_b_c
 
-lemma margin_P1Profile_b_d : margin P1Profile b d = 2 := by
+lemma margin_P1Profile_b_d : margin P1Profile b d = 1 := by
   calc
     margin P1Profile b d = marginBlocks blocksP1 b d := margin_P1Profile_eq_blocks (a := b) (b := d)
       (by decide)
-    _ = 2 := by simpa using marginBlocks_P1_b_d
+    _ = 1 := by simpa using marginBlocks_P1_b_d
 
-lemma margin_P1Profile_b_e : margin P1Profile b e = (-92 : Int) := by
+lemma margin_P1Profile_b_e : margin P1Profile b e = (-91 : Int) := by
   calc
     margin P1Profile b e = marginBlocks blocksP1 b e := margin_P1Profile_eq_blocks (a := b) (b := e)
       (by decide)
-    _ = (-92 : Int) := by simpa using marginBlocks_P1_b_e
+    _ = (-91 : Int) := by simpa using marginBlocks_P1_b_e
 
-lemma margin_P1Profile_c_d : margin P1Profile c d = 44 := by
+lemma margin_P1Profile_c_d : margin P1Profile c d = 41 := by
   calc
     margin P1Profile c d = marginBlocks blocksP1 c d := margin_P1Profile_eq_blocks (a := c) (b := d)
       (by decide)
-    _ = 44 := by simpa using marginBlocks_P1_c_d
+    _ = 41 := by simpa using marginBlocks_P1_c_d
 
-lemma margin_P1Profile_c_e : margin P1Profile c e = 88 := by
+lemma margin_P1Profile_c_e : margin P1Profile c e = 87 := by
   calc
     margin P1Profile c e = marginBlocks blocksP1 c e := margin_P1Profile_eq_blocks (a := c) (b := e)
       (by decide)
-    _ = 88 := by simpa using marginBlocks_P1_c_e
+    _ = 87 := by simpa using marginBlocks_P1_c_e
 
-lemma margin_P1Profile_d_e : margin P1Profile d e = (-8 : Int) := by
+lemma margin_P1Profile_d_e : margin P1Profile d e = (-5 : Int) := by
   calc
     margin P1Profile d e = marginBlocks blocksP1 d e := margin_P1Profile_eq_blocks (a := d) (b := e)
       (by decide)
-    _ = (-8 : Int) := by simpa using marginBlocks_P1_d_e
+    _ = (-5 : Int) := by simpa using marginBlocks_P1_d_e
 
-lemma margin_P2Profile_a_b : margin P2Profile a b = (-57 : Int) := by
+lemma margin_P2Profile_a_b : margin P2Profile a b = (-55 : Int) := by
   calc
     margin P2Profile a b = marginBlocks blocksP2 a b := margin_P2Profile_eq_blocks (a := a) (b := b)
       (by decide)
-    _ = (-57 : Int) := by simpa using marginBlocks_P2_a_b
+    _ = (-55 : Int) := by simpa using marginBlocks_P2_a_b
 
-lemma margin_P2Profile_a_c : margin P2Profile a c = 113 := by
+lemma margin_P2Profile_a_c : margin P2Profile a c = 109 := by
   calc
     margin P2Profile a c = marginBlocks blocksP2 a c := margin_P2Profile_eq_blocks (a := a) (b := c)
       (by decide)
-    _ = 113 := by simpa using marginBlocks_P2_a_c
+    _ = 109 := by simpa using marginBlocks_P2_a_c
 
-lemma margin_P2Profile_a_d : margin P2Profile a d = 29 := by
+lemma margin_P2Profile_a_d : margin P2Profile a d = 27 := by
   calc
     margin P2Profile a d = marginBlocks blocksP2 a d := margin_P2Profile_eq_blocks (a := a) (b := d)
       (by decide)
-    _ = 29 := by simpa using marginBlocks_P2_a_d
+    _ = 27 := by simpa using marginBlocks_P2_a_d
 
 lemma margin_P2Profile_a_e : margin P2Profile a e = 73 := by
   calc
@@ -589,11 +589,11 @@ lemma margin_P2Profile_a_e : margin P2Profile a e = 73 := by
       (by decide)
     _ = 73 := by simpa using marginBlocks_P2_a_e
 
-lemma margin_P2Profile_b_c : margin P2Profile b c = 69 := by
+lemma margin_P2Profile_b_c : margin P2Profile b c = 63 := by
   calc
     margin P2Profile b c = marginBlocks blocksP2 b c := margin_P2Profile_eq_blocks (a := b) (b := c)
       (by decide)
-    _ = 69 := by simpa using marginBlocks_P2_b_c
+    _ = 63 := by simpa using marginBlocks_P2_b_c
 
 lemma margin_P2Profile_b_d : margin P2Profile b d = (-25 : Int) := by
   calc
@@ -607,11 +607,11 @@ lemma margin_P2Profile_b_e : margin P2Profile b e = (-65 : Int) := by
       (by decide)
     _ = (-65 : Int) := by simpa using marginBlocks_P2_b_e
 
-lemma margin_P2Profile_c_d : margin P2Profile c d = 17 := by
+lemma margin_P2Profile_c_d : margin P2Profile c d = 15 := by
   calc
     margin P2Profile c d = marginBlocks blocksP2 c d := margin_P2Profile_eq_blocks (a := c) (b := d)
       (by decide)
-    _ = 17 := by simpa using marginBlocks_P2_c_d
+    _ = 15 := by simpa using marginBlocks_P2_c_d
 
 lemma margin_P2Profile_c_e : margin P2Profile c e = 61 := by
   calc
@@ -619,83 +619,83 @@ lemma margin_P2Profile_c_e : margin P2Profile c e = 61 := by
       (by decide)
     _ = 61 := by simpa using marginBlocks_P2_c_e
 
-lemma margin_P2Profile_d_e : margin P2Profile d e = 19 := by
+lemma margin_P2Profile_d_e : margin P2Profile d e = 21 := by
   calc
     margin P2Profile d e = marginBlocks blocksP2 d e := margin_P2Profile_eq_blocks (a := d) (b := e)
       (by decide)
-    _ = 19 := by simpa using marginBlocks_P2_d_e
+    _ = 21 := by simpa using marginBlocks_P2_d_e
 
-lemma margin_P3Profile_a_b : margin P3Profile a b = (-63 : Int) := by
+lemma margin_P3Profile_a_b : margin P3Profile a b = (-62 : Int) := by
   calc
     margin P3Profile a b = marginBlocks blocksP3 a b := margin_P3Profile_eq_blocks (a := a) (b := b)
       (by decide)
-    _ = (-63 : Int) := by simpa using marginBlocks_P3_a_b
+    _ = (-62 : Int) := by simpa using marginBlocks_P3_a_b
 
-lemma margin_P3Profile_a_c : margin P3Profile a c = 107 := by
+lemma margin_P3Profile_a_c : margin P3Profile a c = 102 := by
   calc
     margin P3Profile a c = marginBlocks blocksP3 a c := margin_P3Profile_eq_blocks (a := a) (b := c)
       (by decide)
-    _ = 107 := by simpa using marginBlocks_P3_a_c
+    _ = 102 := by simpa using marginBlocks_P3_a_c
 
-lemma margin_P3Profile_a_d : margin P3Profile a d = 35 := by
+lemma margin_P3Profile_a_d : margin P3Profile a d = 34 := by
   calc
     margin P3Profile a d = marginBlocks blocksP3 a d := margin_P3Profile_eq_blocks (a := a) (b := d)
       (by decide)
-    _ = 35 := by simpa using marginBlocks_P3_a_d
+    _ = 34 := by simpa using marginBlocks_P3_a_d
 
-lemma margin_P3Profile_a_e : margin P3Profile a e = 67 := by
+lemma margin_P3Profile_a_e : margin P3Profile a e = 66 := by
   calc
     margin P3Profile a e = marginBlocks blocksP3 a e := margin_P3Profile_eq_blocks (a := a) (b := e)
       (by decide)
-    _ = 67 := by simpa using marginBlocks_P3_a_e
+    _ = 66 := by simpa using marginBlocks_P3_a_e
 
-lemma margin_P3Profile_b_c : margin P3Profile b c = 75 := by
+lemma margin_P3Profile_b_c : margin P3Profile b c = 70 := by
   calc
     margin P3Profile b c = marginBlocks blocksP3 b c := margin_P3Profile_eq_blocks (a := b) (b := c)
       (by decide)
-    _ = 75 := by simpa using marginBlocks_P3_b_c
+    _ = 70 := by simpa using marginBlocks_P3_b_c
 
-lemma margin_P3Profile_b_d : margin P3Profile b d = (-19 : Int) := by
+lemma margin_P3Profile_b_d : margin P3Profile b d = (-18 : Int) := by
   calc
     margin P3Profile b d = marginBlocks blocksP3 b d := margin_P3Profile_eq_blocks (a := b) (b := d)
       (by decide)
-    _ = (-19 : Int) := by simpa using marginBlocks_P3_b_d
+    _ = (-18 : Int) := by simpa using marginBlocks_P3_b_d
 
-lemma margin_P3Profile_b_e : margin P3Profile b e = (-59 : Int) := by
+lemma margin_P3Profile_b_e : margin P3Profile b e = (-58 : Int) := by
   calc
     margin P3Profile b e = marginBlocks blocksP3 b e := margin_P3Profile_eq_blocks (a := b) (b := e)
       (by decide)
-    _ = (-59 : Int) := by simpa using marginBlocks_P3_b_e
+    _ = (-58 : Int) := by simpa using marginBlocks_P3_b_e
 
-lemma margin_P3Profile_c_d : margin P3Profile c d = 23 := by
+lemma margin_P3Profile_c_d : margin P3Profile c d = 22 := by
   calc
     margin P3Profile c d = marginBlocks blocksP3 c d := margin_P3Profile_eq_blocks (a := c) (b := d)
       (by decide)
-    _ = 23 := by simpa using marginBlocks_P3_c_d
+    _ = 22 := by simpa using marginBlocks_P3_c_d
 
-lemma margin_P3Profile_c_e : margin P3Profile c e = 55 := by
+lemma margin_P3Profile_c_e : margin P3Profile c e = 54 := by
   calc
     margin P3Profile c e = marginBlocks blocksP3 c e := margin_P3Profile_eq_blocks (a := c) (b := e)
       (by decide)
-    _ = 55 := by simpa using marginBlocks_P3_c_e
+    _ = 54 := by simpa using marginBlocks_P3_c_e
 
-lemma margin_P3Profile_d_e : margin P3Profile d e = 13 := by
+lemma margin_P3Profile_d_e : margin P3Profile d e = 14 := by
   calc
     margin P3Profile d e = marginBlocks blocksP3 d e := margin_P3Profile_eq_blocks (a := d) (b := e)
       (by decide)
-    _ = 13 := by simpa using marginBlocks_P3_d_e
+    _ = 14 := by simpa using marginBlocks_P3_d_e
 
-lemma margin_P4Profile_a_b : margin P4Profile a b = (-87 : Int) := by
+lemma margin_P4Profile_a_b : margin P4Profile a b = (-85 : Int) := by
   calc
     margin P4Profile a b = marginBlocks blocksP4 a b := margin_P4Profile_eq_blocks (a := a) (b := b)
       (by decide)
-    _ = (-87 : Int) := by simpa using marginBlocks_P4_a_b
+    _ = (-85 : Int) := by simpa using marginBlocks_P4_a_b
 
-lemma margin_P4Profile_a_c : margin P4Profile a c = 131 := by
+lemma margin_P4Profile_a_c : margin P4Profile a c = 125 := by
   calc
     margin P4Profile a c = marginBlocks blocksP4 a c := margin_P4Profile_eq_blocks (a := a) (b := c)
       (by decide)
-    _ = 131 := by simpa using marginBlocks_P4_a_c
+    _ = 125 := by simpa using marginBlocks_P4_a_c
 
 lemma margin_P4Profile_a_d : margin P4Profile a d = 11 := by
   calc
@@ -709,11 +709,11 @@ lemma margin_P4Profile_a_e : margin P4Profile a e = 43 := by
       (by decide)
     _ = 43 := by simpa using marginBlocks_P4_a_e
 
-lemma margin_P4Profile_b_c : margin P4Profile b c = 99 := by
+lemma margin_P4Profile_b_c : margin P4Profile b c = 93 := by
   calc
     margin P4Profile b c = marginBlocks blocksP4 b c := margin_P4Profile_eq_blocks (a := b) (b := c)
       (by decide)
-    _ = 99 := by simpa using marginBlocks_P4_b_c
+    _ = 93 := by simpa using marginBlocks_P4_b_c
 
 lemma margin_P4Profile_b_d : margin P4Profile b d = 5 := by
   calc
@@ -745,17 +745,17 @@ lemma margin_P4Profile_d_e : margin P4Profile d e = 37 := by
       (by decide)
     _ = 37 := by simpa using marginBlocks_P4_d_e
 
-lemma margin_P5Profile_a_b : margin P5Profile a b = (-80 : Int) := by
+lemma margin_P5Profile_a_b : margin P5Profile a b = (-78 : Int) := by
   calc
     margin P5Profile a b = marginBlocks blocksP5 a b := margin_P5Profile_eq_blocks (a := a) (b := b)
       (by decide)
-    _ = (-80 : Int) := by simpa using marginBlocks_P5_a_b
+    _ = (-78 : Int) := by simpa using marginBlocks_P5_a_b
 
-lemma margin_P5Profile_a_c : margin P5Profile a c = 138 := by
+lemma margin_P5Profile_a_c : margin P5Profile a c = 118 := by
   calc
     margin P5Profile a c = marginBlocks blocksP5 a c := margin_P5Profile_eq_blocks (a := a) (b := c)
       (by decide)
-    _ = 138 := by simpa using marginBlocks_P5_a_c
+    _ = 118 := by simpa using marginBlocks_P5_a_c
 
 lemma margin_P5Profile_a_d : margin P5Profile a d = 18 := by
   calc
@@ -769,11 +769,11 @@ lemma margin_P5Profile_a_e : margin P5Profile a e = 36 := by
       (by decide)
     _ = 36 := by simpa using marginBlocks_P5_a_e
 
-lemma margin_P5Profile_b_c : margin P5Profile b c = 92 := by
+lemma margin_P5Profile_b_c : margin P5Profile b c = 86 := by
   calc
     margin P5Profile b c = marginBlocks blocksP5 b c := margin_P5Profile_eq_blocks (a := b) (b := c)
       (by decide)
-    _ = 92 := by simpa using marginBlocks_P5_b_c
+    _ = 86 := by simpa using marginBlocks_P5_b_c
 
 lemma margin_P5Profile_b_d : margin P5Profile b d = 12 := by
   calc
@@ -805,32 +805,32 @@ lemma margin_P5Profile_d_e : margin P5Profile d e = 30 := by
       (by decide)
     _ = 30 := by simpa using marginBlocks_P5_d_e
 
-lemma marginBlocks_P1_b_a : marginBlocks blocksP1 b a = 84 := by
+lemma marginBlocks_P1_b_a : marginBlocks blocksP1 b a = 81 := by
   decide
 
-lemma marginBlocks_P2_b_a : marginBlocks blocksP2 b a = 57 := by
+lemma marginBlocks_P2_b_a : marginBlocks blocksP2 b a = 55 := by
   decide
 
-lemma marginBlocks_P4_b_a : marginBlocks blocksP4 b a = 87 := by
+lemma marginBlocks_P4_b_a : marginBlocks blocksP4 b a = 85 := by
   decide
 
-lemma margin_P1Profile_b_a : margin P1Profile b a = 84 := by
+lemma margin_P1Profile_b_a : margin P1Profile b a = 81 := by
   calc
     margin P1Profile b a = marginBlocks blocksP1 b a := margin_P1Profile_eq_blocks (a := b) (b := a)
       (by decide)
-    _ = 84 := by simpa using marginBlocks_P1_b_a
+    _ = 81 := by simpa using marginBlocks_P1_b_a
 
-lemma margin_P2Profile_b_a : margin P2Profile b a = 57 := by
+lemma margin_P2Profile_b_a : margin P2Profile b a = 55 := by
   calc
     margin P2Profile b a = marginBlocks blocksP2 b a := margin_P2Profile_eq_blocks (a := b) (b := a)
       (by decide)
-    _ = 57 := by simpa using marginBlocks_P2_b_a
+    _ = 55 := by simpa using marginBlocks_P2_b_a
 
-lemma margin_P4Profile_b_a : margin P4Profile b a = 87 := by
+lemma margin_P4Profile_b_a : margin P4Profile b a = 85 := by
   calc
     margin P4Profile b a = marginBlocks blocksP4 b a := margin_P4Profile_eq_blocks (a := b) (b := a)
       (by decide)
-    _ = 87 := by simpa using marginBlocks_P4_b_a
+    _ = 85 := by simpa using marginBlocks_P4_b_a
 
 end Holliday
 

@@ -222,19 +222,19 @@ lemma not_mem_P5_add_newVoter_of_not_mem_P4_add_newVoter {f : VotingRule} (hpos 
     rfl
   have hnew :
       ∀ w (hw : w ∈ votersP1_7),
-        Q4'.pref ⟨w, Finset.mem_union.mpr (Or.inr hw)⟩ = ballot_dbcae.toLinearOrder := by
+        Q4'.pref ⟨w, Finset.mem_union.mpr (Or.inr hw)⟩ = ballot_dbace.toLinearOrder := by
     intro w hw
     have hwP4 : w ∈ votersP4 := by
       have h := congrArg (fun s => w ∈ s) votersP4_eq_union_votersP5_votersP1_7
       exact Eq.mp h (Finset.mem_union.mpr (Or.inr hw))
-    have hballot : ballotsAll w = ballot_dbcae :=
-      ballotsAll_eq_ballot_dbcae_of_mem_votersP1_7 hw
+    have hballot : ballotsAll w = ballot_dbace :=
+      ballotsAll_eq_ballot_dbace_of_mem_votersP1_7 hw
     have hP4pref :
-        P4Profile.pref ⟨w, hwP4⟩ = ballot_dbcae.toLinearOrder := by
-      change (ballotsAll w).toLinearOrder = ballot_dbcae.toLinearOrder
+        P4Profile.pref ⟨w, hwP4⟩ = ballot_dbace.toLinearOrder := by
+      change (ballotsAll w).toLinearOrder = ballot_dbace.toLinearOrder
       rw [hballot]
     have hQ4pref :
-        Q4.pref (liftVoter (u := u) ⟨w, hwP4⟩) = ballot_dbcae.toLinearOrder := by
+        Q4.pref (liftVoter (u := u) ⟨w, hwP4⟩) = ballot_dbace.toLinearOrder := by
       have h := hagree4 ⟨w, hwP4⟩
       rw [hP4pref] at h
       exact h
@@ -242,7 +242,7 @@ lemma not_mem_P5_add_newVoter_of_not_mem_P4_add_newVoter {f : VotingRule} (hpos 
     convert hQ4pref using 1
   exact
     not_mem_add_copies_of_not_mem (f := f) hpos V votersP1_7 hVW Q5 Q4' d
-      ballot_dbcae.toLinearOrder hrest hnew ballot_dbcae_top_d hnot
+      ballot_dbace.toLinearOrder hrest hnew ballot_dbace_top_d hnot
 
 lemma hagree_Q4raw_P4 {u2 : U450} (hu2 : u2 ∉ votersP4)
     (Q3 : Profile (Electorate U450 (insert u2 votersP3)) A5)
@@ -357,18 +357,18 @@ lemma not_mem_P5_add_twoVoters_of_not_mem_P4_add_twoVoters {f : VotingRule} (hpo
     rfl
   have hnew :
       ∀ w (hw : w ∈ votersP1_7),
-        Q4'.pref ⟨w, Finset.mem_union.mpr (Or.inr hw)⟩ = ballot_dbcae.toLinearOrder := by
+        Q4'.pref ⟨w, Finset.mem_union.mpr (Or.inr hw)⟩ = ballot_dbace.toLinearOrder := by
     intro w hw
     have hwP4 : w ∈ votersP4 := votersP1_7_subset_votersP4 hw
-    have hballot : ballotsAll w = ballot_dbcae :=
-      ballotsAll_eq_ballot_dbcae_of_mem_votersP1_7 hw
+    have hballot : ballotsAll w = ballot_dbace :=
+      ballotsAll_eq_ballot_dbace_of_mem_votersP1_7 hw
     have hP4pref :
-        P4Profile.pref ⟨w, hwP4⟩ = ballot_dbcae.toLinearOrder := by
-      change (ballotsAll w).toLinearOrder = ballot_dbcae.toLinearOrder
+        P4Profile.pref ⟨w, hwP4⟩ = ballot_dbace.toLinearOrder := by
+      change (ballotsAll w).toLinearOrder = ballot_dbace.toLinearOrder
       rw [hballot]
     have hQ4pref :
         Q4.pref (liftVoter (u := u4) (liftVoter (u := u2) ⟨w, hwP4⟩)) =
-          ballot_dbcae.toLinearOrder := by
+          ballot_dbace.toLinearOrder := by
       have h := hagree4 ⟨w, hwP4⟩
       rw [hP4pref] at h
       exact h
@@ -376,7 +376,7 @@ lemma not_mem_P5_add_twoVoters_of_not_mem_P4_add_twoVoters {f : VotingRule} (hpo
     convert hQ4pref using 1
   exact
     not_mem_add_copies_of_not_mem (f := f) hpos V votersP1_7 hVW Q5 Q4' d
-      ballot_dbcae.toLinearOrder hrest hnew ballot_dbcae_top_d hnot
+      ballot_dbace.toLinearOrder hrest hnew ballot_dbace_top_d hnot
 
 end Holliday
 

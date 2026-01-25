@@ -11,16 +11,16 @@ namespace Holliday
 
 abbrev U450 := Fin 450
 
-def p1_cut1 : Nat := 63
+def p1_cut1 : Nat := 62
 def p1_cut2 : Nat := 69
-def p1_cut3 : Nat := 136
-def p1_cut4 : Nat := 163
-def p1_cut5 : Nat := 184
-def p1_cut6 : Nat := 197
-def p1_cut7 : Nat := 204
-def p1_cut8 : Nat := 222
-def p1_cut9 : Nat := 249
-def p1_cut10 : Nat := 273
+def p1_cut3 : Nat := 133
+def p1_cut4 : Nat := 179
+def p1_cut5 : Nat := 199
+def p1_cut6 : Nat := 210
+def p1_cut7 : Nat := 217
+def p1_cut8 : Nat := 219
+def p1_cut9 : Nat := 245
+def p1_cut10 : Nat := 268
 
 def p1_cut1_fin : U450 := ⟨p1_cut1, by decide⟩
 def p1_cut2_fin : U450 := ⟨p1_cut2, by decide⟩
@@ -46,8 +46,8 @@ def votersP1_10 : Finset U450 := Finset.Ico p1_cut9_fin p1_cut10_fin
 
 def ballotsAllCuts : List (Nat × ListBallot 5) :=
   [(p1_cut1, ballot_daceb), (p1_cut2, ballot_daceb), (p1_cut3, ballot_ebacd),
-   (p1_cut4, ballot_bcaed), (p1_cut5, ballot_cedba), (p1_cut6, ballot_dbcae),
-   (p1_cut7, ballot_dbcae), (p1_cut8, ballot_bacde), (p1_cut9, ballot_adbec),
+   (p1_cut4, ballot_bcaed), (p1_cut5, ballot_cdeba), (p1_cut6, ballot_dbace),
+   (p1_cut7, ballot_dbace), (p1_cut8, ballot_edcba), (p1_cut9, ballot_adbec),
    (p1_cut10, ballot_bdeac)]
 
 def ballotByCuts : List (Nat × ListBallot 5) → Nat → ListBallot 5
@@ -83,16 +83,16 @@ def ballotsAllBlocks : List (Nat × Nat × ListBallot 5) :=
 @[simp] lemma ballotsAllBlocks_mem_4 : (p1_cut3, p1_cut4, ballot_bcaed) ∈ ballotsAllBlocks := by
   simp [ballotsAllBlocks, blocksFromCuts, ballotsAllCuts]
 
-@[simp] lemma ballotsAllBlocks_mem_5 : (p1_cut4, p1_cut5, ballot_cedba) ∈ ballotsAllBlocks := by
+@[simp] lemma ballotsAllBlocks_mem_5 : (p1_cut4, p1_cut5, ballot_cdeba) ∈ ballotsAllBlocks := by
   simp [ballotsAllBlocks, blocksFromCuts, ballotsAllCuts]
 
-@[simp] lemma ballotsAllBlocks_mem_6 : (p1_cut5, p1_cut6, ballot_dbcae) ∈ ballotsAllBlocks := by
+@[simp] lemma ballotsAllBlocks_mem_6 : (p1_cut5, p1_cut6, ballot_dbace) ∈ ballotsAllBlocks := by
   simp [ballotsAllBlocks, blocksFromCuts, ballotsAllCuts]
 
-@[simp] lemma ballotsAllBlocks_mem_7 : (p1_cut6, p1_cut7, ballot_dbcae) ∈ ballotsAllBlocks := by
+@[simp] lemma ballotsAllBlocks_mem_7 : (p1_cut6, p1_cut7, ballot_dbace) ∈ ballotsAllBlocks := by
   simp [ballotsAllBlocks, blocksFromCuts, ballotsAllCuts]
 
-@[simp] lemma ballotsAllBlocks_mem_8 : (p1_cut7, p1_cut8, ballot_bacde) ∈ ballotsAllBlocks := by
+@[simp] lemma ballotsAllBlocks_mem_8 : (p1_cut7, p1_cut8, ballot_edcba) ∈ ballotsAllBlocks := by
   simp [ballotsAllBlocks, blocksFromCuts, ballotsAllCuts]
 
 @[simp] lemma ballotsAllBlocks_mem_9 : (p1_cut8, p1_cut9, ballot_adbec) ∈ ballotsAllBlocks := by
@@ -175,8 +175,8 @@ lemma ballotsAll_eq_ballot_daceb_of_mem_votersP1_2 {v : U450} (hv : v ∈ voters
     simpa [votersP1_2, Finset.mem_Ico, Fin.le_def, Fin.lt_def, p1_cut1_fin, p1_cut2_fin] using hv
   exact ballotsAll_eq_of_mem_block (v := v) ballotsAllBlocks_mem_2 hv'.1 hv'.2
 
-lemma ballotsAll_eq_ballot_dbcae_of_mem_votersP1_7 {v : U450} (hv : v ∈ votersP1_7) :
-    ballotsAll v = ballot_dbcae := by
+lemma ballotsAll_eq_ballot_dbace_of_mem_votersP1_7 {v : U450} (hv : v ∈ votersP1_7) :
+    ballotsAll v = ballot_dbace := by
   have hv' : p1_cut6 ≤ v.val ∧ v.val < p1_cut7 := by
     simpa [votersP1_7, Finset.mem_Ico, Fin.le_def, Fin.lt_def, p1_cut6_fin, p1_cut7_fin] using hv
   exact ballotsAll_eq_of_mem_block (v := v) ballotsAllBlocks_mem_7 hv'.1 hv'.2
@@ -691,7 +691,7 @@ lemma P4Profile_eq_addCopiesProfile_P5 :
     P4Profile =
       castProfile (h := votersP4_eq_union_votersP5_votersP1_7)
         (addCopiesProfile (V := votersP5) (W := votersP1_7) P5Profile
-          ballot_dbcae.toLinearOrder) := by
+          ballot_dbace.toLinearOrder) := by
   classical
   ext v
   by_cases hv : v.1 ∈ votersP5
@@ -707,8 +707,8 @@ lemma P4Profile_eq_addCopiesProfile_P5 :
       rcases Finset.mem_union.mp hv_union with hv5 | hv17
       · exact (False.elim (hv hv5))
       · exact hv17
-    have hballot : ballotsAll v.1 = ballot_dbcae :=
-      ballotsAll_eq_ballot_dbcae_of_mem_votersP1_7 hv17
+    have hballot : ballotsAll v.1 = ballot_dbace :=
+      ballotsAll_eq_ballot_dbace_of_mem_votersP1_7 hv17
     unfold P4Profile FullProfile restrictElectorate castProfile addCopiesProfile
     simp [hv, hballot]
 
