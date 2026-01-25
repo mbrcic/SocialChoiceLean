@@ -117,39 +117,6 @@ lemma no_top_of_topCount_zero
     simpa [topCount] using hd
   exact (Nat.ne_of_gt hpos) hd'
 
-lemma lowestScoring_iff_forall_le'
-    [DecidableEq A] (P : Profile V A) (score : Nat → Int)
-    (hA : (Finset.univ : Finset A).Nonempty) (c : A) :
-    c ∈ lowestScoring P score ↔
-      ∀ d : A, scoreCandidate P score c ≤ scoreCandidate P score d := by
-  classical
-  let scoreSet : Finset Int := Finset.univ.image (fun a => scoreCandidate P score a)
-  have hScoreNonempty : scoreSet.Nonempty := by
-    simpa [scoreSet, Finset.Nonempty] using hA.image (fun a => scoreCandidate P score a)
-  let minScore : Int := scoreSet.min' hScoreNonempty
-  constructor
-  · intro hc d
-    have hc' : scoreCandidate P score c = minScore := by
-      simpa [lowestScoring, hA, scoreSet, minScore] using hc
-    have hmem : scoreCandidate P score d ∈ scoreSet := by
-      exact Finset.mem_image.mpr ⟨d, by simp, rfl⟩
-    have hminle : minScore ≤ scoreCandidate P score d :=
-      Finset.min'_le scoreSet _ hmem
-    simpa [hc'] using hminle
-  · intro hle
-    have hmem : scoreCandidate P score c ∈ scoreSet := by
-      exact Finset.mem_image.mpr ⟨c, by simp, rfl⟩
-    have hminle : minScore ≤ scoreCandidate P score c :=
-      Finset.min'_le scoreSet _ hmem
-    have hmin_mem : minScore ∈ scoreSet := Finset.min'_mem scoreSet hScoreNonempty
-    rcases Finset.mem_image.mp hmin_mem with ⟨d, _hd, hdeq⟩
-    have hle' : scoreCandidate P score c ≤ minScore := by
-      simpa [hdeq] using hle d
-    have hmin_eq : scoreCandidate P score c = minScore := le_antisymm hle' hminle
-    have hc : c ∈ (Finset.univ.filter (fun a => scoreCandidate P score a = minScore)) := by
-      exact Finset.mem_filter.mpr ⟨by simp, hmin_eq⟩
-    simpa [lowestScoring, hA, scoreSet, minScore] using hc
-
 lemma lowestScoring_mem_of_topCount_zero
     [DecidableEq A]
     (P : Profile V A) (d : A) (hd : topCount P d = 0) :
@@ -181,7 +148,7 @@ lemma lowestScoring_mem_of_topCount_zero
         exact_mod_cast (Nat.zero_le _)
       simp [hscore_c]
     simpa [hscore_d] using hnonneg
-  exact (lowestScoring_iff_forall_le' (P := P) (score := fun r => pluralityScore (Fintype.card A) r)
+  exact (lowestScoring_iff_forall_le (P := P) (score := fun r => pluralityScore (Fintype.card A) r)
     hA d).2 hle
 
 lemma topCount_zero_of_mem_lowestScoring

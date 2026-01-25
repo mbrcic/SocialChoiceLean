@@ -60,6 +60,121 @@ lemma CondorcetLoser_lower_plurality_two (P : Profile V A) (hcard : Fintype.card
         Int.ofNat (votersPreferring P c d).card := sub_pos.mp hmargin'
   simpa using hlt
 
+lemma lowestScoring_plurality_iff_forall_le_topCount
+    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) (hA : (Finset.univ : Finset A).Nonempty) (c : A) :
+    c ∈ lowestScoring P (fun r => pluralityScore (Fintype.card A) r) ↔
+      ∀ d : A, topCount P c ≤ topCount P d := by
+  classical
+  constructor
+  · intro hc d
+    have hle :
+        scoreCandidate P (fun r => pluralityScore (Fintype.card A) r) c ≤
+          scoreCandidate P (fun r => pluralityScore (Fintype.card A) r) d :=
+      (lowestScoring_iff_forall_le (P := P)
+        (score := fun r => pluralityScore (Fintype.card A) r) hA c).1 hc d
+    have hle' : (topCount P c : Int) ≤ topCount P d := by
+      simpa [pluralityScore_eq_topCount] using hle
+    exact_mod_cast hle'
+  · intro hle
+    apply (lowestScoring_iff_forall_le (P := P)
+      (score := fun r => pluralityScore (Fintype.card A) r) hA c).2
+    intro d
+    have hle' : (topCount P c : Int) ≤ topCount P d := by
+      exact_mod_cast hle d
+    simpa [pluralityScore_eq_topCount] using hle'
+
+lemma instantRunoffVoting_of_card_two
+    {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
+    (P : Profile V A) (hcard : Fintype.card A = 2) (a b : A) (hab : a ≠ b) :
+    a ∈ instantRunoffVoting P ↔ 0 ≤ margin P a b := by
+  classical
+  letI : DecidableEq A := Classical.decEq A
+  have hnot_le_one : ¬ Fintype.card A ≤ 1 := by
+    omega
+  let m := Fintype.card A
+  let scoreVec : Nat → Int := fun r => pluralityScore m r
+  let L : Finset A := lowestScoring P scoreVec
+  have haux :
+      scoringEliminationAux pluralityScore A P =
+        L.biUnion (fun c => liftFinset (scoringEliminationAux pluralityScore _ (restrictProfile P c))) := by
+    simpa [m, scoreVec, L] using
+      (scoringEliminationAux_eq_biUnion_of_not_card_le_one
+        (score := pluralityScore) (P := P) (hcard := hnot_le_one))
+  have hA : (Finset.univ : Finset A).Nonempty := by
+    have hpos : 0 < Fintype.card A := by omega
+    haveI : Nonempty A := Fintype.card_pos_iff.mp hpos
+    exact Finset.univ_nonempty
+  have hbL : b ∈ L ↔ topCount P b ≤ topCount P a := by
+    constructor
+    · intro hb
+      have hb' :=
+        (lowestScoring_plurality_iff_forall_le_topCount (P := P) hA (c := b)).1 hb
+      exact hb' a
+    · intro hle
+      apply (lowestScoring_plurality_iff_forall_le_topCount (P := P) hA (c := b)).2
+      intro d
+      rcases two_elems_eq_or_eq hcard a b hab d with rfl | rfl
+      · exact hle
+      · exact le_rfl
+  have ha_mem : a ∈ scoringEliminationAux pluralityScore A P ↔ b ∈ L := by
+    constructor
+    · intro ha
+      have ha' := ha
+      rw [haux] at ha'
+      rcases Finset.mem_biUnion.mp ha' with ⟨c, hcL, ha_in⟩
+      have hca : c ≠ a := by
+        intro hEq
+        have ha_in' : c ∈ liftFinset
+            (scoringEliminationAux pluralityScore {x : A // x ≠ c} (restrictProfile P c)) := by
+          simpa [hEq] using ha_in
+        exact (not_mem_liftFinset_removed (c := c) _ ha_in')
+      have hcb : c = b := by
+        rcases two_elems_eq_or_eq hcard a b hab c with rfl | rfl
+        · exact (hca rfl).elim
+        · rfl
+      simpa [L, hcb] using hcL
+    · intro hb
+      have hcard_sub_eq : Fintype.card {x : A // x ≠ b} = 1 := by
+        simp [card_subtype_ne_eq b, hcard]
+      have hcard_sub : Fintype.card {x : A // x ≠ b} ≤ 1 := by
+        exact le_of_eq hcard_sub_eq
+      have hsub : Subsingleton {x : A // x ≠ b} :=
+        (Fintype.card_le_one_iff_subsingleton).1 hcard_sub
+      haveI : Nonempty {x : A // x ≠ b} := by
+        have hpos : 0 < Fintype.card {x : A // x ≠ b} := by
+          simp [hcard_sub_eq]
+        exact Fintype.card_pos_iff.mp hpos
+      have hne :
+          (scoringEliminationAux pluralityScore {x : A // x ≠ b} (restrictProfile P b)).Nonempty := by
+        simpa using
+          (scoringEliminationAux_nonempty (score := pluralityScore) (P := restrictProfile P b))
+      rcases hne with ⟨w, hw⟩
+      have hw_eq : w = (⟨a, hab⟩ : {x : A // x ≠ b}) := by
+        exact Subsingleton.elim _ _
+      have ha_in_sub :
+          (⟨a, hab⟩ : {x : A // x ≠ b}) ∈
+            scoringEliminationAux pluralityScore {x : A // x ≠ b} (restrictProfile P b) := by
+        simpa [hw_eq] using hw
+      have ha_in :
+          a ∈ liftFinset (scoringEliminationAux pluralityScore {x : A // x ≠ b}
+            (restrictProfile P b)) := by
+        exact (mem_liftFinset_iff_subtype
+          (s := scoringEliminationAux pluralityScore {x : A // x ≠ b} (restrictProfile P b))
+          (x := a)).2 ⟨hab, ha_in_sub⟩
+      have ha' :
+          a ∈ L.biUnion (fun c =>
+            liftFinset (scoringEliminationAux pluralityScore _ (restrictProfile P c))) := by
+        refine Finset.mem_biUnion.mpr ?_
+        exact ⟨b, hb, ha_in⟩
+      simpa [haux] using ha'
+  have hmargin : 0 ≤ margin P a b ↔ topCount P b ≤ topCount P a :=
+    margin_nonneg_iff_topCount_le_of_two (P := P) hcard hab
+  have ha_mem' :
+      a ∈ scoringEliminationAux pluralityScore A P ↔ 0 ≤ margin P a b :=
+    (ha_mem.trans hbL).trans hmargin.symm
+  simpa [instantRunoffVoting, scoringEliminationRule] using ha_mem'
+
 /-! ### Main theorem -/
 
 theorem irv_CondorcetLoser_criterion : CondorcetLoserCriterion instantRunoffVoting := by
@@ -91,39 +206,31 @@ theorem irv_CondorcetLoser_criterion : CondorcetLoserCriterion instantRunoffVoti
       exact hy (Subsingleton.elim y d)
     -- Split on candidate count.
     by_cases htwo : Fintype.card A = 2
-    · -- Two-candidate case: the Condorcet loser has strictly lower plurality score,
-      -- hence cannot be the survivor in the unique elimination step.
-      -- Unfold the elimination step.
-      have hcard' : ¬ Fintype.card A ≤ 1 := hnot_le_one
-      have haux :=
-        scoringEliminationAux_eq_biUnion_of_not_card_le_one
-          (score := pluralityScore) (P := P) (hcard := hcard')
-      -- Now argue by contradiction from membership.
+    · -- Two-candidate case: use the 2-candidate IRV characterization.
       intro hdmem
-      have hdmem' := hdmem
-      rw [haux] at hdmem'
-      dsimp at hdmem'
-      -- `d` is in the biUnion, so it survives some elimination of a lowest-scoring candidate `c`.
-      rcases (Finset.mem_biUnion.mp hdmem') with ⟨c, hcL, hd_in⟩
-      have hcd : c ≠ d := by
-        intro hEq
-        subst hEq
-        exact (not_mem_liftFinset_removed (c := c) _ hd_in)
-      -- In a two-candidate election, `d` has strictly lower plurality score than `c`.
-      have hlt :
-          scoreCandidate P (fun r => pluralityScore 2 r) d <
-            scoreCandidate P (fun r => pluralityScore 2 r) c := by
-        -- `pluralityScore 2` is the usual plurality scoring vector.
-        simpa [htwo] using
-          (CondorcetLoser_lower_plurality_two (V := V) (A := A) (P := P) (hcard := htwo)
-            (c := c) (d := d) (hcd := hcd) (hloser := hloser))
-      -- But `c` is lowest-scoring, so its score is ≤ `d`'s score.
-      have hle :
-          scoreCandidate P (fun r => pluralityScore 2 r) c ≤
-            scoreCandidate P (fun r => pluralityScore 2 r) d :=
-        scoreCandidate_le_of_mem_lowestScoring (P := P)
-          (score := fun r => pluralityScore 2 r) (c := c) (e := d) hcL
-      exact (not_lt_of_ge hle) hlt
+      rcases hloser.2 with ⟨y, hyd⟩
+      let instDec : DecidableEq A := inferInstance
+      have hdmem_irv : d ∈ instantRunoffVoting P := by
+        letI : DecidableEq A := Classical.decEq A
+        have hcongr :=
+          scoringEliminationAux_decidableEq_congr (score := pluralityScore) (P := P)
+            (inst1 := instDec) (inst2 := Classical.decEq A)
+        have hdmem' :
+            d ∈ @scoringEliminationAux V _ pluralityScore A _ (Classical.decEq A) P := by
+          simpa [hcongr] using hdmem
+        simpa [instantRunoffVoting, scoringEliminationRule] using hdmem'
+      have hnonneg : 0 ≤ margin P d y :=
+        (instantRunoffVoting_of_card_two (P := P) (hcard := htwo) (a := d) (b := y)
+          (hab := hyd.symm)).1 hdmem_irv
+      have hpos : margin_pos P y d :=
+        (CondorcetLoser_iff_margin_pos (P := P) (c := d)).1 hloser |>.1 y hyd.symm
+      have hneg : margin P d y < 0 := by
+        have hpos' : 0 < margin P y d := by
+          simpa [margin_pos] using hpos
+        have hskew : margin P d y = - margin P y d := by
+          simpa [skew_symmetric] using (margin_antisymmetric (P := P)) d y
+        linarith
+      exact (not_lt_of_ge hnonneg) hneg
     · -- Recursive case: at least three candidates.
       have hgt2 : 2 < Fintype.card A := by
         have hne2 : Fintype.card A ≠ 2 := htwo

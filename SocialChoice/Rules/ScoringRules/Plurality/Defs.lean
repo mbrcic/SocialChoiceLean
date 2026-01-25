@@ -1,3 +1,4 @@
+import SocialChoice.Margin
 import SocialChoice.Rules
 import SocialChoice.Meta
 
@@ -115,6 +116,12 @@ lemma pluralityScore_eq_votersTop_card {V A : Type} [Fintype V] [Fintype A]
             simp [votersTop]
   simpa [pluralityScore] using h
 
+lemma pluralityScore_eq_topCount {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (c : A) :
+    scoreCandidate P (fun r => pluralityScore (Fintype.card A) r) c =
+      topCount P c := by
+  simpa [topCount] using (pluralityScore_eq_votersTop_card (P := P) (c := c))
+
 theorem plurality_eq_scoringRule :
     (plurality : VotingRule) = (scoringRule pluralityScore : VotingRule) := by
   funext V A _ _ P
@@ -208,5 +215,44 @@ lemma pluralityScore_eq_votersPreferring_of_two {V A : Type} [Fintype V] [Fintyp
     scoreCandidate P (fun r => pluralityScore (Fintype.card A) r) c =
       (votersPreferring P c d).card := by
   rw [pluralityScore_eq_votersTop_card, votersTop_eq_votersPreferring_of_two P hcard c d hcd]
+
+lemma margin_nonneg_iff_topCount_le_of_two
+    {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (hcard : Fintype.card A = 2) {a b : A} (hab : a ≠ b) :
+    0 ≤ margin P a b ↔ topCount P b ≤ topCount P a := by
+  classical
+  have htop_a :
+      topCount P a = (votersPreferring P a b).card := by
+    have h :=
+      congrArg Finset.card
+        (votersTop_eq_votersPreferring_of_two (P := P) hcard a b hab)
+    simpa [topCount] using h
+  have htop_b :
+      topCount P b = (votersPreferring P b a).card := by
+    have h :=
+      congrArg Finset.card
+        (votersTop_eq_votersPreferring_of_two (P := P) hcard b a (Ne.symm hab))
+    simpa [topCount] using h
+  have hmargin_int :
+      0 ≤ margin P a b ↔
+        Int.ofNat (votersPreferring P b a).card ≤ Int.ofNat (votersPreferring P a b).card := by
+    dsimp [margin]
+    exact
+      (sub_nonneg
+        (a := Int.ofNat (votersPreferring P a b).card)
+        (b := Int.ofNat (votersPreferring P b a).card))
+  have hmargin_nat :
+      0 ≤ margin P a b ↔
+        (votersPreferring P b a).card ≤ (votersPreferring P a b).card := by
+    constructor
+    · intro h
+      have h' := (hmargin_int.mp h)
+      exact Int.le_of_ofNat_le_ofNat h'
+    · intro h
+      have h' : Int.ofNat (votersPreferring P b a).card ≤
+          Int.ofNat (votersPreferring P a b).card :=
+        Int.ofNat_le_ofNat_of_le h
+      exact hmargin_int.mpr h'
+  simpa [htop_a, htop_b] using hmargin_nat
 
 end SocialChoice
