@@ -42,12 +42,13 @@ noncomputable def clonedVotingRule
   simp [clonedVotingRule]
 
 lemma clonedVotingRule_resolute
-    {V A0 : Type} [Fintype V] [Fintype A0] [DecidableEq V]
+    {V A0 : Type} [Fintype V] [Fintype A0] [Nonempty A0] [DecidableEq V]
     (f : VotingRule) (hf : Resolute f) (v₁ v₂ : V) (hne : v₁ ≠ v₂) :
     Resolute (@clonedVotingRule V A0 _ _ _ f v₁ v₂ hne) := by
-  intro V' A' instV' instA' P
+  intro V' A' instV' instA' instNonemptyA' P
   letI : Fintype V' := instV'
   letI : Fintype A' := instA'
+  letI : Nonempty A' := instNonemptyA'
   classical
   by_cases hV : V' = {w : V // w ≠ v₂}
   · cases hV
@@ -78,7 +79,7 @@ lemma clonedVotingRule_unanimity
   · simpa [clonedVotingRule, hV] using hf_unan P c htop
 
 lemma clonedVotingRule_strategyproof
-    {V A0 : Type} [Fintype V] [Fintype A0] [DecidableEq V]
+    {V A0 : Type} [Fintype V] [Fintype A0] [Nonempty A0] [DecidableEq V]
     (f : VotingRule) (hf : Resolute f) (hf_sp : ResoluteStrategyproofness f hf)
     (v₁ v₂ : V) (hne : v₁ ≠ v₂) :
     ResoluteStrategyproofness

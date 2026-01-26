@@ -26,7 +26,7 @@ used in the induction proof of the Gibbard-Satterthwaite theorem.
 
 open Finset
 
-variable {V A : Type} [Fintype V] [Fintype A] [DecidableEq V]
+variable {V A : Type} [Fintype V] [Fintype A] [Nonempty A] [DecidableEq V]
 
 /-! ## Voter Cloning Construction -/
 
@@ -56,7 +56,7 @@ noncomputable def clonedRule {V A : Type} [Fintype V] [Fintype A] [DecidableEq V
 /-! ## Property Preservation -/
 
 /-- The cloned rule is resolute if the original is. -/
-lemma clonedRule_resolute {V A : Type} [Fintype V] [Fintype A] [DecidableEq V]
+lemma clonedRule_resolute {V A : Type} [Fintype V] [Fintype A] [Nonempty A] [DecidableEq V]
     (f : VotingRule) (hf : Resolute f) (v₁ v₂ : V) (hne : v₁ ≠ v₂)
     (P' : Profile {w : V // w ≠ v₂} A) : (clonedRule f v₁ v₂ hne P').card = 1 := by
   unfold clonedRule
@@ -175,7 +175,7 @@ lemma expandProfile_updateProfile_v1_eq {V A : Type} [Fintype V] [Fintype A] [De
 The key insight is that any manipulation of g corresponds to a manipulation of f:
 - If manipulator w ≠ v₁: direct lifting to f
 - If manipulator w = v₁: either v₁ or v₂ can manipulate f -/
-lemma clonedRule_strategyproof {V A : Type} [Fintype V] [Fintype A] [DecidableEq V]
+lemma clonedRule_strategyproof {V A : Type} [Fintype V] [Fintype A] [Nonempty A] [DecidableEq V]
     (f : VotingRule) (hf : Resolute f) (hf_sp : ResoluteStrategyproofness f hf)
     (v₁ v₂ : V) (hne : v₁ ≠ v₂) :
     ∀ P' : Profile {w : V // w ≠ v₂} A,

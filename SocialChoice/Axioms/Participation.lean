@@ -320,7 +320,7 @@ lemma resoluteParticipation_leaving {f : VotingRule} (hf : Resolute f)
 
 lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
     (hpart : ResoluteParticipation f hf) :
-    ∀ {U A : Type} [DecidableEq U] [Fintype A] [DecidableEq A]
+    ∀ {U A : Type} [DecidableEq U] [Fintype A] [Nonempty A] [DecidableEq A]
         (V W : Finset U) (hVW : V ⊆ W)
         (Q : Profile (Electorate U W) A) (S : Finset A) (x : A),
       f (restrictElectorate Q V hVW) = {x} →
@@ -328,7 +328,7 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
       (∀ w (hw : w ∈ W \ V),
         UpperSet (Q.pref ⟨w, (Finset.mem_sdiff.mp hw).1⟩) S) →
       f Q ⊆ S := by
-  intro U A _ _ _ V W hVW Q S x hx hxS hUpper
+  intro U A _ _ _ _ V W hVW Q S x hx hxS hUpper
   classical
   let T : Finset U := W \ V
   have hEqset0 : V ∪ (∅ : Finset U) = V := by simp
@@ -428,5 +428,49 @@ lemma resoluteParticipation_superset {f : VotingRule} (hf : Resolute f)
     · exact hW.symm
   rw [← hQeq]
   exact hsubset
+
+lemma tieBrokenVotingRule_resoluteParticipation (f : VotingRule) (hf : IsVotingRule f)
+    (hpart : StrongFishburnParticipation f) :
+    ResoluteParticipation (SocialChoice.tieBrokenVotingRule f hf)
+      (SocialChoice.tieBrokenVotingRule_resolute f hf) := by
+  intro U A _ _ V u hu P Q x y hagree hx hy
+  classical
+  by_cases hA : Nonempty A
+  · letI : Nonempty A := hA
+    let r := Q.pref (newVoter (u := u) (V := V) hu)
+    letI : LinearOrder A := r
+    have hfish : FishburnWeak r (f Q) (f P) := by
+      simpa [StrongFishburnParticipation, StrongParticipation, FishburnExtension] using
+        (hpart (V := V) (u := u) hu P Q hagree)
+    let tb := SocialChoice.canonicalLinearOrder (A := A)
+    have hx' : tieBrokenRule tb f hf P = {x} := by
+      simpa [tieBrokenVotingRule, hA, tb] using hx
+    have hy' : tieBrokenRule tb f hf Q = {y} := by
+      simpa [tieBrokenVotingRule, hA, tb] using hy
+    have hneP : (f P).Nonempty := hf P
+    have hneQ : (f Q).Nonempty := hf Q
+    have hmin :
+        r.le (@Finset.min' A tb (f Q) hneQ) (@Finset.min' A tb (f P) hneP) :=
+      @fishburn_min_tb_le A (fun a b => @LinearOrder.toDecidableEq A r a b)
+        tb r (f Q) (f P) hneQ hneP hfish
+    have hyset : ({y} : Finset A) = {@Finset.min' A tb (f Q) hneQ} := by
+      simpa [tieBrokenRule] using hy'.symm
+    have hxset : ({x} : Finset A) = {@Finset.min' A tb (f P) hneP} := by
+      simpa [tieBrokenRule] using hx'.symm
+    have hymin : y = @Finset.min' A tb (f Q) hneQ := by
+      have hymem : y ∈ ({@Finset.min' A tb (f Q) hneQ} : Finset A) := by
+        simpa [hyset] using (Finset.mem_singleton_self y)
+      exact Finset.mem_singleton.mp hymem
+    have hxmin : x = @Finset.min' A tb (f P) hneP := by
+      have hxmem : x ∈ ({@Finset.min' A tb (f P) hneP} : Finset A) := by
+        simpa [hxset] using (Finset.mem_singleton_self x)
+      exact Finset.mem_singleton.mp hxmem
+    have hle : r.le y x := by
+      simpa [hymin, hxmin] using hmin
+    letI : LinearOrder A := r
+    exact not_lt.mpr (by simpa using hle)
+  ·
+    have hA' : IsEmpty A := (not_nonempty_iff.mp hA)
+    exact IsEmpty.elim hA' x
 
 end SocialChoice

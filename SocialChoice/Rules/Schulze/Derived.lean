@@ -3,6 +3,7 @@ import SocialChoice.Axioms.Pareto
 import SocialChoice.Axioms.Condorcet
 import SocialChoice.Axioms.Majority
 import SocialChoice.Impossibilities.CondorcetReinforcement
+import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Schulze.InformationalBasis
 import SocialChoice.Rules.Schulze.Transitivity
 import SocialChoice.Rules.Schulze.RefinesSplitCycle
@@ -70,5 +71,10 @@ theorem schulze_not_reinforcement : ¬ Reinforcement schulze := by
   intro hrein
   exact no_condorcet_reinforcement schulze
     schulze_isVotingRule schulze_condorcet_consistency hrein
+
+theorem schulze_not_strongFishburnParticipation : ¬ StrongFishburnParticipation schulze := by
+  intro hpart
+  exact no_condorcet_strongFishburn_participation_m4_n12
+    ⟨schulze, schulze_isVotingRule, schulze_condorcet_consistency, hpart⟩
 
 end SocialChoice

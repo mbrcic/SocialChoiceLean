@@ -1,5 +1,6 @@
 import SocialChoice.Axioms.Implications
 import SocialChoice.Impossibilities.CondorcetReinforcement
+import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.ScoringElimination.Anonymity
 import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
@@ -42,6 +43,11 @@ theorem baldwin_not_reinforcement : ¬ Reinforcement baldwin := by
   intro hrein
   exact no_condorcet_reinforcement baldwin
     baldwin_isVotingRule baldwin_condorcet_consistency hrein
+
+theorem baldwin_not_strongFishburnParticipation : ¬ StrongFishburnParticipation baldwin := by
+  intro hpart
+  exact no_condorcet_strongFishburn_participation_m4_n12
+    ⟨baldwin, baldwin_isVotingRule, baldwin_condorcet_consistency, hpart⟩
 
 theorem bordaElimination_majority_criterion : MajorityCriterion bordaElimination := by
   intro V A _ _ P c hmaj

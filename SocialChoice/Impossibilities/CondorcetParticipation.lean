@@ -575,4 +575,22 @@ theorem no_resolute_condorcet_participation_m4_n12 :
          simpa
       contradiction
 
+theorem no_condorcet_strongFishburn_participation_m4_n12 :
+    ¬ ∃ (f : VotingRule) (hf : IsVotingRule f),
+      CondorcetConsistency f ∧ StrongFishburnParticipation f := by
+  rintro ⟨f, hf, hcond, hpart⟩
+  have hcond' : CondorcetConsistency (tieBrokenVotingRule f hf) := by
+    intro V A _ _ P c hcw
+    classical
+    have hA : Nonempty A := ⟨c⟩
+    letI : Nonempty A := hA
+    have hc : f P = {c} := hcond P c hcw
+    simp [tieBrokenVotingRule, hA, tieBrokenRule, hc]
+  have hpart' :
+      ResoluteParticipation (tieBrokenVotingRule f hf)
+        (tieBrokenVotingRule_resolute f hf) :=
+    tieBrokenVotingRule_resoluteParticipation f hf hpart
+  exact no_resolute_condorcet_participation_m4_n12
+    ⟨tieBrokenVotingRule f hf, tieBrokenVotingRule_resolute f hf, hcond', hpart'⟩
+
 end SocialChoice

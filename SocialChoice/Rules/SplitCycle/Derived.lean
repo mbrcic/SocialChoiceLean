@@ -1,5 +1,6 @@
 import SocialChoice.Axioms.Implications
 import SocialChoice.Impossibilities.CondorcetReinforcement
+import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.SplitCycle.Condorcet
 import SocialChoice.Rules.SplitCycle.InformationalBasis
 import SocialChoice.Rules.SplitCycle.Pareto
@@ -36,5 +37,10 @@ theorem splitCycle_not_reinforcement : ¬ Reinforcement splitCycle := by
   intro hrein
   exact no_condorcet_reinforcement splitCycle
     splitCycle_isVotingRule split_cycle_condorcet_consistency hrein
+
+theorem splitCycle_not_strongFishburnParticipation : ¬ StrongFishburnParticipation splitCycle := by
+  intro hpart
+  exact no_condorcet_strongFishburn_participation_m4_n12
+    ⟨splitCycle, splitCycle_isVotingRule, split_cycle_condorcet_consistency, hpart⟩
 
 end SocialChoice

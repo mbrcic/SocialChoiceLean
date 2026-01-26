@@ -1,5 +1,6 @@
 import SocialChoice.Axioms.Implications
 import SocialChoice.Impossibilities.CondorcetReinforcement
+import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Nanson.Defs
 import SocialChoice.Rules.Nanson.Condorcet
 import SocialChoice.Rules.Nanson.CondorcetLoser
@@ -38,6 +39,11 @@ theorem nanson_not_reinforcement : ¬ Reinforcement nanson := by
   intro hrein
   exact no_condorcet_reinforcement nanson
     nanson_isVotingRule nanson_condorcet_consistency hrein
+
+theorem nanson_not_strongFishburnParticipation : ¬ StrongFishburnParticipation nanson := by
+  intro hpart
+  exact no_condorcet_strongFishburn_participation_m4_n12
+    ⟨nanson, nanson_isVotingRule, nanson_condorcet_consistency, hpart⟩
 
 theorem nanson_singleton_reversal_symmetry : SingletonReversalSymmetry nanson := by
   apply Implies.apply reversalSymmetry_implies_singletonReversalSymmetry (f := nanson)

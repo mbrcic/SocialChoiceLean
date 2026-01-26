@@ -1,5 +1,6 @@
 import SocialChoice.Axioms.Implications
 import SocialChoice.Impossibilities.CondorcetReinforcement
+import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Minimax.Defs
 import SocialChoice.Rules.Minimax.Condorcet
 import SocialChoice.Rules.Minimax.InformationalBasis
@@ -31,5 +32,10 @@ theorem minimax_not_reinforcement : ¬ Reinforcement minimax := by
   intro hrein
   exact no_condorcet_reinforcement minimax
     minimax_isVotingRule minimax_condorcet_consistency hrein
+
+theorem minimax_not_strongFishburnParticipation : ¬ StrongFishburnParticipation minimax := by
+  intro hpart
+  exact no_condorcet_strongFishburn_participation_m4_n12
+    ⟨minimax, minimax_isVotingRule, minimax_condorcet_consistency, hpart⟩
 
 end SocialChoice

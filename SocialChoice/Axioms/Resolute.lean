@@ -16,12 +16,12 @@ open Finset
 /-- A voting rule is resolute if it always returns exactly one winner. -/
 @[scAxiom]
 def Resolute (f : VotingRule) : Prop :=
-  ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A), (f P).card = 1
+  ∀ {V A : Type} [Fintype V] [Fintype A] [Nonempty A] (P : Profile V A), (f P).card = 1
 
 /-! ## Extracting the Unique Winner -/
 
 /-- Extract the unique winner from a resolute voting rule's output. -/
-noncomputable def theWinner {V A : Type} [Fintype V] [Fintype A]
+noncomputable def theWinner {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
     (f : VotingRule) (P : Profile V A) (hf : Resolute f) : A := by
   have h : ∃! x, x ∈ f P := by
     have hcard := hf P
@@ -31,7 +31,7 @@ noncomputable def theWinner {V A : Type} [Fintype V] [Fintype A]
   exact Classical.choose h
 
 /-- The winner is a member of f P. -/
-lemma theWinner_mem {V A : Type} [Fintype V] [Fintype A]
+lemma theWinner_mem {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
     (f : VotingRule) (P : Profile V A) (hf : Resolute f) :
     theWinner f P hf ∈ f P := by
   unfold theWinner
@@ -43,7 +43,7 @@ lemma theWinner_mem {V A : Type} [Fintype V] [Fintype A]
   exact (Classical.choose_spec h).1
 
 /-- If f P = {c}, then the winner is c. -/
-lemma theWinner_eq_of_eq_singleton {V A : Type} [Fintype V] [Fintype A]
+lemma theWinner_eq_of_eq_singleton {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
     (f : VotingRule) (P : Profile V A) (hf : Resolute f) (c : A)
     (hc : f P = {c}) : theWinner f P hf = c := by
   have hmem : theWinner f P hf ∈ f P := theWinner_mem f P hf
@@ -51,7 +51,7 @@ lemma theWinner_eq_of_eq_singleton {V A : Type} [Fintype V] [Fintype A]
   exact hmem
 
 /-- f P = {c} iff theWinner is c. -/
-lemma eq_singleton_iff_theWinner_eq {V A : Type} [Fintype V] [Fintype A]
+lemma eq_singleton_iff_theWinner_eq {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
     (f : VotingRule) (P : Profile V A) (hf : Resolute f) (c : A) :
     f P = {c} ↔ theWinner f P hf = c := by
   constructor

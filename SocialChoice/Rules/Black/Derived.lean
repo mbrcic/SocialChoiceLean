@@ -1,5 +1,6 @@
 import SocialChoice.Axioms.Implications
 import SocialChoice.Impossibilities.CondorcetReinforcement
+import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Black.Defs
 import SocialChoice.Rules.Black.Condorcet
 import SocialChoice.Rules.Black.CondorcetLoser
@@ -38,5 +39,10 @@ theorem black_not_reinforcement : ¬ Reinforcement black := by
   intro hrein
   exact no_condorcet_reinforcement black
     black_isVotingRule black_condorcet_consistency hrein
+
+theorem black_not_strongFishburnParticipation : ¬ StrongFishburnParticipation black := by
+  intro hpart
+  exact no_condorcet_strongFishburn_participation_m4_n12
+    ⟨black, black_isVotingRule, black_condorcet_consistency, hpart⟩
 
 end SocialChoice
