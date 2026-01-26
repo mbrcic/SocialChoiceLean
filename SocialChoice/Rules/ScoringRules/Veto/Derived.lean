@@ -1,3 +1,4 @@
+import SocialChoice.Axioms.Implications
 import SocialChoice.Rules.ScoringRules.Anonymity
 import SocialChoice.Rules.ScoringRules.Condorcet
 import SocialChoice.Rules.ScoringRules.Derived
@@ -69,6 +70,16 @@ theorem veto_participation : StrongFishburnParticipation veto := by
       vetoScore_weaklyDecreasing)
       (V := V) (u := u) (hu := hu) (P := P) (Q := Q) hagree
   simpa [veto] using h
+
+theorem veto_positive_involvement : PositiveInvolvement veto := by
+  apply Implies.apply strongFishburnParticipation_implies_positiveInvolvement (f := veto)
+  · exact veto_isVotingRule
+  · exact veto_participation
+
+theorem veto_negative_involvement : NegativeInvolvement veto := by
+  apply Implies.apply strongFishburnParticipation_implies_negativeInvolvement (f := veto)
+  · exact veto_isVotingRule
+  · exact veto_participation
 
 theorem veto_not_condorcet : ¬ CondorcetConsistency veto := by
   simpa [veto] using (scoringRule_not_condorcet (score := vetoScore))

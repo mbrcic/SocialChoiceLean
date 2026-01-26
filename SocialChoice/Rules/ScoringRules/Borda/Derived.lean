@@ -74,6 +74,16 @@ theorem borda_participation : StrongFishburnParticipation borda := by
       (V := V) (u := u) (hu := hu) (P := P) (Q := Q) hagree
   simpa [borda] using h
 
+theorem borda_positive_involvement : PositiveInvolvement borda := by
+  apply Implies.apply strongFishburnParticipation_implies_positiveInvolvement (f := borda)
+  · exact borda_isVotingRule
+  · exact borda_participation
+
+theorem borda_negative_involvement : NegativeInvolvement borda := by
+  apply Implies.apply strongFishburnParticipation_implies_negativeInvolvement (f := borda)
+  · exact borda_isVotingRule
+  · exact borda_participation
+
 theorem borda_pareto : ParetoEfficiency borda := by
   intro V A _ _ _ P c d hpref
   have h :=

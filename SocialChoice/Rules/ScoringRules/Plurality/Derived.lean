@@ -94,6 +94,16 @@ theorem plurality_participation : StrongFishburnParticipation plurality := by
       (V := V) (u := u) (hu := hu) (P := P) (Q := Q) hagree
   simpa [plurality_eq_scoringRule_app] using h
 
+theorem plurality_positive_involvement_derived : PositiveInvolvement plurality := by
+  apply Implies.apply strongFishburnParticipation_implies_positiveInvolvement (f := plurality)
+  · exact plurality_isVotingRule
+  · exact plurality_participation
+
+theorem plurality_negative_involvement_derived : NegativeInvolvement plurality := by
+  apply Implies.apply strongFishburnParticipation_implies_negativeInvolvement (f := plurality)
+  · exact plurality_isVotingRule
+  · exact plurality_participation
+
 theorem plurality_not_condorcet : ¬ CondorcetConsistency plurality := by
   intro hcond
   have hcond' : CondorcetConsistency (scoringRule pluralityScore) := by
@@ -107,6 +117,13 @@ theorem plurality_not_mutualMajorityCriterion : ¬ MutualMajorityCriterion plura
   have hmajloser : MajorityLoserCriterion plurality :=
     Implies.apply mutualMajorityCriterion_implies_majorityLoserCriterion_Imp
       (f := plurality) plurality_isVotingRule hmut
+  exact plurality_not_majority_loser_criterion hmajloser
+
+theorem plurality_not_condorcetLoser_criterion : ¬ CondorcetLoserCriterion plurality := by
+  intro hcond
+  have hmajloser : MajorityLoserCriterion plurality :=
+    Implies.apply condorcetLoserCriterion_implies_majorityLoserCriterion
+      (f := plurality) plurality_isVotingRule hcond
   exact plurality_not_majority_loser_criterion hmajloser
 
 end SocialChoice

@@ -78,6 +78,7 @@ import SocialChoice.Rules.Nanson.Reversal
 import SocialChoice.Rules.Nanson.InformationalBasis
 import SocialChoice.Rules.Nanson.Derived
 import SocialChoice.Rules.PluralityWithRunoff.Defs
+import SocialChoice.Rules.PluralityWithRunoff.Anonymity
 import SocialChoice.Rules.PluralityWithRunoff.Neutrality
 import SocialChoice.Rules.PluralityWithRunoff.Condorcet
 import SocialChoice.Rules.PluralityWithRunoff.CondorcetLoser

@@ -9,6 +9,7 @@ import SocialChoice.Axioms.InformationalBasis
 import SocialChoice.Axioms.Anonymity
 import SocialChoice.Axioms.Reinforcement
 import SocialChoice.Axioms.Reversal
+import SocialChoice.Axioms.Participation
 
 namespace SocialChoice
 
@@ -195,5 +196,63 @@ theorem topsOnly_implies_anonymity :
   apply htops (P₁ := permuteVoters P σ) (P₂ := P)
   intro a
   simp
+
+theorem strongFishburnParticipation_implies_positiveInvolvement :
+    Implies StrongFishburnParticipation PositiveInvolvement := by
+  intro f hf hpart U A _ _ V u hu P Q c hagree hc htop
+  classical
+  let r := Q.pref (newVoter (u := u) (V := V) hu)
+  letI : LinearOrder A := r
+  have hfish : FishburnWeak r (f Q) (f P) := by
+    simpa [StrongFishburnParticipation, StrongParticipation, FishburnExtension, r] using
+      (hpart (V := V) (u := u) hu P Q hagree)
+  by_contra hcQ
+  let _ : Nonempty A := ⟨c⟩
+  have hneQ : (f Q).Nonempty := hf Q
+  rcases hneQ with ⟨x, hx⟩
+  have hxne : x ≠ c := by
+    intro hxc
+    exact hcQ (by simpa [hxc] using hx)
+  have hcs : c ∈ f P \ f Q := by
+    exact Finset.mem_sdiff.mpr ⟨hc, hcQ⟩
+  obtain ⟨h1, h2, h3⟩ := hfish
+  have hle : r.le x c := by
+    by_cases hxP : x ∈ f P
+    · have hxst : x ∈ f Q ∩ f P := Finset.mem_inter.mpr ⟨hx, hxP⟩
+      exact h2 x hxst c hcs
+    · have hxst : x ∈ f Q \ f P := Finset.mem_sdiff.mpr ⟨hx, hxP⟩
+      exact h3 x hxst c hcs
+  have hlt : r.lt c x := htop x hxne
+  exact (not_le_of_gt hlt) hle
+
+theorem strongFishburnParticipation_implies_negativeInvolvement :
+    Implies StrongFishburnParticipation NegativeInvolvement := by
+  intro f hf hpart U A _ _ V u hu P Q c hagree hc hbot
+  classical
+  let r := Q.pref (newVoter (u := u) (V := V) hu)
+  letI : LinearOrder A := r
+  have hfish : FishburnWeak r (f Q) (f P) := by
+    simpa [StrongFishburnParticipation, StrongParticipation, FishburnExtension, r] using
+      (hpart (V := V) (u := u) hu P Q hagree)
+  by_contra hcQ
+  have hcQ' : c ∈ f Q := by
+    simpa using hcQ
+  let _ : Nonempty A := ⟨c⟩
+  have hneP : (f P).Nonempty := hf P
+  rcases hneP with ⟨x, hx⟩
+  have hxne : x ≠ c := by
+    intro hxc
+    exact hc (by simpa [hxc] using hx)
+  have hcs : c ∈ f Q \ f P := by
+    exact Finset.mem_sdiff.mpr ⟨hcQ', hc⟩
+  obtain ⟨h1, h2, h3⟩ := hfish
+  have hle : r.le c x := by
+    by_cases hxQ : x ∈ f Q
+    · have hxst : x ∈ f Q ∩ f P := Finset.mem_inter.mpr ⟨hxQ, hx⟩
+      exact h1 c hcs x hxst
+    · have hxst : x ∈ f P \ f Q := Finset.mem_sdiff.mpr ⟨hx, hxQ⟩
+      exact h3 c hcs x hxst
+  have hlt : r.lt x c := hbot x hxne
+  exact (not_le_of_gt hlt) hle
 
 end SocialChoice
