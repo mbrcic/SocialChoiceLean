@@ -44,6 +44,7 @@ import SocialChoice.Rules.ScoringRules.Borda.C2Borda
 import SocialChoice.Rules.ScoringRules.Borda.Condorcet
 import SocialChoice.Rules.ScoringRules.Borda.Pareto
 import SocialChoice.Rules.ScoringRules.Borda.Monotonicity
+import SocialChoice.Rules.ScoringRules.Borda.Independence
 import SocialChoice.Rules.ScoringRules.Borda.Majority
 import SocialChoice.Rules.ScoringRules.Borda.Reversal
 import SocialChoice.Rules.ScoringRules.Borda.InformationalBasis

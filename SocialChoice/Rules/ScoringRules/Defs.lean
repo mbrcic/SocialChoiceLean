@@ -66,6 +66,20 @@ noncomputable def scoringRule (score : Nat → Nat → Int) : VotingRule :=
   fun {V A} _ _ (P : Profile V A) =>
     scoringWinners P (fun r => score (Fintype.card A) r)
 
+lemma mem_scoringRule_castCandidates_iff {V A : Type} [Fintype V] [Fintype A]
+    (score : Nat → Nat → Int) {p q : A → Prop}
+    (dp : DecidablePred p) (dq : DecidablePred q)
+    (h : p = q) (x : {a : A // p a}) (P : Profile V {a : A // p a}) :
+    x ∈ scoringRule score P ↔
+      ((cast (congrArg (fun r => {a : A // r a}) h) x : {a : A // q a}) ∈
+        scoringRule score (castCandidates (p := p) (q := q) h P)) := by
+  classical
+  letI : DecidablePred p := dp
+  letI : DecidablePred q := dq
+  cases h
+  cases (Subsingleton.elim dq dp)
+  rfl
+
 lemma scoringWinners_nonempty {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
     (P : Profile V A) (score : Nat → Int) : (scoringWinners P score).Nonempty := by
   classical
