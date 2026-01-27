@@ -43,6 +43,8 @@ No testing is required as the project focuses on formal proofs. Verification is 
 - **Mathematical Style:** Uses `Fintype` for finite sets of voters and candidates, and `Finset` for result sets.
 - **Modularity:** New rules should be added to `SocialChoice/Rules/`, and their axioms to `SocialChoice/Axioms/`.
 
+Note that `native_decide` is not allowed in this project. You can inspect constructions and proofs of existing counterexamples to see patterns used in this project that avoid `native_decide`.
+
 ## Meta-level Infrastructure
 
 The file `SocialChoice/Meta.lean` provides predicates and attributes for reasoning about relationships between rules and axioms.

@@ -1,5 +1,10 @@
+import Mathlib.Tactic
+import Mathlib.Tactic.FinCases
+import SocialChoice.Axioms.Clones
 import SocialChoice.Axioms.Independence
+import SocialChoice.ListBallot
 import SocialChoice.Rules
+import SocialChoice.Rules.ScoringRules.Defs
 import SocialChoice.Rules.ScoringRules.Plurality.Defs
 
 namespace SocialChoice
@@ -152,5 +157,338 @@ theorem plurality_independence_of_dominated_nonempty :
       have ha''' :
           ∃ h : a ≠ d, (⟨a, h⟩ : {x : A // x ≠ d}) ∈ plurality P' := ⟨hne, ha''⟩
       simpa [liftWinners, P'] using ha'''
+
+end SocialChoice
+
+/-!
+## Plurality fails independence of clones
+
+Counterexample profile (candidates 0=a, 1=b, 2=c):
+2 voters: a > b > c
+2 voters: b > a > c
+3 voters: c > a > b
+
+Plurality selects c. The clone set is {a,b}. Removing b makes a the winner,
+so c is no longer a winner.
+-/
+
+namespace SocialChoice
+
+namespace PluralityIndependenceCounterexample
+
+def ballotABC : ListBallot 3 := ListBallot.mk' [0, 1, 2]
+def ballotBAC : ListBallot 3 := ListBallot.mk' [1, 0, 2]
+def ballotCAB : ListBallot 3 := ListBallot.mk' [2, 0, 1]
+
+def ballots : Fin 7 → ListBallot 3
+  | ⟨0, _⟩ => ballotABC
+  | ⟨1, _⟩ => ballotABC
+  | ⟨2, _⟩ => ballotBAC
+  | ⟨3, _⟩ => ballotBAC
+  | ⟨4, _⟩ => ballotCAB
+  | ⟨5, _⟩ => ballotCAB
+  | ⟨6, _⟩ => ballotCAB
+
+noncomputable def profile : Profile (Fin 7) (Fin 3) :=
+  profileOfListBallots ballots
+
+def cloneSet : Set (Fin 3) := {0, 1}
+
+lemma cloneSet_profile : CloneSet profile cloneSet := by
+  refine ⟨?_, ?_⟩
+  · refine ⟨(0 : Fin 3), by simp [cloneSet]⟩
+  intro v c hc
+  have hc' : c = (2 : Fin 3) := by
+    fin_cases c
+    · have hmem : (0 : Fin 3) ∈ cloneSet := by simp [cloneSet]
+      exact (hc hmem).elim
+    · have hmem : (1 : Fin 3) ∈ cloneSet := by simp [cloneSet]
+      exact (hc hmem).elim
+    · rfl
+  subst hc'
+  fin_cases v <;>
+    (first
+      | left
+        intro x hx
+        have hx' : x = (0 : Fin 3) ∨ x = (1 : Fin 3) := by
+          simpa [cloneSet] using hx
+        cases hx' with
+        | inl hx0 =>
+            subst hx0
+            simp [profile, ballots, prefers_iff_prefersInList, prefersInList]; decide
+        | inr hx1 =>
+            subst hx1
+            simp [profile, ballots, prefers_iff_prefersInList, prefersInList]; decide
+      | right
+        intro x hx
+        have hx' : x = (0 : Fin 3) ∨ x = (1 : Fin 3) := by
+          simpa [cloneSet] using hx
+        cases hx' with
+        | inl hx0 =>
+            subst hx0
+            simp [profile, ballots, prefers_iff_prefersInList, prefersInList]; decide
+        | inr hx1 =>
+            subst hx1
+            simp [profile, ballots, prefers_iff_prefersInList, prefersInList]; decide)
+
+def scoreVec : Nat → Int := fun r => pluralityScore (Fintype.card (Fin 3)) r
+
+lemma topCount_profile_a : topCount profile (0 : Fin 3) = 2 := by
+  calc
+    topCount profile (0 : Fin 3) =
+        countTop (fun v => (ballots v).ranking) 0 := by
+          simpa [topCount, profile] using
+            (votersTop_card_eq_countTop (ballots := ballots) (c := (0 : Fin 3)))
+    _ = 2 := rfl
+
+lemma topCount_profile_b : topCount profile (1 : Fin 3) = 2 := by
+  calc
+    topCount profile (1 : Fin 3) =
+        countTop (fun v => (ballots v).ranking) 1 := by
+          simpa [topCount, profile] using
+            (votersTop_card_eq_countTop (ballots := ballots) (c := (1 : Fin 3)))
+    _ = 2 := rfl
+
+lemma topCount_profile_c : topCount profile (2 : Fin 3) = 3 := by
+  calc
+    topCount profile (2 : Fin 3) =
+        countTop (fun v => (ballots v).ranking) 2 := by
+          simpa [topCount, profile] using
+            (votersTop_card_eq_countTop (ballots := ballots) (c := (2 : Fin 3)))
+    _ = 3 := rfl
+
+lemma score_profile_a :
+    scoreCandidate profile scoreVec (0 : Fin 3) = 2 := by
+  simpa [scoreVec, topCount_profile_a] using
+    (pluralityScore_eq_topCount (P := profile) (c := (0 : Fin 3)))
+
+lemma score_profile_b :
+    scoreCandidate profile scoreVec (1 : Fin 3) = 2 := by
+  simpa [scoreVec, topCount_profile_b] using
+    (pluralityScore_eq_topCount (P := profile) (c := (1 : Fin 3)))
+
+lemma score_profile_c :
+    scoreCandidate profile scoreVec (2 : Fin 3) = 3 := by
+  simpa [scoreVec, topCount_profile_c] using
+    (pluralityScore_eq_topCount (P := profile) (c := (2 : Fin 3)))
+
+lemma plurality_profile_has_c : (2 : Fin 3) ∈ plurality profile := by
+  classical
+  have hA : (Finset.univ : Finset (Fin 3)).Nonempty := by simp
+  have hmax :
+      ∀ d : Fin 3, scoreCandidate profile scoreVec d ≤
+        scoreCandidate profile scoreVec (2 : Fin 3) := by
+    intro d
+    fin_cases d <;> simp [score_profile_a, score_profile_b, score_profile_c]
+  have hc :
+      (2 : Fin 3) ∈ scoringRule pluralityScore profile := by
+    have hc' :=
+      (scoringWinners_iff_forall_le (P := profile) (score := scoreVec)
+        (hA := hA) (c := (2 : Fin 3))).2 hmax
+    simpa [scoringRule, scoreVec] using hc'
+  simpa [plurality_eq_scoringRule] using hc
+
+def q : Fin 3 → Prop := fun a => a ≠ (1 : Fin 3)
+
+instance : DecidablePred q := by
+  intro a
+  dsimp [q]
+  infer_instance
+
+lemma clonePred_eq_ne :
+    clonePred cloneSet (0 : Fin 3) = (fun a : Fin 3 => a ≠ (1 : Fin 3)) := by
+  funext a
+  apply propext
+  fin_cases a <;> simp [cloneSet, clonePred]
+
+def candAq : {a : Fin 3 // q a} := ⟨0, by simp [q]⟩
+def candCq : {a : Fin 3 // q a} := ⟨2, by simp [q]⟩
+
+def candCclone : {a : Fin 3 // clonePred cloneSet (0 : Fin 3) a} :=
+  ⟨2, Or.inl (by simp [cloneSet])⟩
+
+noncomputable def profileQ : Profile (Fin 7) {a : Fin 3 // q a} :=
+  restrictCandidates profile q
+
+def scoreVecQ : Nat → Int := fun r => pluralityScore (Fintype.card {a : Fin 3 // q a}) r
+
+lemma card_q : Fintype.card {a : Fin 3 // q a} = 2 := by
+  classical
+  change Fintype.card {a : Fin 3 // a ≠ (1 : Fin 3)} = 2
+  have h :=
+    (Fintype.card_subtype_compl (α := Fin 3) (p := fun a : Fin 3 => a = (1 : Fin 3)))
+  rw [h]
+  simp
+
+lemma candAq_ne_candCq : candAq ≠ candCq := by
+  intro h
+  have h' : (0 : Fin 3) = 2 := by
+    simpa [candAq, candCq] using congrArg Subtype.val h
+  exact (by decide : (0 : Fin 3) ≠ 2) h'
+
+lemma candCq_ne_candAq : candCq ≠ candAq := by
+  exact candAq_ne_candCq.symm
+
+lemma prefers_restrictCandidates_iff {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (p : A → Prop) [DecidablePred p] (v : V)
+    (a b : {x : A // p x}) :
+    Prefers (restrictCandidates P p) v a b ↔ Prefers P v a b := by
+  rfl
+
+lemma votersPreferring_restrictCandidates_eq {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (p : A → Prop) [DecidablePred p]
+    (a b : {x : A // p x}) :
+    votersPreferring (restrictCandidates P p) a b = votersPreferring P a b := by
+  ext v
+  simp [votersPreferring, prefers_restrictCandidates_iff]
+
+lemma votersPreferring_profile_a_c :
+    (votersPreferring profile (0 : Fin 3) (2 : Fin 3)).card = 4 := by
+  calc
+    (votersPreferring profile (0 : Fin 3) (2 : Fin 3)).card =
+        countPrefers (fun v => (ballots v).ranking) 0 2 := by
+          unfold countPrefers
+          simpa [profile] using
+            congrArg Finset.card
+              (votersPreferring_eq_filter_prefersInList
+                (ballots := ballots) (a := 0) (b := 2))
+    _ = 4 := rfl
+
+lemma votersPreferring_profile_c_a :
+    (votersPreferring profile (2 : Fin 3) (0 : Fin 3)).card = 3 := by
+  calc
+    (votersPreferring profile (2 : Fin 3) (0 : Fin 3)).card =
+        countPrefers (fun v => (ballots v).ranking) 2 0 := by
+          unfold countPrefers
+          simpa [profile] using
+            congrArg Finset.card
+              (votersPreferring_eq_filter_prefersInList
+                (ballots := ballots) (a := 2) (b := 0))
+    _ = 3 := rfl
+
+lemma score_restrict_a :
+    scoreCandidate profileQ scoreVecQ candAq = 4 := by
+  have hcard : Fintype.card {a : Fin 3 // q a} = 2 := card_q
+  have hcd : candAq ≠ candCq := candAq_ne_candCq
+  have h := pluralityScore_eq_votersPreferring_of_two
+    (P := profileQ) (hcard := hcard) (c := candAq) (d := candCq) (hcd := hcd)
+  have hvp :
+      (votersPreferring profileQ candAq candCq).card =
+        (votersPreferring profile (0 : Fin 3) (2 : Fin 3)).card := by
+    have h' := congrArg Finset.card
+      (votersPreferring_restrictCandidates_eq (P := profile) (p := q)
+        (a := candAq) (b := candCq))
+    simpa [profileQ, candAq, candCq] using h'
+  calc
+    scoreCandidate profileQ scoreVecQ candAq =
+        (votersPreferring profileQ candAq candCq).card := by
+          simpa [scoreVecQ] using h
+    _ = (votersPreferring profile (0 : Fin 3) (2 : Fin 3)).card := by
+          exact_mod_cast hvp
+    _ = 4 := by
+          exact_mod_cast votersPreferring_profile_a_c
+
+lemma score_restrict_c :
+    scoreCandidate profileQ scoreVecQ candCq = 3 := by
+  have hcard : Fintype.card {a : Fin 3 // q a} = 2 := card_q
+  have hcd : candCq ≠ candAq := candCq_ne_candAq
+  have h := pluralityScore_eq_votersPreferring_of_two
+    (P := profileQ) (hcard := hcard) (c := candCq) (d := candAq) (hcd := hcd)
+  have hvp :
+      (votersPreferring profileQ candCq candAq).card =
+        (votersPreferring profile (2 : Fin 3) (0 : Fin 3)).card := by
+    have h' := congrArg Finset.card
+      (votersPreferring_restrictCandidates_eq (P := profile) (p := q)
+        (a := candCq) (b := candAq))
+    simpa [profileQ, candAq, candCq] using h'
+  calc
+    scoreCandidate profileQ scoreVecQ candCq =
+        (votersPreferring profileQ candCq candAq).card := by
+          simpa [scoreVecQ] using h
+    _ = (votersPreferring profile (2 : Fin 3) (0 : Fin 3)).card := by
+          exact_mod_cast hvp
+    _ = 3 := by
+          exact_mod_cast votersPreferring_profile_c_a
+
+lemma cast_subtype_val {A : Type} {p q : A → Prop}
+    (h : p = q) (x : {a : A // p a}) :
+    (cast (congrArg (fun r => {a : A // r a}) h) x : {a : A // q a}).1 = x.1 := by
+  cases x
+  cases h
+  rfl
+
+lemma plurality_cloneProfile_not_c :
+    candCclone ∉ plurality (removeClonesExcept profile cloneSet (0 : Fin 3)) := by
+  classical
+  have hcq : candCq ∉ scoringRule pluralityScore (restrictCandidates profile q) := by
+    intro hcq
+    have hA : (Finset.univ : Finset {a : Fin 3 // q a}).Nonempty :=
+      ⟨candAq, by simp [candAq]⟩
+    have hcq' :
+        candCq ∈ scoringWinners (restrictCandidates profile q) scoreVecQ := by
+      simpa [scoringRule, scoreVecQ] using hcq
+    have hmax :=
+      (scoringWinners_iff_forall_le (P := restrictCandidates profile q) (score := scoreVecQ)
+        (hA := hA) (c := candCq)).1 hcq'
+    have hmaxa := hmax candAq
+    have hmaxa' :
+        scoreCandidate profileQ scoreVecQ candAq ≤
+          scoreCandidate profileQ scoreVecQ candCq := by
+      simpa [profileQ] using hmaxa
+    have : (4 : Int) ≤ 3 := by
+      have hmaxa'' := hmaxa'
+      simp [score_restrict_a, score_restrict_c] at hmaxa''
+    exact (by decide : ¬ ((4 : Int) ≤ 3)) this
+  have hpred : q = clonePred cloneSet (0 : Fin 3) := by
+    simpa [q] using clonePred_eq_ne.symm
+  have hcq_cast :
+      (cast (congrArg (fun r => {a : Fin 3 // r a}) hpred) candCq :
+        {a : Fin 3 // clonePred cloneSet (0 : Fin 3) a}) ∉
+      scoringRule pluralityScore
+        (castCandidates (p := q) (q := clonePred cloneSet (0 : Fin 3)) hpred
+          (restrictCandidates profile q)) := by
+    intro hc
+    have hc' :
+        candCq ∈ scoringRule pluralityScore (restrictCandidates profile q) :=
+      (mem_scoringRule_castCandidates_iff
+        (score := pluralityScore) (p := q) (q := clonePred cloneSet (0 : Fin 3))
+        (dp := inferInstance) (dq := inferInstance) hpred
+        candCq (restrictCandidates profile q)).2 hc
+    exact (hcq hc').elim
+  have hcq_cast' :
+      (cast (congrArg (fun r => {a : Fin 3 // r a}) hpred) candCq :
+        {a : Fin 3 // clonePred cloneSet (0 : Fin 3) a}) ∉
+      scoringRule pluralityScore (restrictCandidates profile (clonePred cloneSet (0 : Fin 3))) := by
+    simpa [castCandidates_restrictCandidates] using hcq_cast
+  have hcast_candC :
+      (cast (congrArg (fun r => {a : Fin 3 // r a}) hpred) candCq :
+        {a : Fin 3 // clonePred cloneSet (0 : Fin 3) a}) = candCclone := by
+    apply Subtype.ext
+    simpa [candCclone, candCq] using (cast_subtype_val (h := hpred) (x := candCq))
+  have hcclone :
+      candCclone ∉ scoringRule pluralityScore
+        (restrictCandidates profile (clonePred cloneSet (0 : Fin 3))) := by
+    simpa [hcast_candC] using hcq_cast'
+  simpa [plurality_eq_scoringRule, removeClonesExcept] using hcclone
+
+end PluralityIndependenceCounterexample
+
+open PluralityIndependenceCounterexample
+
+theorem plurality_not_independenceOfClones : ¬ IndependenceOfClones plurality := by
+  intro hind
+  have hclone : CloneSet profile cloneSet := cloneSet_profile
+  have hx : (0 : Fin 3) ∈ cloneSet := by
+    simp [cloneSet]
+  have h := hind (P := profile) (X := cloneSet) (x := (0 : Fin 3)) hclone hx
+  have hc : (2 : Fin 3) ∉ cloneSet := by
+    simp [cloneSet]
+  have hnonclone := h.1 (2 : Fin 3) hc
+  have hc_left :
+      (⟨2, Or.inl hc⟩ :
+        {a : Fin 3 // clonePred cloneSet (0 : Fin 3) a}) ∈
+          plurality (removeClonesExcept profile cloneSet (0 : Fin 3)) := by
+    simpa [candCclone] using (hnonclone).1 plurality_profile_has_c
+  exact (plurality_cloneProfile_not_c hc_left).elim
 
 end SocialChoice
