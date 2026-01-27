@@ -45,4 +45,9 @@ theorem black_not_strongFishburnParticipation : ¬ StrongFishburnParticipation b
   exact no_condorcet_strongFishburn_participation_m4_n12
     ⟨black, black_isVotingRule, black_condorcet_consistency, hpart⟩
 
+theorem black_not_optimistParticipation : ¬ OptimistParticipation black := by
+  intro hpart
+  exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
+    ⟨black, black_condorcet_consistency, hpart⟩
+
 end SocialChoice

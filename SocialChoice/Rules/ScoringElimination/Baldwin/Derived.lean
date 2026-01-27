@@ -49,6 +49,11 @@ theorem baldwin_not_strongFishburnParticipation : ¬ StrongFishburnParticipation
   exact no_condorcet_strongFishburn_participation_m4_n12
     ⟨baldwin, baldwin_isVotingRule, baldwin_condorcet_consistency, hpart⟩
 
+theorem baldwin_not_optimistParticipation : ¬ OptimistParticipation baldwin := by
+  intro hpart
+  exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
+    ⟨baldwin, baldwin_condorcet_consistency, hpart⟩
+
 theorem bordaElimination_majority_criterion : MajorityCriterion bordaElimination := by
   intro V A _ _ P c hmaj
   simpa [bordaElimination] using

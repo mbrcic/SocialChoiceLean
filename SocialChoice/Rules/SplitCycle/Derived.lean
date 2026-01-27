@@ -43,4 +43,9 @@ theorem splitCycle_not_strongFishburnParticipation : ¬ StrongFishburnParticipat
   exact no_condorcet_strongFishburn_participation_m4_n12
     ⟨splitCycle, splitCycle_isVotingRule, split_cycle_condorcet_consistency, hpart⟩
 
+theorem splitCycle_not_optimistParticipation : ¬ OptimistParticipation splitCycle := by
+  intro hpart
+  exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
+    ⟨splitCycle, split_cycle_condorcet_consistency, hpart⟩
+
 end SocialChoice

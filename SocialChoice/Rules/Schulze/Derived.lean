@@ -77,4 +77,9 @@ theorem schulze_not_strongFishburnParticipation : ¬ StrongFishburnParticipation
   exact no_condorcet_strongFishburn_participation_m4_n12
     ⟨schulze, schulze_isVotingRule, schulze_condorcet_consistency, hpart⟩
 
+theorem schulze_not_optimistParticipation : ¬ OptimistParticipation schulze := by
+  intro hpart
+  exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
+    ⟨schulze, schulze_condorcet_consistency, hpart⟩
+
 end SocialChoice

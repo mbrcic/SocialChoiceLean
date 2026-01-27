@@ -45,6 +45,11 @@ theorem nanson_not_strongFishburnParticipation : ¬ StrongFishburnParticipation 
   exact no_condorcet_strongFishburn_participation_m4_n12
     ⟨nanson, nanson_isVotingRule, nanson_condorcet_consistency, hpart⟩
 
+theorem nanson_not_optimistParticipation : ¬ OptimistParticipation nanson := by
+  intro hpart
+  exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
+    ⟨nanson, nanson_condorcet_consistency, hpart⟩
+
 theorem nanson_singleton_reversal_symmetry : SingletonReversalSymmetry nanson := by
   apply Implies.apply reversalSymmetry_implies_singletonReversalSymmetry (f := nanson)
   · exact nanson_isVotingRule

@@ -72,6 +72,7 @@ import SocialChoice.Rules.ScoringElimination.Coombs.Defs
 import SocialChoice.Rules.ScoringElimination.Coombs.Majority
 import SocialChoice.Rules.ScoringElimination.Coombs.Condorcet
 import SocialChoice.Rules.ScoringElimination.Coombs.CondorcetLoser
+import SocialChoice.Rules.ScoringElimination.Coombs.Independence
 import SocialChoice.Rules.ScoringElimination.Coombs.Derived
 import SocialChoice.Rules.Nanson.Defs
 import SocialChoice.Rules.Nanson.Condorcet
