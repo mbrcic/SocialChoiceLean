@@ -8,6 +8,7 @@ import SocialChoice.Cycles
 import SocialChoice.Rules
 import SocialChoice.ListBallot
 import SocialChoice.SetExtensions
+import SocialChoice.DebordMcGarvey
 
 import SocialChoice.Axioms.Anonymity
 import SocialChoice.Axioms.Clones
