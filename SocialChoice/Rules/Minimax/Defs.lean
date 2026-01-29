@@ -31,6 +31,69 @@ noncomputable def minimaxScore (P : Profile V A) : Int := by
     exact Finset.min' scores hScores
   · exact 0
 
+lemma margin_le_maxLoss (P : Profile V A) (a b : A) :
+    margin P b a ≤ maxLoss P a := by
+  classical
+  have hA : (Finset.univ : Finset A).Nonempty := ⟨a, Finset.mem_univ a⟩
+  set losses : Finset Int := Finset.univ.image (fun c => margin P c a)
+  have hLosses : losses.Nonempty := by
+    exact ⟨margin P b a, Finset.mem_image.mpr ⟨b, Finset.mem_univ b, rfl⟩⟩
+  have hmem : margin P b a ∈ losses := by
+    exact Finset.mem_image.mpr ⟨b, Finset.mem_univ b, rfl⟩
+  have hle : margin P b a ≤ Finset.max' losses hLosses := Finset.le_max' _ _ hmem
+  have hdef : maxLoss P a = Finset.max' losses hLosses := by
+    simp [maxLoss, hA, losses]
+  simpa [hdef] using hle
+
+lemma maxLoss_le_of_forall_margin_le (P : Profile V A) (a : A) (k : Int)
+    (h : ∀ b, margin P b a ≤ k) : maxLoss P a ≤ k := by
+  classical
+  have hA : (Finset.univ : Finset A).Nonempty := ⟨a, Finset.mem_univ a⟩
+  set losses : Finset Int := Finset.univ.image (fun b => margin P b a)
+  have hLosses : losses.Nonempty := by
+    exact ⟨margin P a a, Finset.mem_image.mpr ⟨a, Finset.mem_univ a, rfl⟩⟩
+  have hle : ∀ x ∈ losses, x ≤ k := by
+    intro x hx
+    rcases Finset.mem_image.mp hx with ⟨b, _, rfl⟩
+    exact h b
+  have hmax : Finset.max' losses hLosses ≤ k :=
+    (Finset.max'_le_iff _ _).2 hle
+  have hdef : maxLoss P a = Finset.max' losses hLosses := by
+    simp [maxLoss, hA, losses]
+  simpa [hdef] using hmax
+
+lemma minimaxScore_le_of_candidate (P : Profile V A) (a : A) :
+    minimaxScore P ≤ maxLoss P a := by
+  classical
+  have hA : (Finset.univ : Finset A).Nonempty := ⟨a, Finset.mem_univ a⟩
+  set scores : Finset Int := Finset.univ.image (fun a => maxLoss P a)
+  have hScores : scores.Nonempty := by
+    exact ⟨maxLoss P a, Finset.mem_image.mpr ⟨a, Finset.mem_univ a, rfl⟩⟩
+  have hdef : minimaxScore P = Finset.min' scores hScores := by
+    simp [minimaxScore, hA, scores]
+  have hmem : maxLoss P a ∈ scores :=
+    Finset.mem_image.mpr ⟨a, Finset.mem_univ a, rfl⟩
+  have hle : Finset.min' scores hScores ≤ maxLoss P a :=
+    Finset.min'_le (s := scores) (x := maxLoss P a) (H2 := hmem)
+  simpa [hdef] using hle
+
+lemma le_minimaxScore_of_forall (P : Profile V A) (k : Int)
+    (hA : (Finset.univ : Finset A).Nonempty)
+    (h : ∀ a, k ≤ maxLoss P a) : k ≤ minimaxScore P := by
+  classical
+  set scores : Finset Int := Finset.univ.image (fun a => maxLoss P a)
+  have hScores : scores.Nonempty := by
+    rcases hA with ⟨a, ha⟩
+    exact ⟨maxLoss P a, Finset.mem_image.mpr ⟨a, ha, rfl⟩⟩
+  have hdef : minimaxScore P = Finset.min' scores hScores := by
+    simp [minimaxScore, hA, scores]
+  have hle : k ≤ Finset.min' scores hScores := by
+    refine Finset.le_min' (s := scores) (H := hScores) (x := k) ?_
+    intro x hx
+    rcases Finset.mem_image.mp hx with ⟨a, _, rfl⟩
+    exact h a
+  simpa [hdef] using hle
+
 @[scRule]
 noncomputable def minimax : VotingRule := by
   intro V A _ _ P

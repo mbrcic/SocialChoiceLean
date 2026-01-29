@@ -93,6 +93,7 @@ import SocialChoice.Rules.PluralityWithRunoff.Derived
 import SocialChoice.Rules.Minimax.Defs
 import SocialChoice.Rules.Minimax.Neutrality
 import SocialChoice.Rules.Minimax.Condorcet
+import SocialChoice.Rules.Minimax.CondorcetLoser
 import SocialChoice.Rules.Minimax.Monotonicity
 import SocialChoice.Rules.Minimax.InformationalBasis
 import SocialChoice.Rules.Minimax.Derived
