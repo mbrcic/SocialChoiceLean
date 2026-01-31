@@ -6,7 +6,8 @@ namespace SocialChoice
 
 @[scAxiom]
 def MarginBased (f : VotingRule) : Prop :=
-  ∀ {V A : Type} [Fintype V] [Fintype A] (P₁ P₂ : Profile V A),
+  ∀ {V₁ V₂ A : Type} [Fintype V₁] [Fintype V₂] [Fintype A]
+      (P₁ : Profile V₁ A) (P₂ : Profile V₂ A),
     (∀ x y : A, margin P₁ x y = margin P₂ x y) → f P₁ = f P₂
 
 @[scAxiom]

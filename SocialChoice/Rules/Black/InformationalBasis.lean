@@ -5,7 +5,7 @@ import SocialChoice.Rules.ScoringRules.Borda.InformationalBasis
 namespace SocialChoice
 
 theorem black_marginBased : MarginBased black := by
-  intro V A _ _ P₁ P₂ hmargin
+  intro V₁ V₂ A _ _ _ P₁ P₂ hmargin
   classical
   have hcw :
       ∀ x : A, CondorcetWinner P₁ x ↔ CondorcetWinner P₂ x := by

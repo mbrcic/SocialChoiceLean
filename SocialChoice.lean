@@ -53,6 +53,7 @@ import SocialChoice.Rules.ScoringRules.Borda.InformationalBasis
 import SocialChoice.Rules.ScoringRules.Borda.Derived
 import SocialChoice.Rules.ScoringRules.Veto.Defs
 import SocialChoice.Rules.ScoringRules.Veto.Majority
+import SocialChoice.Rules.ScoringRules.Veto.Pareto
 import SocialChoice.Rules.ScoringRules.Veto.Derived
 import SocialChoice.Rules.ScoringRules.Derived
 import SocialChoice.Rules.ScoringElimination.Defs
@@ -63,6 +64,7 @@ import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Clones
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Condorcet
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.MutualMajority
+import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Monotonicity
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Derived
 import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
@@ -100,6 +102,13 @@ import SocialChoice.Rules.Minimax.CondorcetLoser
 import SocialChoice.Rules.Minimax.Monotonicity
 import SocialChoice.Rules.Minimax.InformationalBasis
 import SocialChoice.Rules.Minimax.Derived
+import SocialChoice.Rules.Copeland.Defs
+import SocialChoice.Rules.Copeland.Condorcet
+import SocialChoice.Rules.Copeland.CondorcetLoser
+import SocialChoice.Rules.Copeland.Monotonicity
+import SocialChoice.Rules.Copeland.InformationalBasis
+import SocialChoice.Rules.Copeland.Pareto
+import SocialChoice.Rules.Copeland.Derived
 import SocialChoice.Rules.Black.Defs
 import SocialChoice.Rules.Black.Neutrality
 import SocialChoice.Rules.Black.Condorcet

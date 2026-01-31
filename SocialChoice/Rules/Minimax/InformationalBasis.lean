@@ -3,8 +3,8 @@ import SocialChoice.Rules.Minimax.Defs
 
 namespace SocialChoice
 
-lemma maxLoss_eq_of_margins {V A : Type} [Fintype V] [Fintype A]
-    (P₁ P₂ : Profile V A)
+lemma maxLoss_eq_of_margins {V₁ V₂ A : Type} [Fintype V₁] [Fintype V₂] [Fintype A]
+    (P₁ : Profile V₁ A) (P₂ : Profile V₂ A)
     (hmargin : ∀ x y : A, margin P₁ x y = margin P₂ x y) :
     ∀ a : A, maxLoss P₁ a = maxLoss P₂ a := by
   intro a
@@ -18,8 +18,8 @@ lemma maxLoss_eq_of_margins {V A : Type} [Fintype V] [Fintype A]
     simp [maxLoss, hA, himage]
   · simp [maxLoss, hA]
 
-lemma minimaxScore_eq_of_margins {V A : Type} [Fintype V] [Fintype A]
-    (P₁ P₂ : Profile V A)
+lemma minimaxScore_eq_of_margins {V₁ V₂ A : Type} [Fintype V₁] [Fintype V₂] [Fintype A]
+    (P₁ : Profile V₁ A) (P₂ : Profile V₂ A)
     (hmargin : ∀ x y : A, margin P₁ x y = margin P₂ x y) :
     minimaxScore P₁ = minimaxScore P₂ := by
   classical
@@ -35,7 +35,7 @@ lemma minimaxScore_eq_of_margins {V A : Type} [Fintype V] [Fintype A]
   · simp [minimaxScore, hA]
 
 theorem minimax_marginBased : MarginBased minimax := by
-  intro V A _ _ P₁ P₂ hmargin
+  intro V₁ V₂ A _ _ _ P₁ P₂ hmargin
   classical
   by_cases hA : Nonempty A
   · have hmaxLoss : ∀ a : A, maxLoss P₁ a = maxLoss P₂ a :=

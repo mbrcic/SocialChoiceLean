@@ -19,9 +19,9 @@ lemma liftWinners_nansonAux_restrictCandidates_congr
   cases hinst
   rfl
 
-lemma nansonAux_marginBased {V : Type} [Fintype V] :
+lemma nansonAux_marginBased {V₁ V₂ : Type} [Fintype V₁] [Fintype V₂] :
     ∀ n : Nat, ∀ (A : Type) [Fintype A] [DecidableEq A],
-      ∀ P₁ P₂ : Profile V A,
+      ∀ (P₁ : Profile V₁ A) (P₂ : Profile V₂ A),
         (∀ x y : A, margin P₁ x y = margin P₂ x y) →
         nansonAux n A P₁ = nansonAux n A P₂ := by
   intro n
@@ -117,10 +117,10 @@ lemma nansonAux_marginBased {V : Type} [Fintype V] :
           simp [nansonAux, hall₁, hall₂, hsurv₁, hsurv₂]
 
 theorem nanson_marginBased : MarginBased nanson := by
-  intro V A _ _ P₁ P₂ hmargin
+  intro V₁ V₂ A _ _ _ P₁ P₂ hmargin
   classical
   simpa [nanson] using
-    (nansonAux_marginBased (V := V) (n := Fintype.card A) (A := A)
+    (nansonAux_marginBased (V₁ := V₁) (V₂ := V₂) (n := Fintype.card A) (A := A)
       (P₁ := P₁) (P₂ := P₂) hmargin)
 
 end SocialChoice

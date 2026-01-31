@@ -10,44 +10,98 @@ namespace SocialChoice
 
 open Finset
 
-lemma scoreCandidate_borda_eq_of_margins {V A : Type} [Fintype V] [Fintype A]
-    (P₁ P₂ : Profile V A)
-    (hmargin : ∀ x y : A, margin P₁ x y = margin P₂ x y) (a : A) :
-    scoreCandidate P₁ (fun r => bordaScore (Fintype.card A) r) a =
-      scoreCandidate P₂ (fun r => bordaScore (Fintype.card A) r) a := by
+lemma scoreCandidate_borda_le_iff_of_margins {V₁ V₂ A : Type} [Fintype V₁] [Fintype V₂]
+    [Fintype A] (P₁ : Profile V₁ A) (P₂ : Profile V₂ A)
+    (hmargin : ∀ x y : A, margin P₁ x y = margin P₂ x y) (a b : A) :
+    scoreCandidate P₁ (fun r => bordaScore (Fintype.card A) r) a ≤
+        scoreCandidate P₁ (fun r => bordaScore (Fintype.card A) r) b ↔
+      scoreCandidate P₂ (fun r => bordaScore (Fintype.card A) r) a ≤
+        scoreCandidate P₂ (fun r => bordaScore (Fintype.card A) r) b := by
   classical
-  set k : Int := (Fintype.card V : Int) * ((Fintype.card A : Int) - 1)
-  have hx :
-      c2BordaScore P₁ a =
-        2 * scoreCandidate P₁ (fun r => bordaScore (Fintype.card A) r) a - k := by
-    simpa [k] using (c2BordaScore_eq_affine (P := P₁) (x := a))
-  have hy :
-      c2BordaScore P₂ a =
-        2 * scoreCandidate P₂ (fun r => bordaScore (Fintype.card A) r) a - k := by
-    simpa [k] using (c2BordaScore_eq_affine (P := P₂) (x := a))
-  have hc2 : c2BordaScore P₁ a = c2BordaScore P₂ a := by
-    simpa using (c2BordaScore_eq_of_margins (P₁ := P₁) (P₂ := P₂) hmargin a)
-  linarith [hx, hy, hc2]
+  let score : Nat → Int := fun r => bordaScore (Fintype.card A) r
+  set k₁ : Int := (Fintype.card V₁ : Int) * ((Fintype.card A : Int) - 1)
+  set k₂ : Int := (Fintype.card V₂ : Int) * ((Fintype.card A : Int) - 1)
+  have hxa :
+      2 * scoreCandidate P₁ score a - k₁ =
+        2 * scoreCandidate P₂ score a - k₂ := by
+    calc
+      2 * scoreCandidate P₁ score a - k₁ = c2BordaScore P₁ a := by
+        symm
+        simpa [score, k₁] using (c2BordaScore_eq_affine (P := P₁) (x := a))
+      _ = c2BordaScore P₂ a := by
+        simpa using (c2BordaScore_eq_of_margins (P₁ := P₁) (P₂ := P₂) hmargin a)
+      _ = 2 * scoreCandidate P₂ score a - k₂ := by
+        simpa [score, k₂] using (c2BordaScore_eq_affine (P := P₂) (x := a))
+  have hxb :
+      2 * scoreCandidate P₁ score b - k₁ =
+        2 * scoreCandidate P₂ score b - k₂ := by
+    calc
+      2 * scoreCandidate P₁ score b - k₁ = c2BordaScore P₁ b := by
+        symm
+        simpa [score, k₁] using (c2BordaScore_eq_affine (P := P₁) (x := b))
+      _ = c2BordaScore P₂ b := by
+        simpa using (c2BordaScore_eq_of_margins (P₁ := P₁) (P₂ := P₂) hmargin b)
+      _ = 2 * scoreCandidate P₂ score b - k₂ := by
+        simpa [score, k₂] using (c2BordaScore_eq_affine (P := P₂) (x := b))
+  constructor
+  · intro hle
+    have hle' :
+        2 * scoreCandidate P₁ score a - k₁ ≤
+          2 * scoreCandidate P₁ score b - k₁ := by
+      linarith
+    have hle'' :
+        2 * scoreCandidate P₂ score a - k₂ ≤
+          2 * scoreCandidate P₂ score b - k₂ := by
+      simpa [hxa, hxb] using hle'
+    linarith
+  · intro hle
+    have hle' :
+        2 * scoreCandidate P₂ score a - k₂ ≤
+          2 * scoreCandidate P₂ score b - k₂ := by
+      linarith
+    have hle'' :
+        2 * scoreCandidate P₁ score a - k₁ ≤
+          2 * scoreCandidate P₁ score b - k₁ := by
+      simpa [hxa, hxb] using hle'
+    linarith
 
-lemma lowestScoring_borda_eq_of_margins {V A : Type} [Fintype V] [Fintype A] [DecidableEq A]
-    (P₁ P₂ : Profile V A)
+lemma lowestScoring_borda_eq_of_margins {V₁ V₂ A : Type} [Fintype V₁] [Fintype V₂]
+    [Fintype A] [DecidableEq A] (P₁ : Profile V₁ A) (P₂ : Profile V₂ A)
     (hmargin : ∀ x y : A, margin P₁ x y = margin P₂ x y) :
     lowestScoring P₁ (fun r => bordaScore (Fintype.card A) r) =
       lowestScoring P₂ (fun r => bordaScore (Fintype.card A) r) := by
   classical
-  have hscore :
-      ∀ a : A, scoreCandidate P₁ (fun r => bordaScore (Fintype.card A) r) a =
-        scoreCandidate P₂ (fun r => bordaScore (Fintype.card A) r) a :=
-    fun a => scoreCandidate_borda_eq_of_margins (P₁ := P₁) (P₂ := P₂) hmargin a
+  let score : Nat → Int := fun r => bordaScore (Fintype.card A) r
   by_cases hA : (Finset.univ : Finset A).Nonempty
-  · simp [lowestScoring, hA, hscore]
+  · ext a
+    constructor
+    · intro ha
+      have ha' :
+          ∀ d : A, scoreCandidate P₁ score a ≤ scoreCandidate P₁ score d :=
+        (lowestScoring_iff_forall_le (P := P₁) (score := score) hA a).1 ha
+      have ha'' :
+          ∀ d : A, scoreCandidate P₂ score a ≤ scoreCandidate P₂ score d := by
+        intro d
+        exact (scoreCandidate_borda_le_iff_of_margins (P₁ := P₁) (P₂ := P₂) hmargin a d).1
+          (ha' d)
+      exact (lowestScoring_iff_forall_le (P := P₂) (score := score) hA a).2 ha''
+    · intro ha
+      have ha' :
+          ∀ d : A, scoreCandidate P₂ score a ≤ scoreCandidate P₂ score d :=
+        (lowestScoring_iff_forall_le (P := P₂) (score := score) hA a).1 ha
+      have ha'' :
+          ∀ d : A, scoreCandidate P₁ score a ≤ scoreCandidate P₁ score d := by
+        intro d
+        exact (scoreCandidate_borda_le_iff_of_margins (P₁ := P₁) (P₂ := P₂) hmargin a d).2
+          (ha' d)
+      exact (lowestScoring_iff_forall_le (P := P₁) (score := score) hA a).2 ha''
   · simp [lowestScoring, hA]
 
 lemma scoringEliminationAux_borda_marginBased
-    {V : Type} [Fintype V] :
+    {V₁ V₂ : Type} [Fintype V₁] [Fintype V₂] :
     ∀ n : Nat, ∀ (A : Type) [Fintype A] [DecidableEq A],
       (hcard : Fintype.card A = n) →
-      ∀ P₁ P₂ : Profile V A,
+      ∀ (P₁ : Profile V₁ A) (P₂ : Profile V₂ A),
         (∀ x y : A, margin P₁ x y = margin P₂ x y) →
         scoringEliminationAux bordaScore A P₁ = scoringEliminationAux bordaScore A P₂ := by
   classical
@@ -98,9 +152,9 @@ lemma scoringEliminationAux_borda_marginBased
     simp [haux₁, haux₂, hL, hrec]
 
 theorem baldwin_marginBased : MarginBased baldwin := by
-  intro V A _ _ P₁ P₂ hmargin
+  intro V₁ V₂ A _ _ _ P₁ P₂ hmargin
   classical
-  have h := scoringEliminationAux_borda_marginBased (V := V) (n := Fintype.card A)
+  have h := scoringEliminationAux_borda_marginBased (V₁ := V₁) (V₂ := V₂) (n := Fintype.card A)
     (A := A) (hcard := rfl) (P₁ := P₁) (P₂ := P₂) hmargin
   simpa [baldwin, scoringEliminationRule] using h
 
