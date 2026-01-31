@@ -3,6 +3,7 @@ import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.SplitCycle.Condorcet
 import SocialChoice.Rules.SplitCycle.InformationalBasis
+import SocialChoice.Rules.SplitCycle.Independence
 import SocialChoice.Rules.SplitCycle.Pareto
 import SocialChoice.Rules.SplitCycle.Reversal
 

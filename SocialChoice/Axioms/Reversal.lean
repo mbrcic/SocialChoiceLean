@@ -24,4 +24,10 @@ def ReversalSymmetry (f : VotingRule) : Prop :=
   ∀ {V A : Type} [Fintype V] [Fintype A] [DecidableEq A] (P : Profile V A),
     f P ≠ Finset.univ → f P ∩ f (reverse_profile P) = ∅
 
+-- Neutral Reversal (Donald G. Saari, Capturing the "will of the people", 2003).
+@[scAxiom]
+def NeutralReversal (f : VotingRule) : Prop :=
+  ∀ {V A : Type} [Fintype V] [Fintype A] (P : Profile V A) (r : LinearOrder A),
+    f P = f (addVoter (addVoter P r) (reverse_ballot r))
+
 end SocialChoice

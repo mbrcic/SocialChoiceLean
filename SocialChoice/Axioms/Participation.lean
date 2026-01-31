@@ -48,6 +48,17 @@ def PositiveInvolvement (f : VotingRule) : Prop :=
     c ∈ f Q
 
 @[scAxiom]
+def SingletonPositiveInvolvement (f : VotingRule) : Prop :=
+  ∀ {U A : Type} [DecidableEq U] [Fintype A]
+      (V : Finset U) (u : U) (hu : u ∉ V)
+      (P : Profile (Electorate U V) A)
+      (Q : Profile (Electorate U (insert u V)) A) (c : A),
+    (∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v) →
+    f P = {c} →
+    BallotTop (Q.pref (newVoter (u := u) (V := V) hu)) c →
+    c ∈ f Q
+
+@[scAxiom]
 def NegativeInvolvement (f : VotingRule) : Prop :=
   ∀ {U A : Type} [DecidableEq U] [Fintype A]
       (V : Finset U) (u : U) (hu : u ∉ V)

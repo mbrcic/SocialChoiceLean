@@ -40,6 +40,7 @@ import SocialChoice.Rules.ScoringRules.Plurality.Majority
 import SocialChoice.Rules.ScoringRules.Plurality.Pareto
 import SocialChoice.Rules.ScoringRules.Plurality.InformationalBasis
 import SocialChoice.Rules.ScoringRules.Plurality.Derived
+import SocialChoice.Rules.ScoringRules.Plurality.Reversal
 import SocialChoice.Rules.ScoringRules.Borda.Defs
 import SocialChoice.Rules.ScoringRules.Borda.C2Borda
 import SocialChoice.Rules.ScoringRules.Borda.Condorcet
@@ -79,6 +80,7 @@ import SocialChoice.Rules.Nanson.Condorcet
 import SocialChoice.Rules.Nanson.CondorcetLoser
 import SocialChoice.Rules.Nanson.Reversal
 import SocialChoice.Rules.Nanson.InformationalBasis
+import SocialChoice.Rules.Nanson.SubsetReinforcement
 import SocialChoice.Rules.Nanson.Derived
 import SocialChoice.Rules.PluralityWithRunoff.Defs
 import SocialChoice.Rules.PluralityWithRunoff.Anonymity
@@ -90,6 +92,7 @@ import SocialChoice.Rules.PluralityWithRunoff.Majority
 import SocialChoice.Rules.PluralityWithRunoff.Involvement
 import SocialChoice.Rules.PluralityWithRunoff.EqualsIRVForThreeCandidates
 import SocialChoice.Rules.PluralityWithRunoff.Derived
+import SocialChoice.Rules.PluralityWithRunoff.Reversal
 import SocialChoice.Rules.Minimax.Defs
 import SocialChoice.Rules.Minimax.Neutrality
 import SocialChoice.Rules.Minimax.Condorcet
@@ -104,6 +107,7 @@ import SocialChoice.Rules.Black.CondorcetLoser
 import SocialChoice.Rules.Black.Pareto
 import SocialChoice.Rules.Black.Monotonicity
 import SocialChoice.Rules.Black.InformationalBasis
+import SocialChoice.Rules.Black.Involvement
 import SocialChoice.Rules.Black.Derived
 import SocialChoice.Rules.SplitCycle.Defs
 import SocialChoice.Rules.SplitCycle.Clones

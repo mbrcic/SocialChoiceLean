@@ -37,8 +37,7 @@ theorem nanson_not_subsetReinforcement : ¬ SubsetReinforcement nanson := by
 
 theorem nanson_not_reinforcement : ¬ Reinforcement nanson := by
   intro hrein
-  exact no_condorcet_reinforcement nanson
-    nanson_isVotingRule nanson_condorcet_consistency hrein
+  exact nanson_not_subsetReinforcement (reinforcement_subset hrein)
 
 theorem nanson_not_strongFishburnParticipation : ¬ StrongFishburnParticipation nanson := by
   intro hpart
