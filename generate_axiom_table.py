@@ -407,63 +407,6 @@ def parse_theorems(axioms: dict[str, Axiom], rules: dict[str, Rule], commit: Opt
                                 ))
                                 break
 
-    # Also look for generic scoring rule theorems
-    generic_theorems = []
-    for relative_path in file_paths:
-        content = read_file(relative_path)
-        if content is None:
-            continue
-
-        lines = content.split('\n')
-        for line_num, line in enumerate(lines, 1):
-            theorem_match = re.match(
-                r'^theorem\s+(scoringRule_[a-zA-Z0-9_]*|scoring_?[Rr]ule_[a-zA-Z0-9_]*)\s*',
-                line
-            )
-            if theorem_match:
-                theorem_name = theorem_match.group(1)
-                normalized = normalize_name(theorem_name)
-
-                is_negative = '_not_' in normalized
-
-                # Extract axiom name
-                remainder = normalized.replace('scoring_rule_', '').replace('scoringrule_', '')
-                if remainder.startswith('not_'):
-                    remainder = remainder[4:]
-                    is_negative = True
-
-                for axiom_key in axioms:
-                    if remainder.startswith(axiom_key) or remainder == axiom_key:
-                        generic_theorems.append({
-                            'name': theorem_name,
-                            'axiom': axiom_key,
-                            'satisfies': not is_negative,
-                            'file_path': relative_path,
-                            'line_number': line_num,
-                            'applies_to': 'scoring_rule'
-                        })
-                        break
-
-    # Apply generic theorems to specific rules
-    for gt in generic_theorems:
-        for rule_key, rule in rules.items():
-            if gt['applies_to'] == 'scoring_rule' and rule.is_scoring_rule:
-                # Check if we already have a specific theorem for this rule+axiom
-                has_specific = any(
-                    t.rule == rule_key and t.axiom == gt['axiom']
-                    for t in theorems
-                )
-                if not has_specific:
-                    theorems.append(Theorem(
-                        name=f"{gt['name']} (via {rule.name})",
-                        rule=rule_key,
-                        axiom=gt['axiom'],
-                        satisfies=gt['satisfies'],
-                        file_path=gt['file_path'],
-                        line_number=gt['line_number'],
-                        is_derived='Derived.lean' in gt['file_path']
-                    ))
-
     return theorems
 
 # ============================================================================

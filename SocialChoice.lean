@@ -61,7 +61,7 @@ import SocialChoice.Rules.ScoringRules.Borda.Derived
 import SocialChoice.Rules.ScoringRules.Veto.Defs
 import SocialChoice.Rules.ScoringRules.Veto.Common
 import SocialChoice.Rules.ScoringRules.Veto.Majority
-import SocialChoice.Rules.ScoringRules.Veto.Pareto
+import SocialChoice.Rules.ScoringRules.Veto.Unanimity
 import SocialChoice.Rules.ScoringRules.Veto.Independence
 import SocialChoice.Rules.ScoringRules.Veto.CondorcetLoser
 import SocialChoice.Rules.ScoringRules.Veto.Derived
@@ -155,6 +155,8 @@ import SocialChoice.Rules.TopCycle.Defs
 import SocialChoice.Rules.TopCycle.Condorcet
 import SocialChoice.Rules.TopCycle.CondorcetLoser
 import SocialChoice.Rules.TopCycle.MutualMajority
+import SocialChoice.Rules.TopCycle.Neutrality
+import SocialChoice.Rules.TopCycle.Pareto
 import SocialChoice.Rules.TopCycle.Derived
 import SocialChoice.Rules.SplitCycle.Defs
 import SocialChoice.Rules.SplitCycle.Clones

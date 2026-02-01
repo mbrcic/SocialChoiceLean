@@ -7,7 +7,7 @@ import SocialChoice.Rules.ScoringRules.Neutrality
 import SocialChoice.Rules.ScoringRules.Participation
 import SocialChoice.Rules.ScoringRules.Reinforcement
 import SocialChoice.Rules.ScoringRules.Veto.Defs
-import SocialChoice.Rules.ScoringRules.Veto.Pareto
+import SocialChoice.Rules.ScoringRules.Veto.Unanimity
 
 namespace SocialChoice
 
@@ -91,6 +91,12 @@ theorem veto_not_smithCriterion : ¬ SmithCriterion veto := by
     Implies.apply smithCriterion_implies_condorcetConsistency_Imp
       (f := veto) veto_isVotingRule hsmith
   exact veto_not_condorcet hcond
+
+theorem veto_not_pareto_efficiency : ¬ ParetoEfficiency veto := by
+  intro hpareto
+  have hunan : Unanimity veto :=
+    Implies.apply paretoEfficiency_implies_unanimity (f := veto) veto_isVotingRule hpareto
+  exact veto_not_unanimity hunan
 
 theorem veto_not_independenceOfDominated : ¬ IndependenceOfDominated veto := by
   intro hInd

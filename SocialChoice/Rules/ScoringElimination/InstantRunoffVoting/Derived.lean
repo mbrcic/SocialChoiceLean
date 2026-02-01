@@ -142,4 +142,8 @@ theorem instantRunoffVoting_not_subsetReinforcement :
     simpa [hIRVAll] using hx''
   exact pluralityWithRunoff_subsetReinforcement_counterexample_sets hsubset'
 
+theorem instantRunoffVoting_not_reinforcement : ¬ Reinforcement instantRunoffVoting := by
+  intro hrein
+  exact instantRunoffVoting_not_subsetReinforcement (reinforcement_subset hrein)
+
 end SocialChoice

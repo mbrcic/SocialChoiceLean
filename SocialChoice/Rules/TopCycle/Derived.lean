@@ -5,9 +5,15 @@ import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.TopCycle.Defs
 import SocialChoice.Rules.TopCycle.Condorcet
 import SocialChoice.Rules.TopCycle.CondorcetLoser
+import SocialChoice.Rules.TopCycle.InformationalBasis
 import SocialChoice.Rules.TopCycle.MutualMajority
 
 namespace SocialChoice
+
+theorem topCycle_anonymity : Anonymity topCycle := by
+  apply Implies.apply marginBased_implies_anonymity (f := topCycle)
+  · exact topCycle_isVotingRule
+  · exact topCycle_marginBased
 
 /-- TopCycle satisfies the majority criterion (via Condorcet consistency). -/
 theorem topCycle_majorityCriterion : MajorityCriterion topCycle := by

@@ -2,6 +2,7 @@ import SocialChoice.Axioms.Implications
 import SocialChoice.Rules.PluralityWithRunoff.Condorcet
 import SocialChoice.Rules.PluralityWithRunoff.CondorcetLoser
 import SocialChoice.Rules.PluralityWithRunoff.Pareto
+import SocialChoice.Rules.PluralityWithRunoff.SubsetReinforcement
 
 namespace SocialChoice
 
@@ -23,5 +24,9 @@ theorem pluralityWithRunoff_not_smithCriterion : ¬ SmithCriterion pluralityWith
     Implies.apply smithCriterion_implies_condorcetConsistency_Imp
       (f := pluralityWithRunoff) pluralityWithRunoff_isVotingRule hsmith
   exact pluralityWithRunoff_not_condorcet hcond
+
+theorem pluralityWithRunoff_not_reinforcement : ¬ Reinforcement pluralityWithRunoff := by
+  intro hrein
+  exact pluralityWithRunoff_not_subsetReinforcement (reinforcement_subset hrein)
 
 end SocialChoice
