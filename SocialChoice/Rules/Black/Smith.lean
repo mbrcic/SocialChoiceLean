@@ -1,0 +1,182 @@
+import Mathlib.Tactic
+import Mathlib.Tactic.FinCases
+import SocialChoice.Axioms.Smith
+import SocialChoice.ListBallot
+import SocialChoice.Rules.Black.Defs
+import SocialChoice.Rules.TopCycle.Defs
+
+namespace SocialChoice
+
+open Classical
+open Finset
+
+attribute [instance] Classical.decEq Classical.decPred
+
+/-!
+## Black fails the Smith criterion
+
+Counterexample with 4 candidates and 8 voters (3+1+3+1 blocks):
+  3 voters: 2 ≻ 1 ≻ 0 ≻ 3
+  1 voter : 2 ≻ 3 ≻ 1 ≻ 0
+  3 voters: 3 ≻ 1 ≻ 0 ≻ 2
+  1 voter : 3 ≻ 2 ≻ 1 ≻ 0
+The Smith set is {2,3}, but Black returns {1,2,3}.
+-/
+
+namespace BlackSmithCounterexample
+
+def ballot2103 : ListBallot 4 := ListBallot.mk' [2, 1, 0, 3]
+def ballot2310 : ListBallot 4 := ListBallot.mk' [2, 3, 1, 0]
+def ballot3102 : ListBallot 4 := ListBallot.mk' [3, 1, 0, 2]
+def ballot3210 : ListBallot 4 := ListBallot.mk' [3, 2, 1, 0]
+
+def ballots : Fin 8 → ListBallot 4
+  | 0 => ballot2103
+  | 1 => ballot2103
+  | 2 => ballot2103
+  | 3 => ballot2310
+  | 4 => ballot3102
+  | 5 => ballot3102
+  | 6 => ballot3102
+  | 7 => ballot3210
+  | _ => ballot3210
+
+noncomputable def profile : Profile (Fin 8) (Fin 4) :=
+  profileOfListBallots ballots
+
+def smithSet : Finset (Fin 4) := {2, 3}
+
+private lemma margin_pos_profile_2_0 : margin_pos profile (2 : Fin 4) (0 : Fin 4) := by
+  have h : marginList (fun v => (ballots v).ranking) (2 : Fin 4) (0 : Fin 4) > 0 := by
+    decide
+  have h' :=
+    (margin_pos_iff_marginList_pos (ballots := ballots)
+      (a := (2 : Fin 4)) (b := (0 : Fin 4))).2 h
+  simpa [profile] using h'
+
+private lemma margin_pos_profile_2_1 : margin_pos profile (2 : Fin 4) (1 : Fin 4) := by
+  have h : marginList (fun v => (ballots v).ranking) (2 : Fin 4) (1 : Fin 4) > 0 := by
+    decide
+  have h' :=
+    (margin_pos_iff_marginList_pos (ballots := ballots)
+      (a := (2 : Fin 4)) (b := (1 : Fin 4))).2 h
+  simpa [profile] using h'
+
+private lemma margin_pos_profile_3_0 : margin_pos profile (3 : Fin 4) (0 : Fin 4) := by
+  have h : marginList (fun v => (ballots v).ranking) (3 : Fin 4) (0 : Fin 4) > 0 := by
+    decide
+  have h' :=
+    (margin_pos_iff_marginList_pos (ballots := ballots)
+      (a := (3 : Fin 4)) (b := (0 : Fin 4))).2 h
+  simpa [profile] using h'
+
+private lemma margin_pos_profile_3_1 : margin_pos profile (3 : Fin 4) (1 : Fin 4) := by
+  have h : marginList (fun v => (ballots v).ranking) (3 : Fin 4) (1 : Fin 4) > 0 := by
+    decide
+  have h' :=
+    (margin_pos_iff_marginList_pos (ballots := ballots)
+      (a := (3 : Fin 4)) (b := (1 : Fin 4))).2 h
+  simpa [profile] using h'
+
+lemma dominatesSet_profile_smithSet : dominatesSet profile smithSet := by
+  classical
+  refine ⟨?_, ?_⟩
+  · simp [smithSet]
+  · intro a ha b hb
+    have ha' : a = (2 : Fin 4) ∨ a = (3 : Fin 4) := by
+      simpa [smithSet] using ha
+    rcases ha' with rfl | rfl
+    · fin_cases b
+      · exact margin_pos_profile_2_0
+      · exact margin_pos_profile_2_1
+      · simp [smithSet] at hb
+      · simp [smithSet] at hb
+    · fin_cases b
+      · exact margin_pos_profile_3_0
+      · exact margin_pos_profile_3_1
+      · simp [smithSet] at hb
+      · simp [smithSet] at hb
+
+lemma topCycle_profile_subset : topCycle profile ⊆ smithSet := by
+  classical
+  have hA : Nonempty (Fin 4) := inferInstance
+  have hsubset : topCycleSet (P := profile) ⊆ smithSet :=
+    topCycleSet_subset_of_dominates (P := profile) dominatesSet_profile_smithSet
+  simpa [topCycle, hA] using hsubset
+
+lemma one_not_mem_topCycle : (1 : Fin 4) ∉ topCycle profile := by
+  have hsubset := topCycle_profile_subset
+  intro hmem
+  have : (1 : Fin 4) ∈ smithSet := hsubset hmem
+  simp [smithSet] at this
+
+private lemma not_marginList_profile_0_1_pos :
+    ¬ marginList (fun v => (ballots v).ranking) (0 : Fin 4) (1 : Fin 4) > 0 := by
+  decide
+
+private lemma not_marginList_profile_1_2_pos :
+    ¬ marginList (fun v => (ballots v).ranking) (1 : Fin 4) (2 : Fin 4) > 0 := by
+  decide
+
+private lemma not_marginList_profile_2_3_pos :
+    ¬ marginList (fun v => (ballots v).ranking) (2 : Fin 4) (3 : Fin 4) > 0 := by
+  decide
+
+private lemma not_marginList_profile_3_2_pos :
+    ¬ marginList (fun v => (ballots v).ranking) (3 : Fin 4) (2 : Fin 4) > 0 := by
+  decide
+
+lemma no_condorcet_profile : ¬ ∃ x, CondorcetWinner profile x := by
+  intro h
+  rcases h with ⟨x, hx⟩
+  fin_cases x
+  · have hx' :
+      CondorcetWinner (profileOfListBallots ballots) (0 : Fin 4) := by
+      simpa [profile] using hx
+    have hpos :=
+      (CondorcetWinner_iff_marginList (ballots := ballots) (c := (0 : Fin 4))).1
+        hx' (1 : Fin 4) (by decide)
+    exact not_marginList_profile_0_1_pos hpos
+  · have hx' :
+      CondorcetWinner (profileOfListBallots ballots) (1 : Fin 4) := by
+      simpa [profile] using hx
+    have hpos :=
+      (CondorcetWinner_iff_marginList (ballots := ballots) (c := (1 : Fin 4))).1
+        hx' (2 : Fin 4) (by decide)
+    exact not_marginList_profile_1_2_pos hpos
+  · have hx' :
+      CondorcetWinner (profileOfListBallots ballots) (2 : Fin 4) := by
+      simpa [profile] using hx
+    have hpos :=
+      (CondorcetWinner_iff_marginList (ballots := ballots) (c := (2 : Fin 4))).1
+        hx' (3 : Fin 4) (by decide)
+    exact not_marginList_profile_2_3_pos hpos
+  · have hx' :
+      CondorcetWinner (profileOfListBallots ballots) (3 : Fin 4) := by
+      simpa [profile] using hx
+    have hpos :=
+      (CondorcetWinner_iff_marginList (ballots := ballots) (c := (3 : Fin 4))).1
+        hx' (2 : Fin 4) (by decide)
+    exact not_marginList_profile_3_2_pos hpos
+
+lemma borda_profile : borda profile = ({1, 2, 3} : Finset (Fin 4)) := by
+  ext x
+  fin_cases x <;> decide
+
+lemma black_profile : black profile = ({1, 2, 3} : Finset (Fin 4)) := by
+  have h : ¬ ∃ x, CondorcetWinner profile x := no_condorcet_profile
+  simpa [black, h] using borda_profile
+
+end BlackSmithCounterexample
+
+open BlackSmithCounterexample
+
+theorem black_not_smithCriterion : ¬ SmithCriterion black := by
+  intro hsmith
+  have hsubset := hsmith (P := profile)
+  have hmem : (1 : Fin 4) ∈ black profile := by
+    simp [black_profile]
+  have hmem' : (1 : Fin 4) ∈ topCycle profile := hsubset hmem
+  exact (one_not_mem_topCycle hmem').elim
+
+end SocialChoice

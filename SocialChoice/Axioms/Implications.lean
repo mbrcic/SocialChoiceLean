@@ -11,6 +11,11 @@ import SocialChoice.Axioms.Anonymity
 import SocialChoice.Axioms.Reinforcement
 import SocialChoice.Axioms.Reversal
 import SocialChoice.Axioms.Participation
+import SocialChoice.Axioms.Smith
+import SocialChoice.Rules.TopCycle.Defs
+import SocialChoice.Rules.TopCycle.Condorcet
+import SocialChoice.Rules.TopCycle.CondorcetLoser
+import SocialChoice.Rules.TopCycle.MutualMajority
 
 namespace SocialChoice
 
@@ -151,6 +156,32 @@ theorem condorcetLoserCriterion_implies_majorityLoserCriterion :
       Nat.lt_of_lt_of_le hlt hle'
     simpa [StrictMajority] using hlt'
   exact hcond P c hloser
+
+theorem smithCriterion_implies_mutualMajorityCriterion_Imp :
+    Implies SmithCriterion MutualMajorityCriterion := by
+  intro f hf hsmith
+  exact mutualMajorityCriterion_preservedUnderRefinement
+    f topCycle hf topCycle_isVotingRule hsmith topCycle_mutualMajorityCriterion
+
+theorem smithCriterion_implies_condorcetConsistency_Imp :
+    Implies SmithCriterion CondorcetConsistency := by
+  intro f hf hsmith
+  apply PreservedUnderRefinement.apply condorcetConsistency_preservedUnderRefinement
+    (f := f) (g := topCycle)
+  · exact hf
+  · exact topCycle_isVotingRule
+  · exact hsmith
+  · exact topCycle_condorcetConsistency
+
+theorem smithCriterion_implies_condorcetLoserCriterion_Imp :
+    Implies SmithCriterion CondorcetLoserCriterion := by
+  intro f hf hsmith
+  apply PreservedUnderRefinement.apply condorcetLoserCriterion_preservedUnderRefinement
+    (f := f) (g := topCycle)
+  · exact hf
+  · exact topCycle_isVotingRule
+  · exact hsmith
+  · exact topCycle_condorcetLoser_criterion
 
 theorem reversalSymmetry_implies_singletonReversalSymmetry :
     Implies ReversalSymmetry SingletonReversalSymmetry := by

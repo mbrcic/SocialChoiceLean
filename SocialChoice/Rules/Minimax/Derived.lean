@@ -3,6 +3,7 @@ import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Minimax.Defs
 import SocialChoice.Rules.Minimax.Condorcet
+import SocialChoice.Rules.Minimax.CondorcetLoser
 import SocialChoice.Rules.Minimax.InformationalBasis
 import SocialChoice.Rules.Minimax.Involvement
 import SocialChoice.Rules.Minimax.Neutrality
@@ -54,5 +55,12 @@ theorem minimax_not_optimistParticipation : ¬ OptimistParticipation minimax := 
   intro hpart
   exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
     ⟨minimax, minimax_condorcet_consistency, hpart⟩
+
+theorem minimax_not_smithCriterion : ¬ SmithCriterion minimax := by
+  intro hsmith
+  have hcondLoser : CondorcetLoserCriterion minimax :=
+    Implies.apply smithCriterion_implies_condorcetLoserCriterion_Imp
+      (f := minimax) minimax_isVotingRule hsmith
+  exact minimax_not_condorcetLoser_criterion hcondLoser
 
 end SocialChoice

@@ -2,6 +2,7 @@ import SocialChoice.Axioms.Implications
 import SocialChoice.Axioms.Pareto
 import SocialChoice.Axioms.Condorcet
 import SocialChoice.Axioms.Majority
+import SocialChoice.Axioms.Smith
 import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Schulze.InformationalBasis
@@ -12,6 +13,7 @@ import SocialChoice.Rules.Schulze.Neutrality
 import SocialChoice.Rules.SplitCycle.Condorcet
 import SocialChoice.Rules.SplitCycle.Pareto
 import SocialChoice.Rules.SplitCycle.Reversal
+import SocialChoice.Rules.SplitCycle.Smith
 
 namespace SocialChoice
 
@@ -40,6 +42,19 @@ theorem schulze_condorcetLoser_criterion : CondorcetLoserCriterion schulze := by
   · exact splitCycle_isVotingRule
   · exact schulze_refines_splitCycle
   · exact split_cycle_CondorcetLoser_criterion
+
+theorem schulze_smithCriterion : SmithCriterion schulze := by
+  apply PreservedUnderRefinement.apply smithCriterion_preservedUnderRefinement
+    (f := schulze) (g := splitCycle)
+  · exact schulze_isVotingRule
+  · exact splitCycle_isVotingRule
+  · exact schulze_refines_splitCycle
+  · exact splitCycle_smithCriterion
+
+theorem schulze_mutualMajorityCriterion : MutualMajorityCriterion schulze := by
+  apply Implies.apply smithCriterion_implies_mutualMajorityCriterion_Imp (f := schulze)
+  · exact schulze_isVotingRule
+  · exact schulze_smithCriterion
 
 /-! ## Axioms Derived Through Implications -/
 

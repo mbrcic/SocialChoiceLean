@@ -3,10 +3,17 @@
 Generate an HTML table showing which axioms are satisfied/failed by which voting rules.
 
 This script parses the SocialChoiceLean project and creates a comprehensive table.
+
+Usage:
+    python generate_axiom_table.py                    # Current state
+    python generate_axiom_table.py --compare-to COMMIT  # Theorems from historical commit
+    python generate_axiom_table.py --compare-to "2026-01-13 22:00"  # Theorems from date
 """
 
 import os
 import re
+import subprocess
+import argparse
 from pathlib import Path
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -18,6 +25,57 @@ from typing import Optional
 
 PROJECT_ROOT = Path(__file__).parent
 SOCIAL_CHOICE_DIR = PROJECT_ROOT / "SocialChoice"
+
+# ============================================================================
+# Git helpers
+# ============================================================================
+
+def resolve_commit(commit_spec: str) -> str:
+    """Resolve a commit spec (hash, date, etc.) to a commit hash."""
+    # Try as a date first
+    try:
+        result = subprocess.run(
+            ["git", "rev-list", "-n", "1", f"--before={commit_spec}", "HEAD"],
+            capture_output=True, text=True, check=True, cwd=PROJECT_ROOT
+        )
+        if result.stdout.strip():
+            return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        pass
+
+    # Try as a commit hash/ref
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", commit_spec],
+            capture_output=True, text=True, check=True, cwd=PROJECT_ROOT
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        raise ValueError(f"Could not resolve commit: {commit_spec}")
+
+def get_file_content_at_commit(file_path: str, commit: str) -> Optional[str]:
+    """Get file content at a specific commit, or None if file didn't exist."""
+    try:
+        result = subprocess.run(
+            ["git", "show", f"{commit}:{file_path}"],
+            capture_output=True, text=True, check=True, cwd=PROJECT_ROOT
+        )
+        return result.stdout
+    except subprocess.CalledProcessError:
+        return None
+
+def list_files_at_commit(commit: str, pattern: str = "SocialChoice/**/*.lean") -> list[str]:
+    """List files matching pattern at a specific commit."""
+    try:
+        result = subprocess.run(
+            ["git", "ls-tree", "-r", "--name-only", commit],
+            capture_output=True, text=True, check=True, cwd=PROJECT_ROOT
+        )
+        files = result.stdout.strip().split('\n')
+        import fnmatch
+        return [f for f in files if fnmatch.fnmatch(f, pattern)]
+    except subprocess.CalledProcessError:
+        return []
 
 # ============================================================================
 # Data structures
@@ -46,6 +104,7 @@ class Theorem:
     satisfies: bool  # True = satisfies, False = fails
     file_path: str
     line_number: int
+    is_derived: bool = False  # True if proven in Derived.lean
 
 # ============================================================================
 # Parsing functions
@@ -154,6 +213,8 @@ def parse_rules() -> dict[str, Rule]:
             family = "Condorcet Methods"
         elif "Copeland" in relative_path:
             family = "Condorcet Methods"
+        elif "TopCycle" in relative_path:
+            family = "Condorcet Methods"
         elif "River" in relative_path:
             family = "Condorcet Methods"
         elif "PluralityWithRunoff" in relative_path:
@@ -195,8 +256,11 @@ def parse_rules() -> dict[str, Rule]:
 
     return rules
 
-def parse_theorems(axioms: dict[str, Axiom], rules: dict[str, Rule]) -> list[Theorem]:
-    """Parse theorems connecting rules to axioms."""
+def parse_theorems(axioms: dict[str, Axiom], rules: dict[str, Rule], commit: Optional[str] = None) -> list[Theorem]:
+    """Parse theorems connecting rules to axioms.
+
+    If commit is specified, reads files from that git commit instead of the filesystem.
+    """
     theorems = []
 
     # Rule name aliases for matching
@@ -229,9 +293,20 @@ def parse_theorems(axioms: dict[str, Axiom], rules: dict[str, Rule]) -> list[The
             rule_lookup[alias] = canonical
             rule_lookup[alias.replace('_', '')] = canonical
 
-    for lean_file in SOCIAL_CHOICE_DIR.rglob("*.lean"):
-        content = lean_file.read_text()
-        relative_path = str(lean_file.relative_to(PROJECT_ROOT))
+    # Get list of files to process
+    if commit:
+        file_paths = list_files_at_commit(commit, "SocialChoice/**/*.lean")
+        def read_file(path):
+            return get_file_content_at_commit(path, commit)
+    else:
+        file_paths = [str(f.relative_to(PROJECT_ROOT)) for f in SOCIAL_CHOICE_DIR.rglob("*.lean")]
+        def read_file(path):
+            return (PROJECT_ROOT / path).read_text()
+
+    for relative_path in file_paths:
+        content = read_file(relative_path)
+        if content is None:
+            continue
 
         lines = content.split('\n')
         for line_num, line in enumerate(lines, 1):
@@ -307,34 +382,37 @@ def parse_theorems(axioms: dict[str, Axiom], rules: dict[str, Rule]) -> list[The
                     axiom=matched_axiom,
                     satisfies=not is_negative,
                     file_path=relative_path,
-                    line_number=line_num
+                    line_number=line_num,
+                    is_derived='Derived.lean' in relative_path
                 ))
-            continue
+                continue
 
-        # Try reverse pattern: axiom_rule (e.g., non_clone_choice_ind_clones_split_cycle)
-        for axiom_key in axioms:
-            axiom_variants = [axiom_key, axiom_key.replace('_', '')]
-            for axiom_variant in axiom_variants:
-                if normalized_theorem.startswith(axiom_variant + '_'):
-                    remainder = normalized_theorem[len(axiom_variant) + 1:]
-                    # Check for rule at end
-                    for rule_variant, canonical_rule in rule_lookup.items():
-                        if remainder == rule_variant or remainder.endswith('_' + rule_variant):
-                            theorems.append(Theorem(
-                                name=theorem_name,
-                                rule=canonical_rule,
-                                axiom=axiom_key,
-                                satisfies=True,  # Reverse pattern typically means satisfies
-                                file_path=relative_path,
-                                line_number=line_num
-                            ))
-                            break
+            # Try reverse pattern: axiom_rule (e.g., non_clone_choice_ind_clones_split_cycle)
+            for axiom_key in axioms:
+                axiom_variants = [axiom_key, axiom_key.replace('_', '')]
+                for axiom_variant in axiom_variants:
+                    if normalized_theorem.startswith(axiom_variant + '_'):
+                        remainder = normalized_theorem[len(axiom_variant) + 1:]
+                        # Check for rule at end
+                        for rule_variant, canonical_rule in rule_lookup.items():
+                            if remainder == rule_variant or remainder.endswith('_' + rule_variant):
+                                theorems.append(Theorem(
+                                    name=theorem_name,
+                                    rule=canonical_rule,
+                                    axiom=axiom_key,
+                                    satisfies=True,  # Reverse pattern typically means satisfies
+                                    file_path=relative_path,
+                                    line_number=line_num,
+                                    is_derived='Derived.lean' in relative_path
+                                ))
+                                break
 
     # Also look for generic scoring rule theorems
     generic_theorems = []
-    for lean_file in SOCIAL_CHOICE_DIR.rglob("*.lean"):
-        content = lean_file.read_text()
-        relative_path = str(lean_file.relative_to(PROJECT_ROOT))
+    for relative_path in file_paths:
+        content = read_file(relative_path)
+        if content is None:
+            continue
 
         lines = content.split('\n')
         for line_num, line in enumerate(lines, 1):
@@ -382,7 +460,8 @@ def parse_theorems(axioms: dict[str, Axiom], rules: dict[str, Rule]) -> list[The
                         axiom=gt['axiom'],
                         satisfies=gt['satisfies'],
                         file_path=gt['file_path'],
-                        line_number=gt['line_number']
+                        line_number=gt['line_number'],
+                        is_derived='Derived.lean' in gt['file_path']
                     ))
 
     return theorems
@@ -392,8 +471,12 @@ def parse_theorems(axioms: dict[str, Axiom], rules: dict[str, Rule]) -> list[The
 # ============================================================================
 
 def generate_html(axioms: dict[str, Axiom], rules: dict[str, Rule],
-                  theorems: list[Theorem]) -> str:
-    """Generate the HTML table."""
+                  theorems: list[Theorem], axioms_to_show: Optional[set[str]] = None) -> str:
+    """Generate the HTML table.
+
+    If axioms_to_show is provided, only those axioms will be displayed (useful for
+    historical comparisons where we want to show current axioms but historical data).
+    """
 
     # Build the results matrix
     results = defaultdict(dict)  # results[axiom][rule] = (satisfies, theorem)
@@ -436,6 +519,7 @@ def generate_html(axioms: dict[str, Axiom], rules: dict[str, Rule],
     axiom_order = [
         'condorcet_criterion', 'condorcet_consistency',
         'condorcet_loser_criterion', 'condorcet_loser_avoidance',
+        'smith_criterion',
         'majority_criterion', 'majority_loser_criterion', 'mutual_majority_criterion',
         'pareto_efficiency', 'unanimity',
         'monotonicity',
@@ -556,10 +640,20 @@ def generate_html(axioms: dict[str, Axiom], rules: dict[str, Rule],
             background: #d4edda;
             color: #155724;
         }
+        /*.satisfied.derived {
+            background: #e8f5e9;
+            color: #2e7d32;
+            opacity: 0.85;
+        }*/
         .failed {
             background: #f8d7da;
             color: #721c24;
         }
+        /*.failed.derived {
+            background: #ffebee;
+            color: #b71c1c;
+            opacity: 0.85;
+        }*/
         .unknown {
             background: #f5f5f5;
             color: #6c757d;
@@ -619,7 +713,7 @@ def generate_html(axioms: dict[str, Axiom], rules: dict[str, Rule],
 </head>
 <body>
     <h1>SocialChoiceLean: Axiom Satisfaction Table</h1>
-    <p>Generated from the <a href="https://github.com/dpetters/SocialChoiceLean">SocialChoiceLean</a> Lean formalization project.</p>
+    <p>Generated from the <a href="https://github.com/DominikPeters/SocialChoiceLean">SocialChoiceLean</a> Lean formalization project.</p>
 
     <div class="controls">
         <button onclick="transposeTable()">Transpose Table</button>
@@ -663,8 +757,12 @@ def generate_html(axioms: dict[str, Axiom], rules: dict[str, Rule],
     html += '            <tbody>\n'
 
     for axiom_key in sorted_axioms:
-        if not results.get(axiom_key):
-            continue  # Skip axioms with no results
+        # Skip axioms with no results (use axioms_to_show if provided, otherwise check results)
+        if axioms_to_show is not None:
+            if axiom_key not in axioms_to_show:
+                continue
+        elif not results.get(axiom_key):
+            continue
         axiom = axioms[axiom_key]
         html += '                <tr>\n'
         html += f'                    <td class="axiom-cell">{axiom.display_name}</td>\n'
@@ -672,12 +770,14 @@ def generate_html(axioms: dict[str, Axiom], rules: dict[str, Rule],
         for rule_key, family in ordered_rules:
             if axiom_key in results and rule_key in results[axiom_key]:
                 satisfies, theorem = results[axiom_key][rule_key]
+                derived_class = " derived" if theorem.is_derived else ""
+                github_url = f"https://github.com/DominikPeters/SocialChoiceLean/blob/master/{theorem.file_path}#L{theorem.line_number}"
                 if satisfies:
                     tooltip = f"{theorem.name} in {theorem.file_path}:{theorem.line_number}"
-                    html += f'                    <td class="satisfied tooltip" data-tooltip="{tooltip}"><span class="checkmark">&#10004;</span></td>\n'
+                    html += f'                    <td class="satisfied tooltip{derived_class}" data-tooltip="{tooltip}"><a href="{github_url}" target="_blank"><span class="checkmark">&#10004;</span></a></td>\n'
                 else:
                     tooltip = f"{theorem.name} in {theorem.file_path}:{theorem.line_number}"
-                    html += f'                    <td class="failed tooltip" data-tooltip="{tooltip}"><span class="checkmark">&#10008;</span></td>\n'
+                    html += f'                    <td class="failed tooltip{derived_class}" data-tooltip="{tooltip}"><a href="{github_url}" target="_blank"><span class="checkmark">&#10008;</span></a></td>\n'
             else:
                 html += '                    <td class="unknown">-</td>\n'
 
@@ -801,13 +901,35 @@ def generate_html(axioms: dict[str, Axiom], rules: dict[str, Rule],
 # ============================================================================
 
 def main():
-    print("Parsing axioms...")
+    parser = argparse.ArgumentParser(
+        description="Generate axiom satisfaction table for SocialChoiceLean"
+    )
+    parser.add_argument(
+        "--compare-to",
+        dest="compare_to",
+        help="Show theorems from a historical commit (hash or date like '2026-01-13 22:00')"
+    )
+    parser.add_argument(
+        "-o", "--output",
+        dest="output",
+        help="Output file path (default: axiom_table.html)"
+    )
+    args = parser.parse_args()
+
+    # Resolve the compare-to commit if specified
+    compare_commit = None
+    if args.compare_to:
+        print(f"Resolving commit for: {args.compare_to}")
+        compare_commit = resolve_commit(args.compare_to)
+        print(f"  Using commit: {compare_commit[:12]}")
+
+    print("Parsing axioms (from current HEAD)...")
     axioms = parse_axioms()
     print(f"  Found {len(axioms)} axioms")
     for ax in sorted(axioms.keys()):
         print(f"    - {axioms[ax].display_name}")
 
-    print("\nParsing rules...")
+    print("\nParsing rules (from current HEAD)...")
     rules = parse_rules()
     print(f"  Found {len(rules)} rules")
     for r in sorted(rules.keys()):
@@ -815,8 +937,21 @@ def main():
         family_str = f" [{rule.family}]" if rule.family else ""
         print(f"    - {rule.display_name}{family_str}")
 
-    print("\nParsing theorems...")
-    theorems = parse_theorems(axioms, rules)
+    # When comparing to a historical commit, we need to know which axioms
+    # have results in the CURRENT state (to show them even if empty historically)
+    axioms_to_show = None
+    if compare_commit:
+        print("\nParsing current theorems (to determine which axioms to show)...")
+        current_theorems = parse_theorems(axioms, rules, commit=None)
+        axioms_to_show = {t.axiom for t in current_theorems}
+        print(f"  {len(axioms_to_show)} axioms have results in current state")
+
+        print(f"\nParsing historical theorems (from commit {compare_commit[:12]})...")
+        theorems = parse_theorems(axioms, rules, commit=compare_commit)
+    else:
+        print("\nParsing theorems...")
+        theorems = parse_theorems(axioms, rules, commit=None)
+
     print(f"  Found {len(theorems)} theorem connections")
 
     # Group by satisfies/fails
@@ -826,9 +961,9 @@ def main():
     print(f"    - Fails: {len(fails)}")
 
     print("\nGenerating HTML...")
-    html = generate_html(axioms, rules, theorems)
+    html = generate_html(axioms, rules, theorems, axioms_to_show=axioms_to_show)
 
-    output_path = PROJECT_ROOT / "axiom_table.html"
+    output_path = Path(args.output) if args.output else PROJECT_ROOT / "axiom_table.html"
     output_path.write_text(html)
     print(f"  Written to {output_path}")
 

@@ -2,6 +2,7 @@ import SocialChoice.Axioms.Implications
 import SocialChoice.Rules.ScoringElimination.Anonymity
 import SocialChoice.Rules.ScoringElimination.Neutrality
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
+import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Condorcet
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Independence
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.MutualMajority
 import SocialChoice.Rules.PluralityWithRunoff.Involvement
@@ -38,6 +39,13 @@ theorem instantRunoffVoting_unanimity : Unanimity instantRunoffVoting := by
   apply Implies.apply majorityCriterion_implies_unanimity (f := instantRunoffVoting)
   · exact instantRunoffVoting_isVotingRule
   · exact instantRunoffVoting_majority_criterion
+
+theorem instantRunoffVoting_not_smithCriterion : ¬ SmithCriterion instantRunoffVoting := by
+  intro hsmith
+  have hcond : CondorcetConsistency instantRunoffVoting :=
+    Implies.apply smithCriterion_implies_condorcetConsistency_Imp
+      (f := instantRunoffVoting) instantRunoffVoting_isVotingRule hsmith
+  exact InstantRunoffCondorcetCounterexample.instantRunoffVoting_not_condorcet hcond
 
 theorem instantRunoffVoting_paretoEfficiency : ParetoEfficiency instantRunoffVoting := by
   apply Implies.apply independenceOfDominated_implies_paretoEfficiency

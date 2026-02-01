@@ -8,6 +8,7 @@ import SocialChoice.Rules.Nanson.InformationalBasis
 import SocialChoice.Rules.Nanson.Pareto
 import SocialChoice.Rules.Nanson.Reversal
 import SocialChoice.Rules.Nanson.Neutrality
+import SocialChoice.Rules.Nanson.Smith
 
 namespace SocialChoice
 
@@ -25,6 +26,11 @@ theorem nanson_majority_loser_criterion : MajorityLoserCriterion nanson := by
   apply Implies.apply condorcetLoserCriterion_implies_majorityLoserCriterion (f := nanson)
   · exact nanson_isVotingRule
   · exact nanson_CondorcetLoser_criterion
+
+theorem nanson_mutualMajorityCriterion : MutualMajorityCriterion nanson := by
+  apply Implies.apply smithCriterion_implies_mutualMajorityCriterion_Imp (f := nanson)
+  · exact nanson_isVotingRule
+  · exact nanson_smithCriterion
 
 theorem nanson_anonymous : Anonymity nanson := by
   apply Implies.apply marginBased_implies_anonymity (f := nanson)

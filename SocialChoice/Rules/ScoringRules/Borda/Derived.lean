@@ -94,6 +94,13 @@ theorem borda_pareto : ParetoEfficiency borda := by
 theorem borda_not_condorcet : ¬ CondorcetConsistency borda := by
   simpa [borda] using (scoringRule_not_condorcet (score := bordaScore))
 
+theorem borda_not_smithCriterion : ¬ SmithCriterion borda := by
+  intro hsmith
+  have hcond : CondorcetConsistency borda :=
+    Implies.apply smithCriterion_implies_condorcetConsistency_Imp
+      (f := borda) borda_isVotingRule hsmith
+  exact borda_not_condorcet hcond
+
 theorem borda_singleton_reversal_symmetry : SingletonReversalSymmetry borda := by
   apply Implies.apply reversalSymmetry_implies_singletonReversalSymmetry (f := borda)
   · exact borda_isVotingRule

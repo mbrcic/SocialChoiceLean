@@ -1,5 +1,6 @@
 import SocialChoice.Axioms.Implications
 import SocialChoice.Rules.ScoringElimination.Anonymity
+import SocialChoice.Rules.ScoringElimination.Coombs.Condorcet
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
 import SocialChoice.Rules.ScoringElimination.Coombs.Majority
 import SocialChoice.Rules.ScoringElimination.Coombs.Pareto
@@ -21,6 +22,13 @@ theorem coombs_unanimity : Unanimity coombs := by
   apply Implies.apply paretoEfficiency_implies_unanimity (f := coombs)
   · exact coombs_isVotingRule
   · exact coombs_paretoEfficiency
+
+theorem coombs_not_smithCriterion : ¬ SmithCriterion coombs := by
+  intro hsmith
+  have hcond : CondorcetConsistency coombs :=
+    Implies.apply smithCriterion_implies_condorcetConsistency_Imp
+      (f := coombs) coombs_isVotingRule hsmith
+  exact CoombsCondorcetCounterexample.coombs_not_condorcet hcond
 
 theorem vetoElimination_majority_loser_criterion :
     MajorityLoserCriterion vetoElimination := by

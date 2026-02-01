@@ -5,6 +5,7 @@ import SocialChoice.Rules.ScoringElimination.Anonymity
 import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
 import SocialChoice.Rules.ScoringElimination.Baldwin.CondorcetLoser
+import SocialChoice.Rules.ScoringElimination.Baldwin.Smith
 import SocialChoice.Rules.ScoringElimination.Neutrality
 import SocialChoice.Rules.ScoringElimination.Pareto
 
@@ -41,6 +42,11 @@ theorem baldwin_majority_loser_criterion : MajorityLoserCriterion baldwin := by
   apply Implies.apply condorcetLoserCriterion_implies_majorityLoserCriterion (f := baldwin)
   · exact baldwin_isVotingRule
   · exact baldwin_CondorcetLoser_criterion
+
+theorem baldwin_mutualMajorityCriterion : MutualMajorityCriterion baldwin := by
+  apply Implies.apply smithCriterion_implies_mutualMajorityCriterion_Imp (f := baldwin)
+  · exact baldwin_isVotingRule
+  · exact baldwin_smithCriterion
 
 theorem baldwin_not_subsetReinforcement : ¬ SubsetReinforcement baldwin := by
   intro hsub

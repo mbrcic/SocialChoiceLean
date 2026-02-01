@@ -26,6 +26,7 @@ import SocialChoice.Axioms.Neutrality
 import SocialChoice.Axioms.Pareto
 import SocialChoice.Axioms.Reinforcement
 import SocialChoice.Axioms.Reversal
+import SocialChoice.Axioms.Smith
 import SocialChoice.Axioms.Unanimity
 import SocialChoice.Axioms.Strategyproofness
 import SocialChoice.Axioms.Implications
@@ -82,6 +83,7 @@ import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
 import SocialChoice.Rules.ScoringElimination.Baldwin.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.Baldwin.InformationalBasis
+import SocialChoice.Rules.ScoringElimination.Baldwin.Smith
 import SocialChoice.Rules.ScoringElimination.Baldwin.Derived
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
 import SocialChoice.Rules.ScoringElimination.Coombs.Majority
@@ -100,6 +102,7 @@ import SocialChoice.Rules.Nanson.Neutrality
 import SocialChoice.Rules.Nanson.Pareto
 import SocialChoice.Rules.Nanson.SubsetReinforcement
 import SocialChoice.Rules.Nanson.Monotonicity
+import SocialChoice.Rules.Nanson.Smith
 import SocialChoice.Rules.Nanson.Derived
 import SocialChoice.Rules.PluralityWithRunoff.Defs
 import SocialChoice.Rules.PluralityWithRunoff.Anonymity
@@ -133,11 +136,13 @@ import SocialChoice.Rules.Copeland.Pareto
 import SocialChoice.Rules.Copeland.Neutrality
 import SocialChoice.Rules.Copeland.Involvement
 import SocialChoice.Rules.Copeland.Independence
+import SocialChoice.Rules.Copeland.Smith
 import SocialChoice.Rules.Copeland.Derived
 import SocialChoice.Rules.Black.Defs
 import SocialChoice.Rules.Black.Neutrality
 import SocialChoice.Rules.Black.Condorcet
 import SocialChoice.Rules.Black.CondorcetLoser
+import SocialChoice.Rules.Black.Smith
 import SocialChoice.Rules.Black.Pareto
 import SocialChoice.Rules.Black.Monotonicity
 import SocialChoice.Rules.Black.InformationalBasis
@@ -146,9 +151,15 @@ import SocialChoice.Rules.Black.Independence
 import SocialChoice.Rules.Black.SubsetReinforcement
 import SocialChoice.Rules.Black.Derived
 import SocialChoice.Rules.DefensibleSet.Defs
+import SocialChoice.Rules.TopCycle.Defs
+import SocialChoice.Rules.TopCycle.Condorcet
+import SocialChoice.Rules.TopCycle.CondorcetLoser
+import SocialChoice.Rules.TopCycle.MutualMajority
+import SocialChoice.Rules.TopCycle.Derived
 import SocialChoice.Rules.SplitCycle.Defs
 import SocialChoice.Rules.SplitCycle.Clones
 import SocialChoice.Rules.SplitCycle.Condorcet
+import SocialChoice.Rules.SplitCycle.Smith
 import SocialChoice.Rules.SplitCycle.Involvement
 import SocialChoice.Rules.SplitCycle.Monotonicity
 import SocialChoice.Rules.SplitCycle.Neutrality

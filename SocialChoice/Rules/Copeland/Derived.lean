@@ -4,10 +4,16 @@ import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Copeland.Defs
 import SocialChoice.Rules.Copeland.Condorcet
 import SocialChoice.Rules.Copeland.CondorcetLoser
+import SocialChoice.Rules.Copeland.Smith
 import SocialChoice.Rules.Copeland.InformationalBasis
 import SocialChoice.Rules.Copeland.Involvement
 
 namespace SocialChoice
+
+theorem copeland_mutualMajorityCriterion : MutualMajorityCriterion copeland := by
+  apply Implies.apply smithCriterion_implies_mutualMajorityCriterion_Imp (f := copeland)
+  · exact copeland_isVotingRule
+  · exact copeland_smithCriterion
 
 theorem copeland_majority_criterion : MajorityCriterion copeland := by
   apply Implies.apply condorcetConsistency_implies_majorityCriterion (f := copeland)

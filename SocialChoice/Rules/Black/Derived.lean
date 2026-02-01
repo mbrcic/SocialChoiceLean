@@ -9,6 +9,7 @@ import SocialChoice.Rules.Black.Pareto
 import SocialChoice.Rules.Black.SubsetReinforcement
 import SocialChoice.Rules.Black.Involvement
 import SocialChoice.Rules.Black.Monotonicity
+import SocialChoice.Rules.Black.Smith
 
 namespace SocialChoice
 

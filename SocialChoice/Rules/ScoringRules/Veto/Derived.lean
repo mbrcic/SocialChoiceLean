@@ -85,6 +85,13 @@ theorem veto_negative_involvement : NegativeInvolvement veto := by
 theorem veto_not_condorcet : ¬ CondorcetConsistency veto := by
   simpa [veto] using (scoringRule_not_condorcet (score := vetoScore))
 
+theorem veto_not_smithCriterion : ¬ SmithCriterion veto := by
+  intro hsmith
+  have hcond : CondorcetConsistency veto :=
+    Implies.apply smithCriterion_implies_condorcetConsistency_Imp
+      (f := veto) veto_isVotingRule hsmith
+  exact veto_not_condorcet hcond
+
 theorem veto_not_independenceOfDominated : ¬ IndependenceOfDominated veto := by
   intro hInd
   have hPareto : ParetoEfficiency veto :=

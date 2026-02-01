@@ -2,6 +2,7 @@ import SocialChoice.Axioms.Implications
 import SocialChoice.Axioms.Pareto
 import SocialChoice.Axioms.Condorcet
 import SocialChoice.Axioms.Majority
+import SocialChoice.Axioms.Smith
 import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.River.Basic
@@ -9,6 +10,7 @@ import SocialChoice.Rules.River.RefinesSplitCycle
 import SocialChoice.Rules.SplitCycle.Condorcet
 import SocialChoice.Rules.SplitCycle.Pareto
 import SocialChoice.Rules.SplitCycle.Reversal
+import SocialChoice.Rules.SplitCycle.Smith
 
 namespace SocialChoice
 
@@ -37,6 +39,19 @@ theorem river_condorcetLoser_criterion : CondorcetLoserCriterion river := by
   · exact splitCycle_isVotingRule
   · exact river_refines_splitCycle
   · exact split_cycle_CondorcetLoser_criterion
+
+theorem river_smithCriterion : SmithCriterion river := by
+  apply PreservedUnderRefinement.apply smithCriterion_preservedUnderRefinement
+    (f := river) (g := splitCycle)
+  · exact river_isVotingRule
+  · exact splitCycle_isVotingRule
+  · exact river_refines_splitCycle
+  · exact splitCycle_smithCriterion
+
+theorem river_mutualMajorityCriterion : MutualMajorityCriterion river := by
+  apply Implies.apply smithCriterion_implies_mutualMajorityCriterion_Imp (f := river)
+  · exact river_isVotingRule
+  · exact river_smithCriterion
 
 /-! ## Axioms Derived Through Implications -/
 

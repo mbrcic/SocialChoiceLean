@@ -1,6 +1,7 @@
 import SocialChoice.Axioms.Implications
 import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Impossibilities.CondorcetParticipation
+import SocialChoice.Rules.SplitCycle.Smith
 import SocialChoice.Rules.SplitCycle.Condorcet
 import SocialChoice.Rules.SplitCycle.InformationalBasis
 import SocialChoice.Rules.SplitCycle.Independence
@@ -24,6 +25,11 @@ theorem splitCycle_majority_loser_criterion : MajorityLoserCriterion splitCycle 
   apply Implies.apply condorcetLoserCriterion_implies_majorityLoserCriterion (f := splitCycle)
   · exact splitCycle_isVotingRule
   · exact split_cycle_CondorcetLoser_criterion
+
+theorem splitCycle_mutualMajorityCriterion : MutualMajorityCriterion splitCycle := by
+  apply Implies.apply smithCriterion_implies_mutualMajorityCriterion_Imp (f := splitCycle)
+  · exact splitCycle_isVotingRule
+  · exact splitCycle_smithCriterion
 
 theorem splitCycle_anonymous : Anonymity splitCycle := by
   apply Implies.apply marginBased_implies_anonymity (f := splitCycle)
