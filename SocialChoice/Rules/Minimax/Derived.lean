@@ -4,6 +4,7 @@ import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Minimax.Defs
 import SocialChoice.Rules.Minimax.Condorcet
 import SocialChoice.Rules.Minimax.InformationalBasis
+import SocialChoice.Rules.Minimax.Involvement
 import SocialChoice.Rules.Minimax.Neutrality
 
 namespace SocialChoice
@@ -22,6 +23,17 @@ theorem minimax_anonymous : Anonymity minimax := by
   apply Implies.apply marginBased_implies_anonymity (f := minimax)
   · exact minimax_isVotingRule
   · exact minimax_marginBased
+
+theorem minimax_negative_involvement : NegativeInvolvement minimax := by
+  have hiff :
+      PositiveInvolvement (fun {V A} [Fintype V] [Fintype A] => minimax) ↔
+      NegativeInvolvement (fun {V A} [Fintype V] [Fintype A] => minimax) := by
+    simpa using
+      (marginBased_positiveInvolvement_iff_negativeInvolvement minimax
+        minimax_isVotingRule minimax_marginBased)
+  -- align the goal to the eta‑expanded form
+  change NegativeInvolvement (fun {V A} [Fintype V] [Fintype A] => minimax)
+  exact hiff.mp minimax_positive_involvement
 
 theorem minimax_not_subsetReinforcement : ¬ SubsetReinforcement minimax := by
   intro hsub

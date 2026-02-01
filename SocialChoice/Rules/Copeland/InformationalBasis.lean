@@ -3,8 +3,8 @@ import SocialChoice.Rules.Copeland.Defs
 
 namespace SocialChoice
 
-lemma copelandScore2_eq_of_margins {V A : Type} [Fintype V] [Fintype A]
-    (P₁ P₂ : Profile V A)
+lemma copelandScore2_eq_of_margins {V₁ V₂ A : Type} [Fintype V₁] [Fintype V₂] [Fintype A]
+    (P₁ : Profile V₁ A) (P₂ : Profile V₂ A)
     (hmargin : ∀ x y : A, margin P₁ x y = margin P₂ x y) :
     ∀ a : A, copelandScore2 P₁ a = copelandScore2 P₂ a := by
   intro a
@@ -13,8 +13,8 @@ lemma copelandScore2_eq_of_margins {V A : Type} [Fintype V] [Fintype A]
   intro b hb
   simp [copelandPairScore2, hmargin]
 
-lemma copelandMaxScore2_eq_of_margins {V A : Type} [Fintype V] [Fintype A]
-    (P₁ P₂ : Profile V A)
+lemma copelandMaxScore2_eq_of_margins {V₁ V₂ A : Type} [Fintype V₁] [Fintype V₂] [Fintype A]
+    (P₁ : Profile V₁ A) (P₂ : Profile V₂ A)
     (hmargin : ∀ x y : A, margin P₁ x y = margin P₂ x y) :
     copelandMaxScore2 P₁ = copelandMaxScore2 P₂ := by
   classical
@@ -30,7 +30,7 @@ lemma copelandMaxScore2_eq_of_margins {V A : Type} [Fintype V] [Fintype A]
   · simp [copelandMaxScore2, hA]
 
 theorem copeland_marginBased : MarginBased copeland := by
-  intro V A _ _ P₁ P₂ hmargin
+  intro V₁ V₂ A _ _ _ P₁ P₂ hmargin
   classical
   by_cases hA : Nonempty A
   · have hscore : ∀ a : A, copelandScore2 P₁ a = copelandScore2 P₂ a :=

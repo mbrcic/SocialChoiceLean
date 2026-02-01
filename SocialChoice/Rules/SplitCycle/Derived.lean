@@ -4,6 +4,7 @@ import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.SplitCycle.Condorcet
 import SocialChoice.Rules.SplitCycle.InformationalBasis
 import SocialChoice.Rules.SplitCycle.Independence
+import SocialChoice.Rules.SplitCycle.Involvement
 import SocialChoice.Rules.SplitCycle.Pareto
 import SocialChoice.Rules.SplitCycle.Reversal
 
@@ -48,5 +49,8 @@ theorem splitCycle_not_optimistParticipation : ¬ OptimistParticipation splitCyc
   intro hpart
   exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
     ⟨splitCycle, split_cycle_condorcet_consistency, hpart⟩
+
+theorem splitCycle_negative_involvement : NegativeInvolvement splitCycle := by
+  exact split_cycle_negative_involvement
 
 end SocialChoice

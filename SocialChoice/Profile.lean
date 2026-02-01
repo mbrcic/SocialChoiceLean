@@ -100,6 +100,12 @@ noncomputable def restrictCandidates {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (p : A → Prop) [DecidablePred p] : Profile V {a // p a} :=
   { pref := fun v => restrictBallot (P.pref v) p }
 
+@[simp] lemma prefers_restrictCandidates_iff {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (p : A → Prop) [DecidablePred p] (v : V)
+    (a b : {x : A // p x}) :
+    Prefers (restrictCandidates P p) v a b ↔ Prefers P v a b := by
+  rfl
+
 noncomputable def castCandidates {V A : Type} [Fintype V] [Fintype A]
     {p q : A → Prop} [DecidablePred p] [DecidablePred q]
     (h : p = q) (P : Profile V {a // p a}) : Profile V {a // q a} := by

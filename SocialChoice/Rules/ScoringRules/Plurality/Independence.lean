@@ -329,12 +329,6 @@ lemma candAq_ne_candCq : candAq ≠ candCq := by
 lemma candCq_ne_candAq : candCq ≠ candAq := by
   exact candAq_ne_candCq.symm
 
-lemma prefers_restrictCandidates_iff {V A : Type} [Fintype V] [Fintype A]
-    (P : Profile V A) (p : A → Prop) [DecidablePred p] (v : V)
-    (a b : {x : A // p x}) :
-    Prefers (restrictCandidates P p) v a b ↔ Prefers P v a b := by
-  rfl
-
 lemma votersPreferring_restrictCandidates_eq {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (p : A → Prop) [DecidablePred p]
     (a b : {x : A // p x}) :

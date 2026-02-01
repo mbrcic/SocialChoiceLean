@@ -1,4 +1,5 @@
 import SocialChoice.Profile
+import SocialChoice.Margin
 import SocialChoice.Meta
 import SocialChoice.Axioms.Pareto
 import SocialChoice.Axioms.Unanimity
@@ -176,6 +177,90 @@ theorem reversalSymmetry_implies_singletonReversalSymmetry :
     exact hxinter
   simp at this
 
+noncomputable def relabelProfileVoters {V W A : Type} [Fintype V] [Fintype W] [Fintype A]
+    (e : W ≃ V) (P : Profile V A) : Profile W A :=
+  { pref := fun w => P.pref (e w) }
+
+lemma margin_relabelProfileVoters {V W A : Type} [Fintype V] [Fintype W] [Fintype A]
+    (e : W ≃ V) (P : Profile V A) (a b : A) :
+    margin (relabelProfileVoters e P) a b = margin P a b := by
+  classical
+  have hcard_ab :
+      (Finset.univ.filter (fun w => Prefers (relabelProfileVoters e P) w a b)).card =
+        (Finset.univ.filter (fun v => Prefers P v a b)).card := by
+    refine Finset.card_bij
+      (s := Finset.univ.filter (fun w => Prefers (relabelProfileVoters e P) w a b))
+      (t := Finset.univ.filter (fun v => Prefers P v a b))
+      (i := fun w _ => e w) ?_ ?_ ?_
+    · intro w hw
+      have hw' : Prefers (relabelProfileVoters e P) w a b := (Finset.mem_filter.mp hw).2
+      have hw'' : Prefers P (e w) a b := by
+        simpa [relabelProfileVoters, Prefers] using hw'
+      exact Finset.mem_filter.mpr ⟨by simp, hw''⟩
+    · intro w1 _ w2 _ h
+      exact e.injective h
+    · intro v hv
+      have hv' : Prefers P v a b := (Finset.mem_filter.mp hv).2
+      refine ⟨e.symm v, ?_, by simp⟩
+      have : Prefers (relabelProfileVoters e P) (e.symm v) a b := by
+        simpa [relabelProfileVoters, Prefers] using hv'
+      exact Finset.mem_filter.mpr ⟨by simp, this⟩
+  have hcard_ba :
+      (Finset.univ.filter (fun w => Prefers (relabelProfileVoters e P) w b a)).card =
+        (Finset.univ.filter (fun v => Prefers P v b a)).card := by
+    refine Finset.card_bij
+      (s := Finset.univ.filter (fun w => Prefers (relabelProfileVoters e P) w b a))
+      (t := Finset.univ.filter (fun v => Prefers P v b a))
+      (i := fun w _ => e w) ?_ ?_ ?_
+    · intro w hw
+      have hw' : Prefers (relabelProfileVoters e P) w b a := (Finset.mem_filter.mp hw).2
+      have hw'' : Prefers P (e w) b a := by
+        simpa [relabelProfileVoters, Prefers] using hw'
+      exact Finset.mem_filter.mpr ⟨by simp, hw''⟩
+    · intro w1 _ w2 _ h
+      exact e.injective h
+    · intro v hv
+      have hv' : Prefers P v b a := (Finset.mem_filter.mp hv).2
+      refine ⟨e.symm v, ?_, by simp⟩
+      have : Prefers (relabelProfileVoters e P) (e.symm v) b a := by
+        simpa [relabelProfileVoters, Prefers] using hv'
+      exact Finset.mem_filter.mpr ⟨by simp, this⟩
+  simp [margin, hcard_ab, hcard_ba]
+
+noncomputable def inlElectorateEquiv {U : Type} [DecidableEq U] (V : Finset U) :
+    Electorate (U ⊕ Unit) (V.image Sum.inl) ≃ Electorate U V := by
+  classical
+  refine
+    { toFun := fun v =>
+        let hx : ∃ u, u ∈ V ∧ Sum.inl u = v.1 := by
+          rcases Finset.mem_image.mp v.2 with ⟨u, huV, huv⟩
+          exact ⟨u, huV, huv⟩
+        let u := Classical.choose hx
+        have huV : u ∈ V := (Classical.choose_spec hx).1
+        ⟨u, huV⟩
+      invFun := fun v => ⟨Sum.inl v.1, Finset.mem_image.mpr ⟨v.1, v.2, rfl⟩⟩
+      left_inv := ?_
+      right_inv := ?_ }
+  · intro v
+    cases v with
+    | mk v hv =>
+        -- Unpack the chosen witness from `toFun`.
+        let hx : ∃ u, u ∈ V ∧ Sum.inl u = v := by
+          rcases Finset.mem_image.mp hv with ⟨u, huV, huv⟩
+          exact ⟨u, huV, huv⟩
+        have hval : Sum.inl (Classical.choose hx) = v :=
+          (Classical.choose_spec hx).2
+        apply Subtype.ext
+        exact hval
+  · intro v
+    -- Unfold the chosen witness from `toFun (invFun v)`.
+    let hx : ∃ u, u ∈ V ∧ Sum.inl (β := Unit) u = Sum.inl (β := Unit) v.1 :=
+      ⟨v.1, v.2, rfl⟩
+    have hval : Sum.inl (β := Unit) (Classical.choose hx) = Sum.inl (β := Unit) v.1 :=
+      (Classical.choose_spec hx).2
+    apply Subtype.ext
+    exact Sum.inl.inj hval
+
 theorem reinforcement_implies_subsetReinforcement :
     Implies Reinforcement SubsetReinforcement := by
   intro f _ href
@@ -189,6 +274,52 @@ theorem marginBased_implies_anonymity :
   intro x y
   simp
 
+theorem marginBased_implies_neutralReversal :
+    Implies MarginBased NeutralReversal := by
+  intro f _ hmargin V A _ _ P r
+  classical
+  refine hmargin (P₁ := P)
+    (P₂ := addVoter (addVoter P r) (reverse_ballot r)) ?_
+  intro a b
+  by_cases hEq : a = b
+  · subst hEq
+    simp [self_margin_zero]
+  · let _ := r
+    have htr : a < b ∨ b < a := lt_or_gt_of_ne hEq
+    cases htr with
+    | inl hlt =>
+        have h1 : margin (addVoter P r) a b = margin P a b + 1 :=
+          margin_addVoter_eq_of_prefers P r a b (by simpa using hlt)
+        have hrev : (reverse_ballot r).lt b a := by
+          simpa [reverse_ballot] using hlt
+        have h2 :
+            margin (addVoter (addVoter P r) (reverse_ballot r)) a b =
+              margin (addVoter P r) a b - 1 :=
+          margin_addVoter_eq_of_prefers_rev
+            (P := addVoter P r) (ballot := reverse_ballot r) a b hrev
+        symm
+        calc
+          margin (addVoter (addVoter P r) (reverse_ballot r)) a b
+              = margin (addVoter P r) a b - 1 := h2
+          _ = margin P a b + 1 - 1 := by simp [h1]
+          _ = margin P a b := by simp
+    | inr hgt =>
+        have h1 : margin (addVoter P r) a b = margin P a b - 1 :=
+          margin_addVoter_eq_of_prefers_rev P r a b (by simpa using hgt)
+        have hrev : (reverse_ballot r).lt a b := by
+          simpa [reverse_ballot] using hgt
+        have h2 :
+            margin (addVoter (addVoter P r) (reverse_ballot r)) a b =
+              margin (addVoter P r) a b + 1 :=
+          margin_addVoter_eq_of_prefers
+            (P := addVoter P r) (ballot := reverse_ballot r) a b hrev
+        symm
+        calc
+          margin (addVoter (addVoter P r) (reverse_ballot r)) a b
+              = margin (addVoter P r) a b + 1 := h2
+          _ = margin P a b - 1 + 1 := by simp [h1]
+          _ = margin P a b := by simp
+
 theorem topsOnly_implies_anonymity :
     Implies TopsOnly Anonymity := by
   intro f _ htops V A _ _ P σ
@@ -196,6 +327,250 @@ theorem topsOnly_implies_anonymity :
   apply htops (P₁ := permuteVoters P σ) (P₂ := P)
   intro a
   simp
+
+-- Ding, Holliday, and Pacuit, "An Axiomatic Characterization of Split Cycle"
+-- (proposition on Neutral Reversal implying Positive/Negative Involvement equivalence).
+theorem marginBased_positiveInvolvement_iff_negativeInvolvement :
+    Implies MarginBased (fun f => PositiveInvolvement f ↔ NegativeInvolvement f) := by
+  intro f _ hmargin
+  classical
+  constructor
+  · intro hpos
+    by_contra hneg
+    -- Extract a counterexample to Negative Involvement.
+    rcases (by
+      simpa [NegativeInvolvement] using hneg) with
+      ⟨U, A, _instDecEqU, _instFintypeA, V, u, hu, P, Q,
+        hagree, c, hcP, hbot, hcQ⟩
+    -- Embed the electorate into a disjoint sum so we can add the reverse ballot.
+    have hagree' :
+        ∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v := by
+      intro v
+      simpa using (hagree v.1 v.2)
+    let V' : Finset (U ⊕ Unit) := (insert u V).image Sum.inl
+    let eV' : Electorate (U ⊕ Unit) V' ≃ Electorate U (insert u V) :=
+      inlElectorateEquiv (U := U) (V := insert u V)
+    let Q' : Profile (Electorate (U ⊕ Unit) V') A :=
+      relabelProfileVoters eV' Q
+    have hmarginQ' : ∀ a b, margin Q' a b = margin Q a b := by
+      intro a b
+      simpa using margin_relabelProfileVoters (e := eV') (P := Q) a b
+    have hQeq : f Q' = f Q := by
+      apply hmargin (P₁ := Q') (P₂ := Q)
+      intro a b
+      simpa using hmarginQ' a b
+    have hcQ' : c ∈ f Q' := by
+      simpa [hQeq] using hcQ
+    -- Now add the reverse ballot as a new voter.
+    let w : U ⊕ Unit := Sum.inr ()
+    have hw : w ∉ V' := by
+      simp [V']
+    let Q'' : Profile (Electorate (U ⊕ Unit) (insert w V')) A :=
+      { pref := fun v => if h : v.1 ∈ V' then Q'.pref ⟨v.1, h⟩
+          else reverse_ballot (Q.pref (newVoter (u := u) (V := V) hu)) }
+    have hagree'' :
+        ∀ v : Electorate (U ⊕ Unit) V',
+          Q''.pref (liftVoter (u := w) v) = Q'.pref v := by
+      intro v
+      have hv : (liftVoter (u := w) v).1 ∈ V' := v.2
+      simp [Q'', liftVoter]
+    have hnew :
+        Q''.pref (newVoter (u := w) (V := V') hw) =
+          reverse_ballot (Q.pref (newVoter (u := u) (V := V) hu)) := by
+      simp [Q'', newVoter, hw]
+    have htop' :
+        BallotTop (Q''.pref (newVoter (u := w) (V := V') hw)) c := by
+      have htop' : BallotTop (reverse_ballot (Q.pref (newVoter (u := u) (V := V) hu))) c := by
+        intro d hd
+        have := hbot d hd
+        simpa [BallotTop, BallotBottom, reverse_ballot] using this
+      simpa [hnew] using htop'
+    -- Show c ∉ f Q'' using MarginBased (margins are unchanged from P).
+    have hmarginP :
+        ∀ a b, margin Q'' a b = margin P a b := by
+      intro a b
+      by_cases hEq : a = b
+      · subst hEq
+        simp [self_margin_zero]
+      ·
+        let L := Q.pref (newVoter (u := u) (V := V) hu)
+        let _ := L
+        have htr : L.lt a b ∨ L.lt b a := lt_or_gt_of_ne hEq
+        cases htr with
+        | inl hlt =>
+            have hQP :
+                margin Q a b = margin P a b + 1 :=
+              margin_add_newVoter_eq_of_prefers
+                (u := u) (V := V) hu P Q hagree' a b (by simpa [L] using hlt)
+            have hQ'P :
+                margin Q' a b = margin P a b + 1 := by
+              calc
+                margin Q' a b = margin Q a b := hmarginQ' a b
+                _ = margin P a b + 1 := hQP
+            have hrev : (reverse_ballot L).lt b a := by
+              simpa [reverse_ballot] using hlt
+            have hrev' :
+                (Q''.pref (newVoter (u := w) (V := V') hw)).lt b a := by
+              simpa [hnew] using hrev
+            have hQ'' :
+                margin Q'' a b = margin Q' a b - 1 :=
+              margin_add_newVoter_eq_of_prefers_rev
+                (u := w) (V := V') hw Q' Q'' hagree'' a b hrev'
+            calc
+              margin Q'' a b = margin Q' a b - 1 := hQ''
+              _ = margin P a b + 1 - 1 := by simp [hQ'P]
+              _ = margin P a b := by simp
+        | inr hgt =>
+            have hQP :
+                margin Q a b = margin P a b - 1 :=
+              margin_add_newVoter_eq_of_prefers_rev
+                (u := u) (V := V) hu P Q hagree' a b (by simpa [L] using hgt)
+            have hQ'P :
+                margin Q' a b = margin P a b - 1 := by
+              calc
+                margin Q' a b = margin Q a b := hmarginQ' a b
+                _ = margin P a b - 1 := hQP
+            have hrev : (reverse_ballot L).lt a b := by
+              simpa [reverse_ballot] using hgt
+            have hrev' :
+                (Q''.pref (newVoter (u := w) (V := V') hw)).lt a b := by
+              simpa [hnew] using hrev
+            have hQ'' :
+                margin Q'' a b = margin Q' a b + 1 :=
+              margin_add_newVoter_eq_of_prefers
+                (u := w) (V := V') hw Q' Q'' hagree'' a b hrev'
+            calc
+              margin Q'' a b = margin Q' a b + 1 := hQ''
+              _ = margin P a b - 1 + 1 := by simp [hQ'P]
+              _ = margin P a b := by simp
+    have hQ''eq : f Q'' = f P := by
+      apply hmargin (P₁ := Q'') (P₂ := P)
+      intro a b
+      simpa using hmarginP a b
+    have hcQ'' : c ∉ f Q'' := by
+      simpa [hQ''eq] using hcP
+    -- This contradicts Positive Involvement.
+    have hcQ''mem : c ∈ f Q'' :=
+      hpos (V := V') (u := w) hw Q' Q'' c hagree'' hcQ' htop'
+    exact (hcQ'' hcQ''mem).elim
+  · intro hneg
+    by_contra hpos
+    -- Extract a counterexample to Positive Involvement.
+    rcases (by
+      simpa [PositiveInvolvement] using hpos) with
+      ⟨U, A, _instDecEqU, _instFintypeA, V, u, hu, P, Q,
+        hagree, c, hcP, htop, hcQ⟩
+    -- Embed the electorate into a disjoint sum so we can add the reverse ballot.
+    have hagree' :
+        ∀ v : Electorate U V, Q.pref (liftVoter (u := u) v) = P.pref v := by
+      intro v
+      simpa using (hagree v.1 v.2)
+    let V' : Finset (U ⊕ Unit) := (insert u V).image Sum.inl
+    let eV' : Electorate (U ⊕ Unit) V' ≃ Electorate U (insert u V) :=
+      inlElectorateEquiv (U := U) (V := insert u V)
+    let Q' : Profile (Electorate (U ⊕ Unit) V') A :=
+      relabelProfileVoters eV' Q
+    have hmarginQ' : ∀ a b, margin Q' a b = margin Q a b := by
+      intro a b
+      simpa using margin_relabelProfileVoters (e := eV') (P := Q) a b
+    have hQeq : f Q' = f Q := by
+      apply hmargin (P₁ := Q') (P₂ := Q)
+      intro a b
+      simpa using hmarginQ' a b
+    have hcQ' : c ∉ f Q' := by
+      simpa [hQeq] using hcQ
+    -- Add the reverse ballot as a new voter.
+    let w : U ⊕ Unit := Sum.inr ()
+    have hw : w ∉ V' := by
+      simp [V']
+    let Q'' : Profile (Electorate (U ⊕ Unit) (insert w V')) A :=
+      { pref := fun v => if h : v.1 ∈ V' then Q'.pref ⟨v.1, h⟩
+          else reverse_ballot (Q.pref (newVoter (u := u) (V := V) hu)) }
+    have hagree'' :
+        ∀ v : Electorate (U ⊕ Unit) V',
+          Q''.pref (liftVoter (u := w) v) = Q'.pref v := by
+      intro v
+      have hv : (liftVoter (u := w) v).1 ∈ V' := v.2
+      simp [Q'', liftVoter]
+    have hnew :
+        Q''.pref (newVoter (u := w) (V := V') hw) =
+          reverse_ballot (Q.pref (newVoter (u := u) (V := V) hu)) := by
+      simp [Q'', newVoter, hw]
+    have hbot' :
+        BallotBottom (Q''.pref (newVoter (u := w) (V := V') hw)) c := by
+      have hbot' : BallotBottom (reverse_ballot (Q.pref (newVoter (u := u) (V := V) hu))) c := by
+        intro d hd
+        have := htop d hd
+        simpa [BallotTop, BallotBottom, reverse_ballot] using this
+      simpa [hnew] using hbot'
+    -- Show c ∈ f Q'' using MarginBased (margins are unchanged from P).
+    have hmarginP :
+        ∀ a b, margin Q'' a b = margin P a b := by
+      intro a b
+      by_cases hEq : a = b
+      · subst hEq
+        simp [self_margin_zero]
+      ·
+        let L := Q.pref (newVoter (u := u) (V := V) hu)
+        let _ := L
+        have htr : L.lt a b ∨ L.lt b a := lt_or_gt_of_ne hEq
+        cases htr with
+        | inl hlt =>
+            have hQP :
+                margin Q a b = margin P a b + 1 :=
+              margin_add_newVoter_eq_of_prefers
+                (u := u) (V := V) hu P Q hagree' a b (by simpa [L] using hlt)
+            have hQ'P :
+                margin Q' a b = margin P a b + 1 := by
+              calc
+                margin Q' a b = margin Q a b := hmarginQ' a b
+                _ = margin P a b + 1 := hQP
+            have hrev : (reverse_ballot L).lt b a := by
+              simpa [reverse_ballot] using hlt
+            have hrev' :
+                (Q''.pref (newVoter (u := w) (V := V') hw)).lt b a := by
+              simpa [hnew] using hrev
+            have hQ'' :
+                margin Q'' a b = margin Q' a b - 1 :=
+              margin_add_newVoter_eq_of_prefers_rev
+                (u := w) (V := V') hw Q' Q'' hagree'' a b hrev'
+            calc
+              margin Q'' a b = margin Q' a b - 1 := hQ''
+              _ = margin P a b + 1 - 1 := by simp [hQ'P]
+              _ = margin P a b := by simp
+        | inr hgt =>
+            have hQP :
+                margin Q a b = margin P a b - 1 :=
+              margin_add_newVoter_eq_of_prefers_rev
+                (u := u) (V := V) hu P Q hagree' a b (by simpa [L] using hgt)
+            have hQ'P :
+                margin Q' a b = margin P a b - 1 := by
+              calc
+                margin Q' a b = margin Q a b := hmarginQ' a b
+                _ = margin P a b - 1 := hQP
+            have hrev : (reverse_ballot L).lt a b := by
+              simpa [reverse_ballot] using hgt
+            have hrev' :
+                (Q''.pref (newVoter (u := w) (V := V') hw)).lt a b := by
+              simpa [hnew] using hrev
+            have hQ'' :
+                margin Q'' a b = margin Q' a b + 1 :=
+              margin_add_newVoter_eq_of_prefers
+                (u := w) (V := V') hw Q' Q'' hagree'' a b hrev'
+            calc
+              margin Q'' a b = margin Q' a b + 1 := hQ''
+              _ = margin P a b - 1 + 1 := by simp [hQ'P]
+              _ = margin P a b := by simp
+    have hQ''eq : f Q'' = f P := by
+      apply hmargin (P₁ := Q'') (P₂ := P)
+      intro a b
+      simpa using hmarginP a b
+    have hcQ'' : c ∈ f Q'' := by
+      simpa [hQ''eq] using hcP
+    -- This contradicts Negative Involvement.
+    have hcQ''not : c ∉ f Q'' :=
+      hneg (V := V') (u := w) hw Q' Q'' c hagree'' hcQ' hbot'
+    exact (hcQ''not hcQ'').elim
 
 theorem strongFishburnParticipation_implies_positiveInvolvement :
     Implies StrongFishburnParticipation PositiveInvolvement := by
@@ -254,5 +629,13 @@ theorem strongFishburnParticipation_implies_negativeInvolvement :
       exact h3 c hcs x hxst
   have hlt : r.lt x c := hbot x hxne
   exact (not_le_of_gt hlt) hle
+
+theorem positiveInvolvement_implies_singletonPositiveInvolvement :
+    Implies PositiveInvolvement SingletonPositiveInvolvement := by
+  intro f _ hpos V A _ _ V' u hu P Q c hagree hfP htop
+  apply hpos (V := V') (u := u) hu P Q c hagree
+  · rw [hfP]
+    exact Finset.mem_singleton_self c
+  · exact htop
 
 end SocialChoice

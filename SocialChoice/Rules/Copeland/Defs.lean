@@ -23,6 +23,39 @@ lemma copelandPairScore2_le_two (m : Int) : copelandPairScore2 m ≤ 2 := by
     · simp [copelandPairScore2, hzero]
     · simp [copelandPairScore2, hpos, hzero]
 
+lemma copelandPairScore2_nonneg (m : Int) : 0 ≤ copelandPairScore2 m := by
+  by_cases hpos : m > 0
+  · simp [copelandPairScore2, hpos]
+  · by_cases hzero : m = 0
+    · simp [copelandPairScore2, hzero]
+    · simp [copelandPairScore2, hpos, hzero]
+
+lemma copelandPairScore2_mono {m n : Int} (h : m ≤ n) :
+    copelandPairScore2 m ≤ copelandPairScore2 n := by
+  by_cases hnpos : n > 0
+  · have hle : copelandPairScore2 m ≤ 2 := copelandPairScore2_le_two m
+    have hscore : copelandPairScore2 n = 2 := by
+      simp [copelandPairScore2, hnpos]
+    simpa [hscore] using hle
+  · have hnle : n ≤ 0 := not_lt.mp hnpos
+    by_cases hnzero : n = 0
+    · have hmle : m ≤ 0 := le_trans h hnle
+      have hmpos : ¬ m > 0 := not_lt_of_ge hmle
+      by_cases hmzero : m = 0
+      · simp [copelandPairScore2, hnzero, hmzero]
+      · have hleft : copelandPairScore2 m = 0 := by
+          simp [copelandPairScore2, hmpos, hmzero]
+        have hright : copelandPairScore2 n = 1 := by
+          simp [copelandPairScore2, hnzero]
+        simp [hleft, hright]
+    · have hnneg : n < 0 := lt_of_le_of_ne hnle hnzero
+      have hmneg : m < 0 := lt_of_le_of_lt h hnneg
+      have hmpos : ¬ m > 0 := not_lt_of_ge (le_of_lt hmneg)
+      have hmzero : m ≠ 0 := ne_of_lt hmneg
+      have hnpos' : ¬ n > 0 := hnpos
+      have hnzero' : n ≠ 0 := hnzero
+      simp [copelandPairScore2, hmpos, hmzero, hnpos', hnzero']
+
 /-- Copeland score for a candidate, using doubled points. -/
 noncomputable def copelandScore2 (P : Profile V A) (a : A) : Int := by
   classical

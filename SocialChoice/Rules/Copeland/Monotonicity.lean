@@ -6,60 +6,6 @@ namespace SocialChoice
 
 open Finset
 
-lemma copelandPairScore2_mono {m n : Int} (h : m ≤ n) :
-    copelandPairScore2 m ≤ copelandPairScore2 n := by
-  by_cases hnpos : n > 0
-  · have hle : copelandPairScore2 m ≤ 2 := copelandPairScore2_le_two m
-    have hscore : copelandPairScore2 n = 2 := by
-      simp [copelandPairScore2, hnpos]
-    simpa [hscore] using hle
-  · have hnle : n ≤ 0 := not_lt.mp hnpos
-    by_cases hnzero : n = 0
-    · have hmle : m ≤ 0 := le_trans h hnle
-      have hmpos : ¬ m > 0 := not_lt_of_ge hmle
-      by_cases hmzero : m = 0
-      · simp [copelandPairScore2, hnzero, hmzero]
-      · have hleft : copelandPairScore2 m = 0 := by
-          simp [copelandPairScore2, hmpos, hmzero]
-        have hright : copelandPairScore2 n = 1 := by
-          simp [copelandPairScore2, hnzero]
-        simp [hleft, hright]
-    · have hnneg : n < 0 := lt_of_le_of_ne hnle hnzero
-      have hmneg : m < 0 := lt_of_le_of_lt h hnneg
-      have hmpos : ¬ m > 0 := not_lt_of_ge (le_of_lt hmneg)
-      have hmzero : m ≠ 0 := ne_of_lt hmneg
-      have hnpos' : ¬ n > 0 := hnpos
-      have hnzero' : n ≠ 0 := hnzero
-      simp [copelandPairScore2, hmpos, hmzero, hnpos', hnzero']
-
-lemma margin_le_of_simpleLift_x {V A : Type} [Fintype V] [Fintype A]
-    {P P' : Profile V A} {x a : A} (hLift : simpleLift P' P x) :
-    margin P x a ≤ margin P' x a := by
-  classical
-  by_cases hax : a = x
-  · subst hax
-    simp [self_margin_zero]
-  · have hcond :
-        ∀ v : V, (Prefers P v x a → Prefers P' v x a) ∧
-          (Prefers P' v a x → Prefers P v a x) := by
-      intro v
-      exact hLift.2 a v
-    exact margin_lemma P P' x a (by simpa [eq_comm] using hax) hcond
-
-lemma margin_le_of_simpleLift_ax {V A : Type} [Fintype V] [Fintype A]
-    {P P' : Profile V A} {x a : A} (hLift : simpleLift P' P x) :
-    margin P' a x ≤ margin P a x := by
-  classical
-  by_cases hax : a = x
-  · subst hax
-    simp [self_margin_zero]
-  · have hcond :
-        ∀ v : V, (Prefers P' v a x → Prefers P v a x) ∧
-          (Prefers P v x a → Prefers P' v x a) := by
-      intro v
-      exact ⟨(hLift.2 a v).2, (hLift.2 a v).1⟩
-    exact margin_lemma P' P a x hax hcond
-
 lemma copelandScore2_le_of_simpleLift_x {V A : Type} [Fintype V] [Fintype A]
     {P P' : Profile V A} {x : A} (hLift : simpleLift P' P x) :
     copelandScore2 P x ≤ copelandScore2 P' x := by
@@ -67,7 +13,7 @@ lemma copelandScore2_le_of_simpleLift_x {V A : Type} [Fintype V] [Fintype A]
   refine Finset.sum_le_sum ?_
   intro b hb
   have hmargin : margin P x b ≤ margin P' x b :=
-    margin_le_of_simpleLift_x (P := P) (P' := P') (x := x) (a := b) hLift
+    margin_le_of_simpleLift_xa (P := P) (P' := P') (x := x) (a := b) hLift
   exact copelandPairScore2_mono hmargin
 
 lemma copelandScore2_le_of_simpleLift_other {V A : Type} [Fintype V] [Fintype A]

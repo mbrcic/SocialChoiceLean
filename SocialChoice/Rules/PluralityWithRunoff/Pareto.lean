@@ -8,26 +8,6 @@ namespace SocialChoice
 
 open Finset
 
-private lemma topCount_eq_zero_of_pareto {V A : Type} [Fintype V] [Fintype A] [Nonempty V]
-    (P : Profile V A) (c d : A) (hpref : ∀ v : V, Prefers P v c d) :
-    topCount P d = 0 := by
-  classical
-  rcases Classical.choice (inferInstance : Nonempty V) with v0
-  let _ := P.pref v0
-  have hcd : c ≠ d := by
-    intro hEq
-    subst hEq
-    exact (lt_irrefl _ (hpref v0))
-  unfold topCount
-  apply Finset.card_eq_zero.mpr
-  apply Finset.eq_empty_iff_forall_notMem.mpr
-  intro v hv
-  let _ := P.pref v
-  have htop : TopRank P v d := (Finset.mem_filter.mp hv).2
-  have hdc : Prefers P v d c := htop c hcd
-  have hcd' : Prefers P v c d := hpref v
-  exact (lt_asymm hdc hcd')
-
 theorem plurality_with_runoff_pareto_efficiency : ParetoEfficiency pluralityWithRunoff := by
   intro V A _ _ _ P c d hpref
   classical
@@ -43,7 +23,7 @@ theorem plurality_with_runoff_pareto_efficiency : ParetoEfficiency pluralityWith
       exact (lt_irrefl _ (hpref v0))
     exact (hcd (hforall c d)).elim
   · have htopcount_d : topCount P d = 0 :=
-      topCount_eq_zero_of_pareto (P := P) c d hpref
+      topCount_eq_zero_of_dominated (P := P) (c := c) (d := d) hpref
     rcases Classical.choice (inferInstance : Nonempty V) with v0
     by_contra hdwin
     have hdwin' :

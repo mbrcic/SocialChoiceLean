@@ -7,6 +7,7 @@ import SocialChoice.Rules.ScoringRules.Neutrality
 import SocialChoice.Rules.ScoringRules.Participation
 import SocialChoice.Rules.ScoringRules.Reinforcement
 import SocialChoice.Rules.ScoringRules.Veto.Defs
+import SocialChoice.Rules.ScoringRules.Veto.Pareto
 
 namespace SocialChoice
 
@@ -83,5 +84,12 @@ theorem veto_negative_involvement : NegativeInvolvement veto := by
 
 theorem veto_not_condorcet : ¬ CondorcetConsistency veto := by
   simpa [veto] using (scoringRule_not_condorcet (score := vetoScore))
+
+theorem veto_not_independenceOfDominated : ¬ IndependenceOfDominated veto := by
+  intro hInd
+  have hPareto : ParetoEfficiency veto :=
+    Implies.apply independenceOfDominated_implies_paretoEfficiency (f := veto)
+      veto_isVotingRule hInd
+  exact veto_not_pareto_efficiency hPareto
 
 end SocialChoice

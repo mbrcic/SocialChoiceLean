@@ -9,10 +9,10 @@ namespace SocialChoice
 open Finset
 open scoped BigOperators
 
-abbrev A3 := Fin 3
-abbrev a : A3 := 0
-abbrev b : A3 := 1
-abbrev c : A3 := 2
+private abbrev A3 := Fin 3
+private abbrev a : A3 := 0
+private abbrev b : A3 := 1
+private abbrev c : A3 := 2
 
 private def ballot_bca : ListBallot 3 := ListBallot.mk' [1, 2, 0]
 private def ballot_abc : ListBallot 3 := ListBallot.identity 3

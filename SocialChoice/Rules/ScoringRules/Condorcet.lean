@@ -12,8 +12,8 @@ Felix Brandt, Chris Dong, and Dominik Peters.
 
 namespace SocialChoice
 
-abbrev Voters5 := Fin 5
-abbrev A3 := Fin 3
+private abbrev Voters5 := Fin 5
+private abbrev A3 := Fin 3
 
 private def ballot012 : ListBallot 3 := ListBallot.identity 3
 private def ballot102 : ListBallot 3 := ListBallot.mk' [1, 0, 2]

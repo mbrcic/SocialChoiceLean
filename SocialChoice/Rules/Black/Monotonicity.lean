@@ -59,7 +59,7 @@ theorem black_monotonicity : Monotonicity black := by
           · subst hwx
             have hle : margin P' (Classical.choose hP') x0 ≤
                 margin P (Classical.choose hP') x0 :=
-              margin_le_of_simpleLift_x (P := P) (P' := P') (x := x0)
+              margin_le_of_simpleLift_ax (P := P) (P' := P') (x := x0)
                 (a := Classical.choose hP') hLift0
             have hpos : margin_pos P' (Classical.choose hP') x0 :=
               (CondorcetWinner_iff_margin_pos P' (Classical.choose hP')).mp

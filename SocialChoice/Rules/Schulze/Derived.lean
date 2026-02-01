@@ -5,6 +5,7 @@ import SocialChoice.Axioms.Majority
 import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Schulze.InformationalBasis
+import SocialChoice.Rules.Schulze.Independence
 import SocialChoice.Rules.Schulze.Transitivity
 import SocialChoice.Rules.Schulze.RefinesSplitCycle
 import SocialChoice.Rules.Schulze.Neutrality

@@ -1,5 +1,4 @@
 import SocialChoice.Axioms.Implications
-import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Black.Defs
 import SocialChoice.Rules.Black.Condorcet
@@ -7,6 +6,9 @@ import SocialChoice.Rules.Black.CondorcetLoser
 import SocialChoice.Rules.Black.InformationalBasis
 import SocialChoice.Rules.Black.Neutrality
 import SocialChoice.Rules.Black.Pareto
+import SocialChoice.Rules.Black.SubsetReinforcement
+import SocialChoice.Rules.Black.Involvement
+import SocialChoice.Rules.Black.Monotonicity
 
 namespace SocialChoice
 
@@ -32,13 +34,20 @@ theorem black_anonymous : Anonymity black := by
 
 theorem black_not_subsetReinforcement : ¬ SubsetReinforcement black := by
   intro hsub
-  exact no_condorcet_subset_reinforcement black
-    black_isVotingRule black_condorcet_consistency hsub
+  have hsubset := hsub (U := Fin 5) (A := Fin 3)
+    (V := BlackSubsetReinforcementCounterexample.voters3)
+    (W := BlackSubsetReinforcementCounterexample.voters2)
+    (hdisj := BlackSubsetReinforcementCounterexample.voters3_disjoint_voters2)
+    (P := BlackSubsetReinforcementCounterexample.profile3)
+    (Q := BlackSubsetReinforcementCounterexample.profile2)
+    (R := BlackSubsetReinforcementCounterexample.profileAll)
+    BlackSubsetReinforcementCounterexample.restrict_profileAll_voters3
+    BlackSubsetReinforcementCounterexample.restrict_profileAll_voters2
+  exact BlackSubsetReinforcementCounterexample.black_subsetReinforcement_counterexample_sets hsubset
 
 theorem black_not_reinforcement : ¬ Reinforcement black := by
   intro hrein
-  exact no_condorcet_reinforcement black
-    black_isVotingRule black_condorcet_consistency hrein
+  exact black_not_subsetReinforcement (reinforcement_subset hrein)
 
 theorem black_not_strongFishburnParticipation : ¬ StrongFishburnParticipation black := by
   intro hpart
@@ -49,5 +58,16 @@ theorem black_not_optimistParticipation : ¬ OptimistParticipation black := by
   intro hpart
   exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
     ⟨black, black_condorcet_consistency, hpart⟩
+
+theorem black_not_positiveInvolvement : ¬ PositiveInvolvement black := by
+  apply mt (Implies.apply positiveInvolvement_implies_singletonPositiveInvolvement (f := black) black_isVotingRule)
+  exact black_not_singletonPositiveInvolvement
+
+theorem black_not_negativeInvolvement : ¬ NegativeInvolvement black := by
+  intro hneg
+  have hiff : PositiveInvolvement black ↔ NegativeInvolvement black :=
+    Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement
+      (f := black) black_isVotingRule black_marginBased
+  exact black_not_positiveInvolvement (hiff.mpr hneg)
 
 end SocialChoice

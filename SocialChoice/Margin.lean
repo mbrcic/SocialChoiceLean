@@ -677,6 +677,28 @@ lemma margin_eq_margin_restrictProfile {V A : Type} [Fintype V] [Fintype A] [Dec
   dsimp [margin]
   simp [h1, h2]
 
+lemma margin_eq_margin_restrictCandidates {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (p : A → Prop) [DecidablePred p]
+    {a b : {x : A // p x}} :
+    margin P a b = margin (restrictCandidates P p) a b := by
+  classical
+  have h1 :
+      (Finset.univ.filter (fun v => Prefers P v a b)).card =
+        (Finset.univ.filter (fun v => Prefers (restrictCandidates P p) v a b)).card := by
+    refine cardinality_lemma2 (p := fun v => Prefers P v a b)
+      (q := fun v => Prefers (restrictCandidates P p) v a b) ?_
+    intro v
+    simp
+  have h2 :
+      (Finset.univ.filter (fun v => Prefers P v b a)).card =
+        (Finset.univ.filter (fun v => Prefers (restrictCandidates P p) v b a)).card := by
+    refine cardinality_lemma2 (p := fun v => Prefers P v b a)
+      (q := fun v => Prefers (restrictCandidates P p) v b a) ?_
+    intro v
+    simp
+  dsimp [margin]
+  simp [h1, h2]
+
 /-! ### Constant profiles and unions -/
 
 lemma margin_constantProfile_of_lt {V A : Type} [Fintype V] [Fintype A]

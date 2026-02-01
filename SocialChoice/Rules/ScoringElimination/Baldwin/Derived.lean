@@ -6,6 +6,7 @@ import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
 import SocialChoice.Rules.ScoringElimination.Baldwin.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.Neutrality
+import SocialChoice.Rules.ScoringElimination.Pareto
 
 namespace SocialChoice
 
@@ -28,6 +29,13 @@ theorem baldwin_unanimity : Unanimity baldwin := by
   apply Implies.apply majorityCriterion_implies_unanimity (f := baldwin)
   · exact baldwin_isVotingRule
   · exact baldwin_majority_criterion
+
+theorem baldwin_paretoEfficiency : ParetoEfficiency baldwin := by
+  intro V A _ _ _ P c d hpref
+  simpa [baldwin] using
+    (scoringEliminationRule_paretoEfficiency
+      (score := bordaScore) bordaScore_strictlyDecreasing
+      (P := P) (c := c) (d := d) hpref)
 
 theorem baldwin_majority_loser_criterion : MajorityLoserCriterion baldwin := by
   apply Implies.apply condorcetLoserCriterion_implies_majorityLoserCriterion (f := baldwin)
