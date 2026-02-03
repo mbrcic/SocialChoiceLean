@@ -2,6 +2,7 @@ import SocialChoice.Axioms.Implications
 import SocialChoice.Rules.ScoringElimination.Anonymity
 import SocialChoice.Rules.ScoringElimination.Coombs.Condorcet
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
+import SocialChoice.Rules.ScoringElimination.Coombs.PositiveInvolvement
 import SocialChoice.Rules.ScoringElimination.Coombs.Majority
 import SocialChoice.Rules.ScoringElimination.Coombs.Pareto
 import SocialChoice.Rules.ScoringElimination.Neutrality

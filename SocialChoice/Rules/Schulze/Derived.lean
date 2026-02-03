@@ -7,6 +7,7 @@ import SocialChoice.Impossibilities.CondorcetReinforcement
 import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Rules.Schulze.InformationalBasis
 import SocialChoice.Rules.Schulze.Independence
+import SocialChoice.Rules.Schulze.Involvement
 import SocialChoice.Rules.Schulze.Transitivity
 import SocialChoice.Rules.Schulze.RefinesSplitCycle
 import SocialChoice.Rules.Schulze.Neutrality
@@ -97,5 +98,12 @@ theorem schulze_not_optimistParticipation : ¬ OptimistParticipation schulze := 
   intro hpart
   exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
     ⟨schulze, schulze_condorcet_consistency, hpart⟩
+
+theorem schulze_not_positiveInvolvement : ¬ PositiveInvolvement schulze := by
+  intro hpos
+  have hiff : PositiveInvolvement schulze ↔ NegativeInvolvement schulze :=
+    Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement (f := schulze)
+      schulze_marginBased
+  exact schulze_not_negativeInvolvement (hiff.mp hpos)
 
 end SocialChoice

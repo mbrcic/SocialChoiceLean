@@ -3,6 +3,7 @@ import Mathlib.Tactic.FinCases
 import SocialChoice.Axioms.Implications
 import SocialChoice.Axioms.Participation
 import SocialChoice.ListBallot
+import SocialChoice.ListBallotProfiles
 import SocialChoice.Margin
 import SocialChoice.Profile
 import SocialChoice.Rules.ScoringElimination.Basic
@@ -136,6 +137,32 @@ lemma relabel_profile6_eq_profile6_list :
   fin_cases v <;>
     simp [profile6, fullProfile, restrictElectorate, ballots7, e6]
 
+lemma votersBottom_card_relabelProfileVoters {V W A : Type} [Fintype V] [Fintype W] [Fintype A]
+    (e : W ≃ V) (P : Profile V A) (c : A) :
+    (votersBottom (relabelProfileVoters e P) c).card = (votersBottom P c).card := by
+  classical
+  refine Finset.card_bij
+    (s := votersBottom (relabelProfileVoters e P) c)
+    (t := votersBottom P c)
+    (i := fun w _ => e w) ?_ ?_ ?_
+  · intro w hw
+    have hw' : BottomRank (relabelProfileVoters e P) w c := (Finset.mem_filter.mp hw).2
+    have hw'' : BottomRank P (e w) c := by
+      intro d hd
+      have : Prefers (relabelProfileVoters e P) w d c := hw' d hd
+      simpa [relabelProfileVoters, Prefers] using this
+    exact Finset.mem_filter.mpr ⟨by simp, hw''⟩
+  · intro w1 _ w2 _ h
+    exact e.injective h
+  · intro v hv
+    have hv' : BottomRank P v c := (Finset.mem_filter.mp hv).2
+    refine ⟨e.symm v, ?_, by simp⟩
+    have : BottomRank (relabelProfileVoters e P) (e.symm v) c := by
+      intro d hd
+      have : Prefers P v d c := hv' d hd
+      simpa [relabelProfileVoters, Prefers] using this
+    exact Finset.mem_filter.mpr ⟨by simp, this⟩
+
 lemma profiles_agree :
     ∀ v : Electorate (Fin 7) voters6,
       profile7.pref (liftVoter (u := (3 : Fin 7)) v) = profile6.pref v := by
@@ -161,54 +188,32 @@ lemma newVoter_top_1 :
 
 /-! ## Bottom-rank counts (full profile) -/
 
-lemma votersBottom_profile7_0 :
-    votersBottom profile7 (0 : Fin 3) =
-      ({⟨3, by simp [voters7, voters6]⟩,
-        ⟨5, by simp [voters7, voters6]⟩,
-        ⟨6, by simp [voters7, voters6]⟩} :
-        Finset (Electorate (Fin 7) voters7)) := by
-  classical
-  ext v
-  cases v with
-  | mk val hmem =>
-      fin_cases val <;>
-        (simp [votersBottom, profile7, fullProfile, restrictElectorate, ballots7, voters7, voters6,
-          Prefers, BottomRank, ListBallot.lt_iff_idxOf] at hmem ⊢; decide)
-
-lemma votersBottom_profile7_1 :
-    votersBottom profile7 (1 : Fin 3) =
-      ({⟨0, by simp [voters7, voters6]⟩,
-        ⟨4, by simp [voters7, voters6]⟩} :
-        Finset (Electorate (Fin 7) voters7)) := by
-  classical
-  ext v
-  cases v with
-  | mk val hmem =>
-      fin_cases val <;>
-        (simp [votersBottom, profile7, fullProfile, restrictElectorate, ballots7, voters7, voters6,
-          Prefers, BottomRank, ListBallot.lt_iff_idxOf] at hmem ⊢; decide)
-
-lemma votersBottom_profile7_2 :
-    votersBottom profile7 (2 : Fin 3) =
-      ({⟨1, by simp [voters7, voters6]⟩,
-        ⟨2, by simp [voters7, voters6]⟩} :
-        Finset (Electorate (Fin 7) voters7)) := by
-  classical
-  ext v
-  cases v with
-  | mk val hmem =>
-      fin_cases val <;>
-        (simp [votersBottom, profile7, fullProfile, restrictElectorate, ballots7, voters7, voters6,
-          Prefers, BottomRank, ListBallot.lt_iff_idxOf] at hmem ⊢; decide)
+lemma votersBottom_profile7_card (c : Fin 3) :
+    (votersBottom profile7 c).card =
+      countBottom (fun v => (ballots7 v).ranking) c := by
+  have hlist :
+      (votersBottom profile7_list c).card =
+        countBottom (fun v => (ballots7 v).ranking) c := by
+    simpa [profile7_list] using
+      (votersBottom_card_eq_countBottom (ballots := ballots7) (c := c))
+  have hrel :
+      (votersBottom profile7 c).card = (votersBottom profile7_list c).card := by
+    have h :=
+      votersBottom_card_relabelProfileVoters (e := e7) (P := profile7) (c := c)
+    simpa [relabel_profile7_eq_profile7_list] using h.symm
+  exact hrel.trans hlist
 
 lemma votersBottom_profile7_0_card : (votersBottom profile7 (0 : Fin 3)).card = 3 := by
-  simp [votersBottom_profile7_0]
+  have h : countBottom (fun v => (ballots7 v).ranking) (0 : Fin 3) = 3 := by decide
+  simpa [votersBottom_profile7_card] using h
 
 lemma votersBottom_profile7_1_card : (votersBottom profile7 (1 : Fin 3)).card = 2 := by
-  simp [votersBottom_profile7_1]
+  have h : countBottom (fun v => (ballots7 v).ranking) (1 : Fin 3) = 2 := by decide
+  simpa [votersBottom_profile7_card] using h
 
 lemma votersBottom_profile7_2_card : (votersBottom profile7 (2 : Fin 3)).card = 2 := by
-  simp [votersBottom_profile7_2]
+  have h : countBottom (fun v => (ballots7 v).ranking) (2 : Fin 3) = 2 := by decide
+  simpa [votersBottom_profile7_card] using h
 
 lemma notBottom_card {V A : Type} [Fintype V] [Fintype A]
     (P : Profile V A) (c : A) {k : Nat} (hcard : (votersBottom P c).card = k) :
@@ -317,53 +322,32 @@ lemma lowestScoring_profile7_eq_singleton_0 :
 
 /-! ## Bottom-rank counts (reduced profile) -/
 
-lemma votersBottom_profile6_0 :
-    votersBottom profile6 (0 : Fin 3) =
-      ({⟨5, by simp [voters6]⟩,
-        ⟨6, by simp [voters6]⟩} :
-        Finset (Electorate (Fin 7) voters6)) := by
-  classical
-  ext v
-  cases v with
-  | mk val hmem =>
-      fin_cases val <;>
-        (simp [votersBottom, profile6, fullProfile, restrictElectorate, ballots7, voters6,
-          Prefers, BottomRank, ListBallot.lt_iff_idxOf] at hmem ⊢ <;> decide)
-
-lemma votersBottom_profile6_1 :
-    votersBottom profile6 (1 : Fin 3) =
-      ({⟨0, by simp [voters6]⟩,
-        ⟨4, by simp [voters6]⟩} :
-        Finset (Electorate (Fin 7) voters6)) := by
-  classical
-  ext v
-  cases v with
-  | mk val hmem =>
-      fin_cases val <;>
-        (simp [votersBottom, profile6, fullProfile, restrictElectorate, ballots7, voters6,
-          Prefers, BottomRank, ListBallot.lt_iff_idxOf] at hmem ⊢ <;> decide)
-
-lemma votersBottom_profile6_2 :
-    votersBottom profile6 (2 : Fin 3) =
-      ({⟨1, by simp [voters6]⟩,
-        ⟨2, by simp [voters6]⟩} :
-        Finset (Electorate (Fin 7) voters6)) := by
-  classical
-  ext v
-  cases v with
-  | mk val hmem =>
-      fin_cases val <;>
-        (simp [votersBottom, profile6, fullProfile, restrictElectorate, ballots7, voters6,
-          Prefers, BottomRank, ListBallot.lt_iff_idxOf] at hmem ⊢ <;> decide)
+lemma votersBottom_profile6_card (c : Fin 3) :
+    (votersBottom profile6 c).card =
+      countBottom (fun v => (ballots6 v).ranking) c := by
+  have hlist :
+      (votersBottom profile6_list c).card =
+        countBottom (fun v => (ballots6 v).ranking) c := by
+    simpa [profile6_list] using
+      (votersBottom_card_eq_countBottom (ballots := ballots6) (c := c))
+  have hrel :
+      (votersBottom profile6 c).card = (votersBottom profile6_list c).card := by
+    have h :=
+      votersBottom_card_relabelProfileVoters (e := e6) (P := profile6) (c := c)
+    simpa [relabel_profile6_eq_profile6_list] using h.symm
+  exact hrel.trans hlist
 
 lemma votersBottom_profile6_0_card : (votersBottom profile6 (0 : Fin 3)).card = 2 := by
-  simp [votersBottom_profile6_0]
+  have h : countBottom (fun v => (ballots6 v).ranking) (0 : Fin 3) = 2 := by decide
+  simpa [votersBottom_profile6_card] using h
 
 lemma votersBottom_profile6_1_card : (votersBottom profile6 (1 : Fin 3)).card = 2 := by
-  simp [votersBottom_profile6_1]
+  have h : countBottom (fun v => (ballots6 v).ranking) (1 : Fin 3) = 2 := by decide
+  simpa [votersBottom_profile6_card] using h
 
 lemma votersBottom_profile6_2_card : (votersBottom profile6 (2 : Fin 3)).card = 2 := by
-  simp [votersBottom_profile6_2]
+  have h : countBottom (fun v => (ballots6 v).ranking) (2 : Fin 3) = 2 := by decide
+  simpa [votersBottom_profile6_card] using h
 
 lemma scoreCandidate_profile6_0 : scoreCandidate profile6 scoreVec (0 : Fin 3) = (4 : Int) := by
   have hcard :

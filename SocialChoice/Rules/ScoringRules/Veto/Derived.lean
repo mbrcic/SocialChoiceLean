@@ -64,7 +64,7 @@ theorem veto_subsetReinforcement : SubsetReinforcement veto := by
   have hx'' := h hx'
   simpa [veto] using hx''
 
-theorem veto_participation : StrongFishburnParticipation veto := by
+theorem veto_strongFishburnParticipation : StrongFishburnParticipation veto := by
   intro U A _ _ _ V u hu P Q hagree
   have h :=
     (scoringRule_strongFishburnParticipation (score := vetoScore)
@@ -75,12 +75,12 @@ theorem veto_participation : StrongFishburnParticipation veto := by
 theorem veto_positive_involvement : PositiveInvolvement veto := by
   apply Implies.apply strongFishburnParticipation_implies_positiveInvolvement (f := veto)
   · exact veto_isVotingRule
-  · exact veto_participation
+  · exact veto_strongFishburnParticipation
 
 theorem veto_negative_involvement : NegativeInvolvement veto := by
   apply Implies.apply strongFishburnParticipation_implies_negativeInvolvement (f := veto)
   · exact veto_isVotingRule
-  · exact veto_participation
+  · exact veto_strongFishburnParticipation
 
 theorem veto_not_condorcet : ¬ CondorcetConsistency veto := by
   simpa [veto] using (scoringRule_not_condorcet (score := vetoScore))

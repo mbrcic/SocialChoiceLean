@@ -2,6 +2,7 @@ import SocialChoice.Axioms.Implications
 import SocialChoice.Rules.PluralityWithRunoff.Condorcet
 import SocialChoice.Rules.PluralityWithRunoff.CondorcetLoser
 import SocialChoice.Rules.PluralityWithRunoff.Pareto
+import SocialChoice.Rules.PluralityWithRunoff.Reversal
 import SocialChoice.Rules.PluralityWithRunoff.SubsetReinforcement
 
 namespace SocialChoice
@@ -28,5 +29,12 @@ theorem pluralityWithRunoff_not_smithCriterion : ¬ SmithCriterion pluralityWith
 theorem pluralityWithRunoff_not_reinforcement : ¬ Reinforcement pluralityWithRunoff := by
   intro hrein
   exact pluralityWithRunoff_not_subsetReinforcement (reinforcement_subset hrein)
+
+theorem pluralityWithRunoff_not_reversalSymmetry : ¬ ReversalSymmetry pluralityWithRunoff := by
+  intro hrev
+  have hsingle : SingletonReversalSymmetry pluralityWithRunoff :=
+    Implies.apply reversalSymmetry_implies_singletonReversalSymmetry
+      (f := pluralityWithRunoff) pluralityWithRunoff_isVotingRule hrev
+  exact pluralityWithRunoff_not_singletonReversalSymmetry hsingle
 
 end SocialChoice

@@ -65,7 +65,7 @@ theorem borda_subsetReinforcement : SubsetReinforcement borda := by
   have hx'' := h hx'
   simpa [borda] using hx''
 
-theorem borda_participation : StrongFishburnParticipation borda := by
+theorem borda_strongFishburnParticipation : StrongFishburnParticipation borda := by
   intro U A _ _ _ V u hu P Q hagree
   have hmono : weaklyDecreasingScore bordaScore :=
     strictlyDecreasingScore.to_weakly (score := bordaScore) bordaScore_strictlyDecreasing
@@ -77,12 +77,12 @@ theorem borda_participation : StrongFishburnParticipation borda := by
 theorem borda_positive_involvement : PositiveInvolvement borda := by
   apply Implies.apply strongFishburnParticipation_implies_positiveInvolvement (f := borda)
   · exact borda_isVotingRule
-  · exact borda_participation
+  · exact borda_strongFishburnParticipation
 
 theorem borda_negative_involvement : NegativeInvolvement borda := by
   apply Implies.apply strongFishburnParticipation_implies_negativeInvolvement (f := borda)
   · exact borda_isVotingRule
-  · exact borda_participation
+  · exact borda_strongFishburnParticipation
 
 theorem borda_pareto : ParetoEfficiency borda := by
   intro V A _ _ _ P c d hpref

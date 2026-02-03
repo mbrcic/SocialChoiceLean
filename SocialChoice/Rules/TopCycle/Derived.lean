@@ -7,6 +7,8 @@ import SocialChoice.Rules.TopCycle.Condorcet
 import SocialChoice.Rules.TopCycle.CondorcetLoser
 import SocialChoice.Rules.TopCycle.InformationalBasis
 import SocialChoice.Rules.TopCycle.MutualMajority
+import SocialChoice.Rules.TopCycle.Involvement
+import SocialChoice.Rules.TopCycle.Monotonicity
 
 namespace SocialChoice
 
@@ -55,5 +57,12 @@ theorem topCycle_not_optimistParticipation : ¬ OptimistParticipation topCycle :
   intro hpart
   exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
     ⟨topCycle, topCycle_condorcetConsistency, hpart⟩
+
+theorem topCycle_not_positiveInvolvement : ¬ PositiveInvolvement topCycle := by
+  intro hpos
+  have hiff : PositiveInvolvement topCycle ↔ NegativeInvolvement topCycle :=
+    Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement
+      (f := topCycle) topCycle_isVotingRule topCycle_marginBased
+  exact topCycle_not_negativeInvolvement (hiff.mp hpos)
 
 end SocialChoice

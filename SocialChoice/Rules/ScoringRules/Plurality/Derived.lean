@@ -9,6 +9,7 @@ import SocialChoice.Rules.ScoringRules.Reinforcement
 import SocialChoice.Rules.ScoringRules.Plurality.Defs
 import SocialChoice.Rules.ScoringRules.Plurality.Independence
 import SocialChoice.Rules.ScoringRules.Plurality.Majority
+import SocialChoice.Rules.ScoringRules.Plurality.Reversal
 
 namespace SocialChoice
 
@@ -86,7 +87,7 @@ theorem plurality_subsetReinforcement : SubsetReinforcement plurality := by
   have hx'' := h hx'
   simpa [plurality_eq_scoringRule_app] using hx''
 
-theorem plurality_participation : StrongFishburnParticipation plurality := by
+theorem plurality_strongFishburnParticipation : StrongFishburnParticipation plurality := by
   intro U A _ _ _ V u hu P Q hagree
   have h :=
     (scoringRule_strongFishburnParticipation (score := pluralityScore)
@@ -97,12 +98,19 @@ theorem plurality_participation : StrongFishburnParticipation plurality := by
 theorem plurality_positive_involvement_derived : PositiveInvolvement plurality := by
   apply Implies.apply strongFishburnParticipation_implies_positiveInvolvement (f := plurality)
   · exact plurality_isVotingRule
-  · exact plurality_participation
+  · exact plurality_strongFishburnParticipation
 
 theorem plurality_negative_involvement_derived : NegativeInvolvement plurality := by
   apply Implies.apply strongFishburnParticipation_implies_negativeInvolvement (f := plurality)
   · exact plurality_isVotingRule
-  · exact plurality_participation
+  · exact plurality_strongFishburnParticipation
+
+theorem plurality_not_reversalSymmetry : ¬ ReversalSymmetry plurality := by
+  intro hrev
+  have hsingle : SingletonReversalSymmetry plurality :=
+    Implies.apply reversalSymmetry_implies_singletonReversalSymmetry
+      (f := plurality) plurality_isVotingRule hrev
+  exact plurality_not_singletonReversalSymmetry hsingle
 
 theorem plurality_not_condorcet : ¬ CondorcetConsistency plurality := by
   intro hcond

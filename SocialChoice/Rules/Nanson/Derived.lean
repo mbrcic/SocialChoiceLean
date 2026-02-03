@@ -5,6 +5,7 @@ import SocialChoice.Rules.Nanson.Defs
 import SocialChoice.Rules.Nanson.Condorcet
 import SocialChoice.Rules.Nanson.CondorcetLoser
 import SocialChoice.Rules.Nanson.InformationalBasis
+import SocialChoice.Rules.Nanson.Involvement
 import SocialChoice.Rules.Nanson.Pareto
 import SocialChoice.Rules.Nanson.Reversal
 import SocialChoice.Rules.Nanson.Neutrality
@@ -55,6 +56,13 @@ theorem nanson_not_optimistParticipation : ¬ OptimistParticipation nanson := by
   intro hpart
   exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
     ⟨nanson, nanson_condorcet_consistency, hpart⟩
+
+theorem nanson_not_positiveInvolvement : ¬ PositiveInvolvement nanson := by
+  intro hpos
+  have hiff : PositiveInvolvement nanson ↔ NegativeInvolvement nanson :=
+    Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement
+      (f := nanson) nanson_isVotingRule nanson_marginBased
+  exact nanson_not_negativeInvolvement (hiff.mp hpos)
 
 theorem nanson_singleton_reversal_symmetry : SingletonReversalSymmetry nanson := by
   apply Implies.apply reversalSymmetry_implies_singletonReversalSymmetry (f := nanson)

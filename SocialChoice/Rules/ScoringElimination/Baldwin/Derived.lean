@@ -5,6 +5,8 @@ import SocialChoice.Rules.ScoringElimination.Anonymity
 import SocialChoice.Rules.ScoringElimination.Baldwin.Defs
 import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
 import SocialChoice.Rules.ScoringElimination.Baldwin.CondorcetLoser
+import SocialChoice.Rules.ScoringElimination.Baldwin.InformationalBasis
+import SocialChoice.Rules.ScoringElimination.Baldwin.PositiveInvolvement
 import SocialChoice.Rules.ScoringElimination.Baldwin.Smith
 import SocialChoice.Rules.ScoringElimination.Neutrality
 import SocialChoice.Rules.ScoringElimination.Pareto
@@ -67,6 +69,13 @@ theorem baldwin_not_optimistParticipation : ¬ OptimistParticipation baldwin := 
   intro hpart
   exact CondorcetOptimistParticipation.no_condorcet_optimist_participation_m4_n17
     ⟨baldwin, baldwin_condorcet_consistency, hpart⟩
+
+theorem baldwin_not_negativeInvolvement : ¬ NegativeInvolvement baldwin := by
+  intro hneg
+  have hiff : PositiveInvolvement baldwin ↔ NegativeInvolvement baldwin :=
+    Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement
+      (f := baldwin) baldwin_isVotingRule baldwin_marginBased
+  exact baldwin_not_positiveInvolvement (hiff.mpr hneg)
 
 theorem bordaElimination_majority_criterion : MajorityCriterion bordaElimination := by
   intro V A _ _ P c hmaj
