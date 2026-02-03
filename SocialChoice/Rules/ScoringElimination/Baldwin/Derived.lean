@@ -8,6 +8,7 @@ import SocialChoice.Rules.ScoringElimination.Baldwin.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.Baldwin.InformationalBasis
 import SocialChoice.Rules.ScoringElimination.Baldwin.PositiveInvolvement
 import SocialChoice.Rules.ScoringElimination.Baldwin.Smith
+import SocialChoice.Rules.ScoringElimination.Monotonicity
 import SocialChoice.Rules.ScoringElimination.Neutrality
 import SocialChoice.Rules.ScoringElimination.Pareto
 
@@ -76,6 +77,17 @@ theorem baldwin_not_negativeInvolvement : ¬ NegativeInvolvement baldwin := by
     Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement
       (f := baldwin) baldwin_isVotingRule baldwin_marginBased
   exact baldwin_not_positiveInvolvement (hiff.mpr hneg)
+
+theorem baldwin_not_monotonicity : ¬ Monotonicity baldwin := by
+  have hweak : weaklyDecreasingScore bordaScore :=
+    strictlyDecreasingScore.to_weakly (score := bordaScore) bordaScore_strictlyDecreasing
+  have h3 : bordaScore 3 0 > bordaScore 3 2 := by
+    simpa using (bordaScore_strictlyDecreasing 3 0 2 (by decide) (by decide) (by decide))
+  have h2 : bordaScore 2 0 > bordaScore 2 1 := by
+    simpa using (bordaScore_strictlyDecreasing 2 0 1 (by decide) (by decide) (by decide))
+  simpa [baldwin] using
+    (ScoringEliminationMonotonicityCounterexample.scoringElimination_not_monotonicity
+      (score := bordaScore) hweak h3 h2)
 
 theorem bordaElimination_majority_criterion : MajorityCriterion bordaElimination := by
   intro V A _ _ P c hmaj
