@@ -9,6 +9,7 @@ import SocialChoice.Rules.TopCycle.InformationalBasis
 import SocialChoice.Rules.TopCycle.MutualMajority
 import SocialChoice.Rules.TopCycle.Involvement
 import SocialChoice.Rules.TopCycle.Monotonicity
+import SocialChoice.Rules.TopCycle.Pareto
 
 namespace SocialChoice
 
@@ -37,6 +38,13 @@ theorem topCycle_majorityLoserCriterion : MajorityLoserCriterion topCycle := by
 
 theorem topCycle_smithCriterion : SmithCriterion topCycle := by
   exact Refines.refl topCycle
+
+theorem topCycle_not_independenceOfDominated : ¬ IndependenceOfDominated topCycle := by
+  intro hInd
+  have hPareto : ParetoEfficiency topCycle :=
+    Implies.apply independenceOfDominated_implies_paretoEfficiency
+      (f := topCycle) topCycle_isVotingRule hInd
+  exact topCycle_not_pareto_efficiency hPareto
 
 theorem topCycle_not_subsetReinforcement : ¬ SubsetReinforcement topCycle := by
   intro hsub

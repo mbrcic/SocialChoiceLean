@@ -103,7 +103,7 @@ theorem schulze_not_positiveInvolvement : ¬ PositiveInvolvement schulze := by
   intro hpos
   have hiff : PositiveInvolvement schulze ↔ NegativeInvolvement schulze :=
     Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement (f := schulze)
-      schulze_marginBased
+      schulze_isVotingRule schulze_marginBased
   exact schulze_not_negativeInvolvement (hiff.mp hpos)
 
 end SocialChoice
