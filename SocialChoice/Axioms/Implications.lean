@@ -11,6 +11,7 @@ import SocialChoice.Axioms.Anonymity
 import SocialChoice.Axioms.Reinforcement
 import SocialChoice.Axioms.Reversal
 import SocialChoice.Axioms.Participation
+import SocialChoice.SetExtensions
 import SocialChoice.Axioms.Smith
 import SocialChoice.Rules.TopCycle.Defs
 import SocialChoice.Rules.TopCycle.Condorcet
@@ -603,17 +604,42 @@ theorem marginBased_positiveInvolvement_iff_negativeInvolvement :
       hneg (V := V') (u := w) hw Q' Q'' c hagree'' hcQ' hbot'
     exact (hcQ''not hcQ'').elim
 
+theorem strongParticipation_implies_of_weakRefinement
+    (E₁ E₂ : ∀ {A : Type}, LinearOrder A → SetExtension A)
+    (href :
+      ∀ {A : Type} [DecidableEq A] (r : LinearOrder A) (s t : Finset A),
+        s.Nonempty → t.Nonempty →
+        (E₁ (A := A) r).weak s t → (E₂ (A := A) r).weak s t) :
+    Implies (StrongParticipation E₁) (StrongParticipation E₂) := by
+  intro f hf hpart U A _ _ _ _ V u hu P Q hagree
+  have hQ : (f Q).Nonempty := hf Q
+  have hP : (f P).Nonempty := hf P
+  exact href (Q.pref (newVoter (u := u) (V := V) hu)) (f Q) (f P) hQ hP
+    (hpart (V := V) (u := u) hu P Q hagree)
+
+theorem strongFishburnParticipation_implies_optimistParticipation :
+    Implies StrongFishburnParticipation OptimistParticipation := by
+  apply strongParticipation_implies_of_weakRefinement
+    (E₁ := fun {A} r => FishburnExtension (A := A) r)
+    (E₂ := fun {A} r => OptimistExtension (A := A) r)
+  intro A _ r s t hs ht hfish
+  letI : DecidableEq A := r.toDecidableEq
+  have hfish' : (FishburnExtension (A := A) r).weak s t := by
+    simpa using hfish
+  exact fishburnExtension_weak_implies_optimistExtension_weak
+    (r := r) hs ht hfish'
+
 theorem strongFishburnParticipation_implies_positiveInvolvement :
     Implies StrongFishburnParticipation PositiveInvolvement := by
   intro f hf hpart U A _ _ V u hu P Q c hagree hc htop
   classical
+  let _ : Nonempty A := ⟨c⟩
   let r := Q.pref (newVoter (u := u) (V := V) hu)
   letI : LinearOrder A := r
   have hfish : FishburnWeak r (f Q) (f P) := by
     simpa [StrongFishburnParticipation, StrongParticipation, FishburnExtension, r] using
       (hpart (V := V) (u := u) hu P Q hagree)
   by_contra hcQ
-  let _ : Nonempty A := ⟨c⟩
   have hneQ : (f Q).Nonempty := hf Q
   rcases hneQ with ⟨x, hx⟩
   have hxne : x ≠ c := by
@@ -635,6 +661,7 @@ theorem strongFishburnParticipation_implies_negativeInvolvement :
     Implies StrongFishburnParticipation NegativeInvolvement := by
   intro f hf hpart U A _ _ V u hu P Q c hagree hc hbot
   classical
+  let _ : Nonempty A := ⟨c⟩
   let r := Q.pref (newVoter (u := u) (V := V) hu)
   letI : LinearOrder A := r
   have hfish : FishburnWeak r (f Q) (f P) := by
@@ -643,7 +670,6 @@ theorem strongFishburnParticipation_implies_negativeInvolvement :
   by_contra hcQ
   have hcQ' : c ∈ f Q := by
     simpa using hcQ
-  let _ : Nonempty A := ⟨c⟩
   have hneP : (f P).Nonempty := hf P
   rcases hneP with ⟨x, hx⟩
   have hxne : x ≠ c := by
@@ -660,6 +686,33 @@ theorem strongFishburnParticipation_implies_negativeInvolvement :
       exact h3 c hcs x hxst
   have hlt : r.lt x c := hbot x hxne
   exact (not_le_of_gt hlt) hle
+
+theorem optimistParticipation_implies_positiveInvolvement :
+    Implies OptimistParticipation PositiveInvolvement := by
+  intro f _ hopt U A _ _ V u hu P Q c hagree hc htop
+  classical
+  let _ : Nonempty A := ⟨c⟩
+  let r := Q.pref (newVoter (u := u) (V := V) hu)
+  letI : LinearOrder A := r
+  have hopt' : OptimistWeak r (f Q) (f P) := by
+    simpa [OptimistParticipation, StrongParticipation, OptimistExtension, r] using
+      (hopt (V := V) (u := u) hu P Q hagree)
+  rcases hopt' with ⟨a, b, haQ, hbP, hle⟩
+  have hb_eq : b = c := by
+    by_contra hbc
+    have hbc' : b < c := by
+      simpa using (hbP.2 c hc (by simpa [eq_comm] using hbc))
+    have hcb : c < b := by
+      simpa using (htop b hbc)
+    exact (lt_asymm hbc' hcb).elim
+  have ha_eq : a = c := by
+    have hle' : a ≤ c := by
+      simpa [hb_eq] using hle
+    by_contra hac
+    have hca : c < a := by
+      simpa using (htop a hac)
+    exact (not_le_of_gt hca) hle'
+  simpa [ha_eq] using haQ.1
 
 theorem positiveInvolvement_implies_singletonPositiveInvolvement :
     Implies PositiveInvolvement SingletonPositiveInvolvement := by

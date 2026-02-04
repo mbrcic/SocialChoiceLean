@@ -66,11 +66,20 @@ theorem borda_subsetReinforcement : SubsetReinforcement borda := by
   simpa [borda] using hx''
 
 theorem borda_strongFishburnParticipation : StrongFishburnParticipation borda := by
-  intro U A _ _ _ V u hu P Q hagree
+  intro U A _ _ _ _ V u hu P Q hagree
   have hmono : weaklyDecreasingScore bordaScore :=
     strictlyDecreasingScore.to_weakly (score := bordaScore) bordaScore_strictlyDecreasing
   have h :=
     (scoringRule_strongFishburnParticipation (score := bordaScore) hmono)
+      (V := V) (u := u) (hu := hu) (P := P) (Q := Q) hagree
+  simpa [borda] using h
+
+theorem borda_optimistParticipation : OptimistParticipation borda := by
+  intro U A _ _ _ _ V u hu P Q hagree
+  have hmono : weaklyDecreasingScore bordaScore :=
+    strictlyDecreasingScore.to_weakly (score := bordaScore) bordaScore_strictlyDecreasing
+  have h :=
+    (scoringRule_optimistParticipation (score := bordaScore) hmono)
       (V := V) (u := u) (hu := hu) (P := P) (Q := Q) hagree
   simpa [borda] using h
 

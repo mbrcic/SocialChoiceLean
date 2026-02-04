@@ -172,6 +172,34 @@ lemma fishburn_min_tb_le {A : Type} [DecidableEq A] (tb r : LinearOrder A)
         exact h3 a ha_st b hb_ts
   simpa [ha, hb] using h
 
+lemma fishburnWeak_implies_optimistWeak {A : Type} [DecidableEq A] (r : LinearOrder A)
+    {s t : Finset A} (hs : s.Nonempty) (ht : t.Nonempty) :
+    FishburnWeak r s t → OptimistWeak r s t := by
+  intro hfish
+  refine ⟨s.min' hs, t.min' ht, ?_⟩
+  have hs_top : TopInSet r s (s.min' hs) := by
+    constructor
+    · exact s.min'_mem hs
+    · intro b hb hne
+      have hle : s.min' hs ≤ b := s.min'_le b hb
+      exact lt_of_le_of_ne hle hne.symm
+  have ht_top : TopInSet r t (t.min' ht) := by
+    constructor
+    · exact t.min'_mem ht
+    · intro b hb hne
+      have hle : t.min' ht ≤ b := t.min'_le b hb
+      exact lt_of_le_of_ne hle hne.symm
+  refine ⟨hs_top, ht_top, ?_⟩
+  exact fishburn_min_tb_le (tb := r) (r := r) (s := s) (t := t) hs ht hfish
+
+lemma fishburnExtension_weak_implies_optimistExtension_weak
+    {A : Type} [DecidableEq A] (r : LinearOrder A)
+    {s t : Finset A} (hs : s.Nonempty) (ht : t.Nonempty) :
+    (FishburnExtension (A := A) r).weak s t → (OptimistExtension (A := A) r).weak s t := by
+  intro hfish
+  simpa [FishburnExtension, OptimistExtension] using
+    (fishburnWeak_implies_optimistWeak (r := r) hs ht hfish)
+
 noncomputable def tieBrokenRule {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
     (tb : LinearOrder A) (f : VotingRule) (hf : IsVotingRule f) : Profile V A → Finset A := by
   classical

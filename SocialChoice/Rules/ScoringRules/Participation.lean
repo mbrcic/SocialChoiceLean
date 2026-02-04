@@ -117,7 +117,7 @@ lemma lt_of_score_gt {A : Type} [Fintype A] (r : LinearOrder A)
 theorem scoringRule_strongFishburnParticipation (score : Nat → Nat → Int)
     (hmono : weaklyDecreasingScore score) :
     StrongFishburnParticipation (scoringRule score) := by
-  intro U A _ _ _ V u hu P Q hagree
+  intro U A _ _ _ _ V u hu P Q hagree
   classical
   by_cases hA : (Finset.univ : Finset A).Nonempty
   · let scoreFun : Nat → Int := fun r => score (Fintype.card A) r

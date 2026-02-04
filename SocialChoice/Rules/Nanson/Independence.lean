@@ -1,6 +1,7 @@
 import Mathlib.Tactic
 import Mathlib.Tactic.FinCases
 import SocialChoice.Axioms.Independence
+import SocialChoice.Axioms.Clones
 import SocialChoice.ListBallot
 import SocialChoice.Rules.Nanson.Reversal
 
@@ -271,6 +272,155 @@ lemma lift_nanson_profile'_has_1 : (b : A3) ∈ liftWinners (nanson profile') :=
   have h : cand1 ∈ nanson profile' := nanson_profile'_has_1
   simpa [liftWinners, cand1] using h
 
+/-!
+## The same profile violates independence of clones
+
+Clone set {0,2}. Removing clone 0 changes whether candidate 1 is a winner.
+-/
+
+def cloneSet : Set A3 := {a, c}
+
+lemma a_ne_c : (a : A3) ≠ c := by
+  decide
+
+lemma b_ne_a : (b : A3) ≠ a := by
+  decide
+
+lemma b_ne_c : (b : A3) ≠ c := by
+  decide
+
+lemma b_not_mem_cloneSet : (b : A3) ∉ cloneSet := by
+  intro hb
+  have hb' : b = a ∨ b = c := by
+    simpa [cloneSet] using hb
+  cases hb' with
+  | inl h => exact (b_ne_a h).elim
+  | inr h => exact (b_ne_c h).elim
+
+lemma c_mem_cloneSet : (c : A3) ∈ cloneSet := by
+  simp [cloneSet]
+
+lemma cloneSet_profile : CloneSet profile cloneSet := by
+  refine ⟨?_, ?_⟩
+  · exact ⟨a, by simp [cloneSet]⟩
+  · intro v d hd
+    fin_cases d
+    · exact (hd (by simp [cloneSet])).elim
+    · -- d = b
+      fin_cases v
+      ·
+        refine Or.inr ?_
+        intro x hx
+        have hx' : x = a ∨ x = c := by
+          simpa [cloneSet] using hx
+        cases hx' with
+        | inl hx0 =>
+            subst hx0
+            simp [profile, ballots, prefers_iff_prefersInList, prefersInList]; decide
+        | inr hx2 =>
+            subst hx2
+            simp [profile, ballots, prefers_iff_prefersInList, prefersInList]; decide
+      ·
+        refine Or.inl ?_
+        intro x hx
+        have hx' : x = a ∨ x = c := by
+          simpa [cloneSet] using hx
+        cases hx' with
+        | inl hx0 =>
+            subst hx0
+            simp [profile, ballots, prefers_iff_prefersInList, prefersInList]; decide
+        | inr hx2 =>
+            subst hx2
+            simp [profile, ballots, prefers_iff_prefersInList, prefersInList]; decide
+    · exact (hd (by simp [cloneSet])).elim
+
+lemma clonePred_eq_ne :
+    clonePred cloneSet c = (fun x : A3 => x ≠ a) := by
+  funext x
+  apply propext
+  fin_cases x
+  · -- x = a
+    constructor
+    · intro hx
+      cases hx with
+      | inl hx' => exact (hx' (by simp [cloneSet])).elim
+      | inr hx' => exact (a_ne_c hx').elim
+    · intro hx
+      cases hx rfl
+  · -- x = b
+    constructor
+    · intro _hx
+      exact b_ne_a
+    · intro _hx
+      exact Or.inl b_not_mem_cloneSet
+  · -- x = c
+    constructor
+    · intro _hx
+      exact a_ne_c.symm
+    · intro _hx
+      exact Or.inr rfl
+
+def cand1clone : {a : A3 // clonePred cloneSet c a} :=
+  ⟨b, Or.inl b_not_mem_cloneSet⟩
+
+lemma cast_subtype_val {A : Type} {p q : A → Prop}
+    (h : p = q) (x : {a : A // p a}) :
+    (cast (congrArg (fun r => {a : A // r a}) h) x : {a : A // q a}).1 = x.1 := by
+  cases x
+  cases h
+  rfl
+
+lemma mem_castCandidates_iff {V A : Type} [Fintype V] [Fintype A]
+    (f : VotingRule) {p q : A → Prop}
+    (dp : DecidablePred p) (dq : DecidablePred q)
+    (h : p = q) (x : {a : A // p a}) (P : Profile V {a : A // p a}) :
+    x ∈ f P ↔
+      ((cast (congrArg (fun r => {a : A // r a}) h) x : {a : A // q a}) ∈
+        f (castCandidates (p := p) (q := q) h P)) := by
+  classical
+  letI : DecidablePred p := dp
+  letI : DecidablePred q := dq
+  cases h
+  cases (Subsingleton.elim dq dp)
+  rfl
+
+lemma nanson_cloneProfile_has_1_raw :
+    cand1clone ∈ nanson (removeClonesExcept profile cloneSet c) := by
+  classical
+  let q : A3 → Prop := fun x => x ≠ a
+  have hb : cand1 ∈ nanson (restrictCandidates profile q) := by
+    simpa [profile', restrictProfile, q] using nanson_profile'_has_1
+  have hpred : q = clonePred cloneSet c := by
+    simpa [q] using clonePred_eq_ne.symm
+  have hb_cast :
+      (cast (congrArg (fun r => {a : A3 // r a}) hpred) cand1 :
+        {a : A3 // clonePred cloneSet c a}) ∈
+        nanson (castCandidates (p := q) (q := clonePred cloneSet c) hpred
+          (restrictCandidates profile q)) := by
+    exact (mem_castCandidates_iff (f := nanson)
+      (dp := inferInstance) (dq := inferInstance) (h := hpred)
+      (x := cand1) (P := restrictCandidates profile q)).1 hb
+  have hb_cast' :
+      (cast (congrArg (fun r => {a : A3 // r a}) hpred) cand1 :
+        {a : A3 // clonePred cloneSet c a}) ∈
+        nanson (restrictCandidates profile (clonePred cloneSet c)) := by
+    simpa [castCandidates_restrictCandidates] using hb_cast
+  have hcast_cand1 :
+      (cast (congrArg (fun r => {a : A3 // r a}) hpred) cand1 :
+        {a : A3 // clonePred cloneSet c a}) = cand1clone := by
+    apply Subtype.ext
+    simpa [cand1clone, cand1] using (cast_subtype_val (h := hpred) (x := cand1))
+  have hb_final :
+      cand1clone ∈ nanson (restrictCandidates profile (clonePred cloneSet c)) := by
+    simpa [hcast_cand1] using hb_cast'
+  simpa [removeClonesExcept] using hb_final
+
+lemma nanson_cloneProfile_has_1 :
+    (⟨b, Or.inl b_not_mem_cloneSet⟩ :
+        {a : A3 // clonePred cloneSet c a}) ∈
+      nanson (removeClonesExcept profile cloneSet c) := by
+  simpa [cand1clone] using nanson_cloneProfile_has_1_raw
+
 end NansonIndependenceCounterexample
 
 open NansonIndependenceCounterexample
@@ -287,5 +437,26 @@ theorem nanson_not_independenceOfDominated : ¬ IndependenceOfDominated nanson :
   have hmem' : (b : A3) ∈ nanson profile := by
     simpa [hEq] using hmem
   exact (nanson_profile_not_1 hmem').elim
+
+theorem nanson_not_independenceOfClones : ¬ IndependenceOfClones nanson := by
+  intro hind
+  have hclone : CloneSet profile cloneSet := cloneSet_profile
+  have hx : (c : A3) ∈ cloneSet := c_mem_cloneSet
+  have h :=
+    hind (P := profile) (X := cloneSet) (x := c) hclone hx
+  have hc : (b : A3) ∉ cloneSet := b_not_mem_cloneSet
+  have hnonclone := h.1 b hc
+  have hb_left :
+      (⟨b, Or.inl hc⟩ : {a : A3 // clonePred cloneSet c a}) ∈
+        nanson (removeClonesExcept profile cloneSet c) := by
+    have hsub : (⟨b, Or.inl hc⟩ : {a : A3 // clonePred cloneSet c a}) =
+        (⟨b, Or.inl b_not_mem_cloneSet⟩ :
+          {a : A3 // clonePred cloneSet c a}) := by
+      apply Subtype.ext
+      rfl
+    simpa [hsub] using nanson_cloneProfile_has_1
+  have hb_right : (b : A3) ∈ nanson profile :=
+    (hnonclone).2 hb_left
+  exact (nanson_profile_not_1 hb_right).elim
 
 end SocialChoice

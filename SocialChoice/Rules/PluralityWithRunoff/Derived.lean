@@ -1,6 +1,7 @@
 import SocialChoice.Axioms.Implications
 import SocialChoice.Rules.PluralityWithRunoff.Condorcet
 import SocialChoice.Rules.PluralityWithRunoff.CondorcetLoser
+import SocialChoice.Rules.PluralityWithRunoff.Involvement
 import SocialChoice.Rules.PluralityWithRunoff.Pareto
 import SocialChoice.Rules.PluralityWithRunoff.Reversal
 import SocialChoice.Rules.PluralityWithRunoff.SubsetReinforcement
@@ -36,5 +37,13 @@ theorem pluralityWithRunoff_not_reversalSymmetry : ¬ ReversalSymmetry plurality
     Implies.apply reversalSymmetry_implies_singletonReversalSymmetry
       (f := pluralityWithRunoff) pluralityWithRunoff_isVotingRule hrev
   exact pluralityWithRunoff_not_singletonReversalSymmetry hsingle
+
+theorem pluralityWithRunoff_not_strongFishburnParticipation :
+    ¬ StrongFishburnParticipation pluralityWithRunoff := by
+  intro hpart
+  have hneg : NegativeInvolvement pluralityWithRunoff :=
+    Implies.apply strongFishburnParticipation_implies_negativeInvolvement
+      (f := pluralityWithRunoff) pluralityWithRunoff_isVotingRule hpart
+  exact pluralityWithRunoff_not_negativeInvolvement hneg
 
 end SocialChoice

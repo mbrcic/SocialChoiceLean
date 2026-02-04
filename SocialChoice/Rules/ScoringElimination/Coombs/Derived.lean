@@ -2,6 +2,7 @@ import SocialChoice.Axioms.Implications
 import SocialChoice.Rules.ScoringElimination.Anonymity
 import SocialChoice.Rules.ScoringElimination.Coombs.Condorcet
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
+import SocialChoice.Rules.ScoringElimination.Coombs.NegativeInvolvement
 import SocialChoice.Rules.ScoringElimination.Coombs.PositiveInvolvement
 import SocialChoice.Rules.ScoringElimination.Coombs.Reversal
 import SocialChoice.Rules.ScoringElimination.Coombs.SubsetReinforcement
@@ -44,6 +45,20 @@ theorem coombs_not_monotonicity : ¬ Monotonicity coombs := by
   simpa [coombs] using
       (ScoringEliminationMonotonicityCounterexample.scoringElimination_not_monotonicity
       (score := vetoScore) hweak h3 h2)
+
+theorem coombs_not_strongFishburnParticipation : ¬ StrongFishburnParticipation coombs := by
+  intro hpart
+  have hpos : PositiveInvolvement coombs :=
+    Implies.apply strongFishburnParticipation_implies_positiveInvolvement
+      (f := coombs) coombs_isVotingRule hpart
+  exact coombs_not_positiveInvolvement hpos
+
+theorem coombs_not_optimistParticipation : ¬ OptimistParticipation coombs := by
+  intro hopt
+  have hpos : PositiveInvolvement coombs :=
+    Implies.apply optimistParticipation_implies_positiveInvolvement
+      (f := coombs) coombs_isVotingRule hopt
+  exact coombs_not_positiveInvolvement hpos
 
 theorem coombs_not_subsetReinforcement : ¬ SubsetReinforcement coombs := by
   intro hsub

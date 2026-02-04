@@ -5,6 +5,7 @@ import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Condorcet
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Independence
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.MutualMajority
+import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.OptimistParticipation
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Reversal
 import SocialChoice.Rules.PluralityWithRunoff.Involvement
 import SocialChoice.Rules.PluralityWithRunoff.Monotonicity
@@ -110,6 +111,14 @@ theorem instantRunoffVoting_not_negativeInvolvement :
       hnotmem
       hbottom
   exact hcontra hmem
+
+theorem instantRunoffVoting_not_strongFishburnParticipation :
+    ¬ StrongFishburnParticipation instantRunoffVoting := by
+  intro hpart
+  have hneg : NegativeInvolvement instantRunoffVoting :=
+    Implies.apply strongFishburnParticipation_implies_negativeInvolvement
+      (f := instantRunoffVoting) instantRunoffVoting_isVotingRule hpart
+  exact instantRunoffVoting_not_negativeInvolvement hneg
 
 theorem instantRunoffVoting_not_subsetReinforcement :
     ¬ SubsetReinforcement instantRunoffVoting := by

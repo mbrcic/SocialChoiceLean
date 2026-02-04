@@ -35,4 +35,12 @@ theorem scoringRule_negative_involvement (score : Nat → Nat → Int)
   · exact scoringRule_isVotingRule score
   · exact scoringRule_strongFishburnParticipation (score := score) hmono
 
+theorem scoringRule_optimistParticipation (score : Nat → Nat → Int)
+    (hmono : weaklyDecreasingScore score) :
+    OptimistParticipation (scoringRule score) := by
+  apply Implies.apply strongFishburnParticipation_implies_optimistParticipation
+    (f := scoringRule score)
+  · exact scoringRule_isVotingRule score
+  · exact scoringRule_strongFishburnParticipation (score := score) hmono
+
 end SocialChoice

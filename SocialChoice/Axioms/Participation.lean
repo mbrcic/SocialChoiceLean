@@ -71,7 +71,7 @@ def NegativeInvolvement (f : VotingRule) : Prop :=
 
 def StrongParticipation (E : ∀ {A : Type}, LinearOrder A → SetExtension A) (f : VotingRule) :
     Prop :=
-  ∀ {U A : Type} [DecidableEq U] [Fintype A] [DecidableEq A]
+  ∀ {U A : Type} [DecidableEq U] [Fintype A] [Nonempty A] [DecidableEq A]
       (V : Finset U) (u : U) (hu : u ∉ V)
     (P : Profile (Electorate U V) A)
     (Q : Profile (Electorate U (insert u V)) A),
@@ -80,7 +80,7 @@ def StrongParticipation (E : ∀ {A : Type}, LinearOrder A → SetExtension A) (
 
 def WeakParticipation (E : ∀ {A : Type}, LinearOrder A → SetExtension A) (f : VotingRule) :
     Prop :=
-  ∀ {U A : Type} [DecidableEq U] [Fintype A] [DecidableEq A]
+  ∀ {U A : Type} [DecidableEq U] [Fintype A] [Nonempty A] [DecidableEq A]
       (V : Finset U) (u : U) (hu : u ∉ V)
       (P : Profile (Electorate U V) A)
       (Q : Profile (Electorate U (insert u V)) A),

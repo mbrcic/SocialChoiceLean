@@ -66,9 +66,17 @@ theorem veto_subsetReinforcement : SubsetReinforcement veto := by
   simpa [veto] using hx''
 
 theorem veto_strongFishburnParticipation : StrongFishburnParticipation veto := by
-  intro U A _ _ _ V u hu P Q hagree
+  intro U A _ _ _ _ V u hu P Q hagree
   have h :=
     (scoringRule_strongFishburnParticipation (score := vetoScore)
+      vetoScore_weaklyDecreasing)
+      (V := V) (u := u) (hu := hu) (P := P) (Q := Q) hagree
+  simpa [veto] using h
+
+theorem veto_optimistParticipation : OptimistParticipation veto := by
+  intro U A _ _ _ _ V u hu P Q hagree
+  have h :=
+    (scoringRule_optimistParticipation (score := vetoScore)
       vetoScore_weaklyDecreasing)
       (V := V) (u := u) (hu := hu) (P := P) (Q := Q) hagree
   simpa [veto] using h

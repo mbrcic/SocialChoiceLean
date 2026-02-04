@@ -88,9 +88,17 @@ theorem plurality_subsetReinforcement : SubsetReinforcement plurality := by
   simpa [plurality_eq_scoringRule_app] using hx''
 
 theorem plurality_strongFishburnParticipation : StrongFishburnParticipation plurality := by
-  intro U A _ _ _ V u hu P Q hagree
+  intro U A _ _ _ _ V u hu P Q hagree
   have h :=
     (scoringRule_strongFishburnParticipation (score := pluralityScore)
+      pluralityScore_weaklyDecreasing)
+      (V := V) (u := u) (hu := hu) (P := P) (Q := Q) hagree
+  simpa [plurality_eq_scoringRule_app] using h
+
+theorem plurality_optimistParticipation : OptimistParticipation plurality := by
+  intro U A _ _ _ _ V u hu P Q hagree
+  have h :=
+    (scoringRule_optimistParticipation (score := pluralityScore)
       pluralityScore_weaklyDecreasing)
       (V := V) (u := u) (hu := hu) (P := P) (Q := Q) hagree
   simpa [plurality_eq_scoringRule_app] using h
