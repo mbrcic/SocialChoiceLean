@@ -3,6 +3,7 @@ import SocialChoice.Rules.ScoringElimination.Anonymity
 import SocialChoice.Rules.ScoringElimination.Coombs.Condorcet
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
 import SocialChoice.Rules.ScoringElimination.Coombs.PositiveInvolvement
+import SocialChoice.Rules.ScoringElimination.Coombs.SubsetReinforcement
 import SocialChoice.Rules.ScoringElimination.Coombs.Majority
 import SocialChoice.Rules.ScoringElimination.Coombs.Pareto
 import SocialChoice.Rules.ScoringElimination.Monotonicity
@@ -40,8 +41,25 @@ theorem coombs_not_monotonicity : ¬ Monotonicity coombs := by
   have h2 : vetoScore 2 0 > vetoScore 2 1 := by
     decide
   simpa [coombs] using
-    (ScoringEliminationMonotonicityCounterexample.scoringElimination_not_monotonicity
+      (ScoringEliminationMonotonicityCounterexample.scoringElimination_not_monotonicity
       (score := vetoScore) hweak h3 h2)
+
+theorem coombs_not_subsetReinforcement : ¬ SubsetReinforcement coombs := by
+  intro hsub
+  have hsubset := hsub (U := Fin 4) (A := Fin 3)
+    (V := CoombsSubsetReinforcementCounterexample.voters1)
+    (W := CoombsSubsetReinforcementCounterexample.voters2)
+    (hdisj := CoombsSubsetReinforcementCounterexample.voters1_disjoint_voters2)
+    (P := CoombsSubsetReinforcementCounterexample.profile1)
+    (Q := CoombsSubsetReinforcementCounterexample.profile2)
+    (R := CoombsSubsetReinforcementCounterexample.profileAll)
+    CoombsSubsetReinforcementCounterexample.restrict_profileAll_voters1
+    CoombsSubsetReinforcementCounterexample.restrict_profileAll_voters2
+  exact CoombsSubsetReinforcementCounterexample.coombs_subsetReinforcement_counterexample_sets hsubset
+
+theorem coombs_not_reinforcement : ¬ Reinforcement coombs := by
+  intro hrein
+  exact coombs_not_subsetReinforcement (reinforcement_subset hrein)
 
 theorem vetoElimination_majority_loser_criterion :
     MajorityLoserCriterion vetoElimination := by
