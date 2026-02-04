@@ -7,6 +7,7 @@ import SocialChoice.Rules.Copeland.CondorcetLoser
 import SocialChoice.Rules.Copeland.Smith
 import SocialChoice.Rules.Copeland.InformationalBasis
 import SocialChoice.Rules.Copeland.Involvement
+import SocialChoice.Rules.Copeland.Reversal
 
 namespace SocialChoice
 
@@ -61,5 +62,10 @@ theorem copeland_not_negativeInvolvement : ¬ NegativeInvolvement copeland := by
     Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement
       (f := copeland) copeland_isVotingRule copeland_marginBased
   exact copeland_not_positiveInvolvement (hiff.mpr hneg)
+
+theorem copeland_singleton_reversal_symmetry : SingletonReversalSymmetry copeland := by
+  apply Implies.apply reversalSymmetry_implies_singletonReversalSymmetry (f := copeland)
+  · exact copeland_isVotingRule
+  exact copeland_reversal_symmetry
 
 end SocialChoice

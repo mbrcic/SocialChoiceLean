@@ -3,6 +3,7 @@ import SocialChoice.Rules.ScoringElimination.Anonymity
 import SocialChoice.Rules.ScoringElimination.Coombs.Condorcet
 import SocialChoice.Rules.ScoringElimination.Coombs.Defs
 import SocialChoice.Rules.ScoringElimination.Coombs.PositiveInvolvement
+import SocialChoice.Rules.ScoringElimination.Coombs.Reversal
 import SocialChoice.Rules.ScoringElimination.Coombs.SubsetReinforcement
 import SocialChoice.Rules.ScoringElimination.Coombs.Majority
 import SocialChoice.Rules.ScoringElimination.Coombs.Pareto
@@ -60,6 +61,20 @@ theorem coombs_not_subsetReinforcement : ¬ SubsetReinforcement coombs := by
 theorem coombs_not_reinforcement : ¬ Reinforcement coombs := by
   intro hrein
   exact coombs_not_subsetReinforcement (reinforcement_subset hrein)
+
+theorem coombs_not_reversalSymmetry : ¬ ReversalSymmetry coombs := by
+  intro hrev
+  have hsingle : SingletonReversalSymmetry coombs :=
+    Implies.apply reversalSymmetry_implies_singletonReversalSymmetry
+      (f := coombs) coombs_isVotingRule hrev
+  exact coombs_not_singletonReversalSymmetry hsingle
+
+theorem coombs_not_mutualMajorityCriterion : ¬ MutualMajorityCriterion coombs := by
+  intro hmut
+  have hmaj : MajorityCriterion coombs :=
+    Implies.apply mutualMajorityCriterion_implies_majorityCriterion_Imp
+      (f := coombs) coombs_isVotingRule hmut
+  exact coombs_not_majority_criterion hmaj
 
 theorem vetoElimination_majority_loser_criterion :
     MajorityLoserCriterion vetoElimination := by

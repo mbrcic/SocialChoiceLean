@@ -4,6 +4,8 @@ import SocialChoice.Cycles
 import SocialChoice.Rules.Schulze.Defs
 import SocialChoice.Rules.Schulze.Path
 import SocialChoice.Rules.Schulze.Transitivity
+import SocialChoice.Rules.SplitCycle.Reversal
+import Mathlib.Tactic.FinCases
 
 namespace SocialChoice
 
@@ -263,5 +265,339 @@ theorem schulze_singleton_reversal_symmetry : SingletonReversalSymmetry schulze 
   have hxcond : ∀ z, ¬ schulzeDefeats (reverse_profile P) z x :=
     (Finset.mem_filter.mp hxmem).2
   exact (hxcond y) hydef'
+
+section SchulzeReversalCounterexample
+
+open Finset
+
+lemma reversalCounterexample_margin_from_0_le_zero (y : Fin 3) :
+    margin reversalCounterexampleProfile (0 : Fin 3) y ≤ 0 := by
+  fin_cases y
+  · simp [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexample_marginList_00]
+  · simp [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexample_marginList_01]
+  · simp [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexample_marginList_02]
+
+lemma reversalCounterexample_margin_from_2_le_zero (y : Fin 3) :
+    margin reversalCounterexampleProfile (2 : Fin 3) y ≤ 0 := by
+  fin_cases y
+  · simp [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexample_marginList_20]
+  · simp [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexample_marginList_21]
+  · simp [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexample_marginList_22]
+
+lemma reversalCounterexample_pathStrength_from_0_le_zero (t : List (Fin 3)) :
+    pathStrength reversalCounterexampleProfile ((0 : Fin 3) :: t) ≤ 0 := by
+  cases t with
+  | nil =>
+      simp [pathStrength]
+  | cons y t' =>
+      have hmargin : margin reversalCounterexampleProfile (0 : Fin 3) y ≤ 0 :=
+        reversalCounterexample_margin_from_0_le_zero y
+      have hpath :
+          pathStrength reversalCounterexampleProfile (0 :: y :: t') ≤
+            margin reversalCounterexampleProfile (0 : Fin 3) y := by
+        simpa [pathStrength] using
+          (pathStrengthAux_le_init (P := reversalCounterexampleProfile) (a := y) (l := t')
+            (m := margin reversalCounterexampleProfile (0 : Fin 3) y))
+      exact le_trans hpath hmargin
+
+lemma reversalCounterexample_pathStrength_from_2_le_zero (t : List (Fin 3)) :
+    pathStrength reversalCounterexampleProfile ((2 : Fin 3) :: t) ≤ 0 := by
+  cases t with
+  | nil =>
+      simp [pathStrength]
+  | cons y t' =>
+      have hmargin : margin reversalCounterexampleProfile (2 : Fin 3) y ≤ 0 :=
+        reversalCounterexample_margin_from_2_le_zero y
+      have hpath :
+          pathStrength reversalCounterexampleProfile (2 :: y :: t') ≤
+            margin reversalCounterexampleProfile (2 : Fin 3) y := by
+        simpa [pathStrength] using
+          (pathStrengthAux_le_init (P := reversalCounterexampleProfile) (a := y) (l := t')
+            (m := margin reversalCounterexampleProfile (2 : Fin 3) y))
+      exact le_trans hpath hmargin
+
+lemma reversalCounterexample_strongestPath_0_y_le_zero (y : Fin 3) (hy : y ≠ 0) :
+    strongestPath reversalCounterexampleProfile (0 : Fin 3) y ≤ 0 := by
+  classical
+  have hne_paths :
+      (pathsUpTo (A := Fin 3) (Fintype.card (Fin 3)) (0 : Fin 3) y).Nonempty :=
+    pathsUpTo_nonempty_of_ne (A := Fin 3) (0 : Fin 3) y (by simpa [eq_comm] using hy)
+  rcases exists_max_path_props (P := reversalCounterexampleProfile) (a := (0 : Fin 3)) (b := y)
+      hne_paths with ⟨l, _hl, hhead, _hlast, _hnodup, hlen, hstrength⟩
+  have hle : pathStrength reversalCounterexampleProfile l ≤ 0 := by
+    cases l with
+    | nil =>
+        simp at hlen
+    | cons x t =>
+        have hx : x = (0 : Fin 3) := by
+          apply Option.some.inj
+          simpa using hhead
+        subst hx
+        simpa using (reversalCounterexample_pathStrength_from_0_le_zero (t := t))
+  simpa [hstrength] using hle
+
+lemma reversalCounterexample_strongestPath_2_y_le_zero (y : Fin 3) (hy : y ≠ 2) :
+    strongestPath reversalCounterexampleProfile (2 : Fin 3) y ≤ 0 := by
+  classical
+  have hne_paths :
+      (pathsUpTo (A := Fin 3) (Fintype.card (Fin 3)) (2 : Fin 3) y).Nonempty :=
+    pathsUpTo_nonempty_of_ne (A := Fin 3) (2 : Fin 3) y (by simpa [eq_comm] using hy)
+  rcases exists_max_path_props (P := reversalCounterexampleProfile) (a := (2 : Fin 3)) (b := y)
+      hne_paths with ⟨l, _hl, hhead, _hlast, _hnodup, hlen, hstrength⟩
+  have hle : pathStrength reversalCounterexampleProfile l ≤ 0 := by
+    cases l with
+    | nil =>
+        simp at hlen
+    | cons x t =>
+        have hx : x = (2 : Fin 3) := by
+          apply Option.some.inj
+          simpa using hhead
+        subst hx
+        simpa using (reversalCounterexample_pathStrength_from_2_le_zero (t := t))
+  simpa [hstrength] using hle
+
+lemma reversalCounterexample_strongestPath_1_0_le_zero :
+    strongestPath reversalCounterexampleProfile (1 : Fin 3) (0 : Fin 3) ≤ 0 := by
+  classical
+  have hne_paths :
+      (pathsUpTo (A := Fin 3) (Fintype.card (Fin 3)) (1 : Fin 3) (0 : Fin 3)).Nonempty :=
+    pathsUpTo_nonempty_of_ne (A := Fin 3) (1 : Fin 3) (0 : Fin 3) (by decide)
+  rcases exists_max_path_props (P := reversalCounterexampleProfile) (a := (1 : Fin 3)) (b := (0 : Fin 3))
+      hne_paths with ⟨l, _hl, hhead, hlast, hnodup, hlen, hstrength⟩
+  have hle : pathStrength reversalCounterexampleProfile l ≤ 0 := by
+    cases l with
+    | nil =>
+        simp at hlen
+    | cons x t =>
+        have hx : x = (1 : Fin 3) := by
+          apply Option.some.inj
+          simpa using hhead
+        subst hx
+        cases t with
+        | nil =>
+            simp at hlen
+        | cons y t' =>
+            have hy : y ≠ (1 : Fin 3) := by
+              have hnot : (1 : Fin 3) ∉ (y :: t') := (List.nodup_cons.mp hnodup).1
+              intro hyEq
+              exact hnot (by simp [hyEq])
+            fin_cases y
+            ·
+              have hpath :
+                  pathStrength reversalCounterexampleProfile (1 :: (0 : Fin 3) :: t') ≤
+                    margin reversalCounterexampleProfile (1 : Fin 3) (0 : Fin 3) := by
+                simpa [pathStrength] using
+                  (pathStrengthAux_le_init (P := reversalCounterexampleProfile) (a := (0 : Fin 3))
+                    (l := t') (m := margin reversalCounterexampleProfile (1 : Fin 3) (0 : Fin 3)))
+              have hmargin : margin reversalCounterexampleProfile (1 : Fin 3) (0 : Fin 3) ≤ 0 := by
+                simp [reversalCounterexampleProfile,
+                  margin_eq_marginList (ballots := reversalCounterexampleBallots),
+                  reversalCounterexample_marginList_10]
+              exact le_trans hpath hmargin
+            · exact (hy rfl).elim
+            ·
+              cases t' with
+              | nil =>
+                  have hlast' : False := by
+                    have hlast' := hlast
+                    simp at hlast'
+                  exact hlast'.elim
+              | cons z t'' =>
+                  have hpath :
+                      pathStrength reversalCounterexampleProfile
+                          (1 :: (2 : Fin 3) :: z :: t'') ≤
+                        pathStrength reversalCounterexampleProfile ((2 : Fin 3) :: z :: t'') := by
+                    have h :=
+                      pathStrength_cons_cons_cons (P := reversalCounterexampleProfile) (a := (1 : Fin 3))
+                        (b := (2 : Fin 3)) (c := z) (t := t'')
+                    have hle :
+                        pathStrength reversalCounterexampleProfile
+                            (1 :: (2 : Fin 3) :: z :: t'') ≤
+                          min (margin reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3))
+                            (pathStrength reversalCounterexampleProfile ((2 : Fin 3) :: z :: t'')) := by
+                      exact le_of_eq h
+                    exact hle.trans (min_le_right _ _)
+                  have hle2 :
+                      pathStrength reversalCounterexampleProfile ((2 : Fin 3) :: z :: t'') ≤ 0 :=
+                    reversalCounterexample_pathStrength_from_2_le_zero (t := z :: t'')
+                  exact le_trans hpath hle2
+  simpa [hstrength] using hle
+
+lemma reversalCounterexample_strongestPath_0_y_ge_zero (y : Fin 3) (hy : y ≠ 0) :
+    (0 : Int) ≤ strongestPath reversalCounterexampleProfile (0 : Fin 3) y := by
+  fin_cases y
+  · cases hy rfl
+  ·
+    have h :=
+      margin_le_strongestPath_of_ne (P := reversalCounterexampleProfile) (a := (0 : Fin 3))
+        (b := (1 : Fin 3)) (by decide)
+    simpa [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexampleBallots, reversalCounterexample_marginList_01] using h
+  ·
+    have h :=
+      margin_le_strongestPath_of_ne (P := reversalCounterexampleProfile) (a := (0 : Fin 3))
+        (b := (2 : Fin 3)) (by decide)
+    simpa [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexampleBallots, reversalCounterexample_marginList_02] using h
+
+lemma reversalCounterexample_strongestPath_y_0_ge_zero (y : Fin 3) (hy : y ≠ 0) :
+    (0 : Int) ≤ strongestPath reversalCounterexampleProfile y (0 : Fin 3) := by
+  fin_cases y
+  · cases hy rfl
+  ·
+    have h :=
+      margin_le_strongestPath_of_ne (P := reversalCounterexampleProfile) (a := (1 : Fin 3))
+        (b := (0 : Fin 3)) (by decide)
+    simpa [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexampleBallots, reversalCounterexample_marginList_10] using h
+  ·
+    have h :=
+      margin_le_strongestPath_of_ne (P := reversalCounterexampleProfile) (a := (2 : Fin 3))
+        (b := (0 : Fin 3)) (by decide)
+    simpa [reversalCounterexampleProfile,
+      margin_eq_marginList (ballots := reversalCounterexampleBallots),
+      reversalCounterexampleBallots, reversalCounterexample_marginList_20] using h
+
+lemma reversalCounterexample_strongestPath_1_2_ge_two :
+    (2 : Int) ≤ strongestPath reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) := by
+  have hmem :
+      [1, 2] ∈ pathsUpTo (A := Fin 3) (Fintype.card (Fin 3)) (1 : Fin 3) (2 : Fin 3) := by
+    refine mem_pathsUpTo_of_props (l := [1, 2]) (a := (1 : Fin 3)) (b := (2 : Fin 3)) ?_ ?_ ?_ ?_
+    · simp
+    · simp
+    · decide
+    · simp
+  have hle := pathStrength_of_mem_pathsUpTo_le_strongestPath
+    (P := reversalCounterexampleProfile) (a := (1 : Fin 3)) (b := (2 : Fin 3)) (l := [1, 2]) hmem
+  simpa [pathStrength_two, reversalCounterexampleProfile,
+    margin_eq_marginList (ballots := reversalCounterexampleBallots),
+    reversalCounterexampleBallots, reversalCounterexample_marginList_12] using hle
+
+lemma reversalCounterexample_schulzeDefeats_12 :
+    schulzeDefeats reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) := by
+  have hge : (2 : Int) ≤ strongestPath reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) :=
+    reversalCounterexample_strongestPath_1_2_ge_two
+  have hle : strongestPath reversalCounterexampleProfile (2 : Fin 3) (1 : Fin 3) ≤ 0 :=
+    reversalCounterexample_strongestPath_2_y_le_zero (y := (1 : Fin 3)) (by decide)
+  have hpos : (0 : Int) < strongestPath reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) := by
+    have h02 : (0 : Int) < 2 := by decide
+    exact lt_of_lt_of_le h02 hge
+  have hlt :
+      strongestPath reversalCounterexampleProfile (2 : Fin 3) (1 : Fin 3) <
+        strongestPath reversalCounterexampleProfile (1 : Fin 3) (2 : Fin 3) :=
+    lt_of_le_of_lt hle hpos
+  exact hlt
+
+lemma reversalCounterexample_no_schulzeDefeats_to_zero :
+    ∀ y : Fin 3, ¬ schulzeDefeats reversalCounterexampleProfile y (0 : Fin 3) := by
+  intro y hydef
+  fin_cases y
+  · exact (lt_irrefl _ hydef)
+  ·
+    have hle : strongestPath reversalCounterexampleProfile (1 : Fin 3) (0 : Fin 3) ≤ 0 :=
+      reversalCounterexample_strongestPath_1_0_le_zero
+    have hge : (0 : Int) ≤ strongestPath reversalCounterexampleProfile (0 : Fin 3) (1 : Fin 3) :=
+      reversalCounterexample_strongestPath_0_y_ge_zero (y := (1 : Fin 3)) (by decide)
+    have hle' :
+        strongestPath reversalCounterexampleProfile (1 : Fin 3) (0 : Fin 3) ≤
+          strongestPath reversalCounterexampleProfile (0 : Fin 3) (1 : Fin 3) :=
+      le_trans hle hge
+    exact (not_lt_of_ge hle') hydef
+  ·
+    have hle : strongestPath reversalCounterexampleProfile (2 : Fin 3) (0 : Fin 3) ≤ 0 :=
+      reversalCounterexample_strongestPath_2_y_le_zero (y := (0 : Fin 3)) (by decide)
+    have hge : (0 : Int) ≤ strongestPath reversalCounterexampleProfile (0 : Fin 3) (2 : Fin 3) :=
+      reversalCounterexample_strongestPath_0_y_ge_zero (y := (2 : Fin 3)) (by decide)
+    have hle' :
+        strongestPath reversalCounterexampleProfile (2 : Fin 3) (0 : Fin 3) ≤
+          strongestPath reversalCounterexampleProfile (0 : Fin 3) (2 : Fin 3) :=
+      le_trans hle hge
+    exact (not_lt_of_ge hle') hydef
+
+lemma reversalCounterexample_no_schulzeDefeats_from_zero :
+    ∀ y : Fin 3, ¬ schulzeDefeats reversalCounterexampleProfile (0 : Fin 3) y := by
+  intro y hydef
+  fin_cases y
+  · exact (lt_irrefl _ hydef)
+  ·
+    have hle : strongestPath reversalCounterexampleProfile (0 : Fin 3) (1 : Fin 3) ≤ 0 :=
+      reversalCounterexample_strongestPath_0_y_le_zero (y := (1 : Fin 3)) (by decide)
+    have hge : (0 : Int) ≤ strongestPath reversalCounterexampleProfile (1 : Fin 3) (0 : Fin 3) :=
+      reversalCounterexample_strongestPath_y_0_ge_zero (y := (1 : Fin 3)) (by decide)
+    have hle' :
+        strongestPath reversalCounterexampleProfile (0 : Fin 3) (1 : Fin 3) ≤
+          strongestPath reversalCounterexampleProfile (1 : Fin 3) (0 : Fin 3) :=
+      le_trans hle hge
+    exact (not_lt_of_ge hle') hydef
+  ·
+    have hle : strongestPath reversalCounterexampleProfile (0 : Fin 3) (2 : Fin 3) ≤ 0 :=
+      reversalCounterexample_strongestPath_0_y_le_zero (y := (2 : Fin 3)) (by decide)
+    have hge : (0 : Int) ≤ strongestPath reversalCounterexampleProfile (2 : Fin 3) (0 : Fin 3) :=
+      reversalCounterexample_strongestPath_y_0_ge_zero (y := (2 : Fin 3)) (by decide)
+    have hle' :
+        strongestPath reversalCounterexampleProfile (0 : Fin 3) (2 : Fin 3) ≤
+          strongestPath reversalCounterexampleProfile (2 : Fin 3) (0 : Fin 3) :=
+      le_trans hle hge
+    exact (not_lt_of_ge hle') hydef
+
+lemma reversalCounterexample_zero_mem_schulze :
+    (0 : Fin 3) ∈ schulze reversalCounterexampleProfile := by
+  classical
+  simp [schulze, reversalCounterexample_no_schulzeDefeats_to_zero]
+
+lemma reversalCounterexample_zero_mem_schulze_reverse :
+    (0 : Fin 3) ∈ schulze (reverse_profile reversalCounterexampleProfile) := by
+  classical
+  simp [schulze]
+  intro y hydef
+  have hydef' : schulzeDefeats reversalCounterexampleProfile (0 : Fin 3) y := by
+    simpa [schulzeDefeats_reverse_iff] using hydef
+  exact reversalCounterexample_no_schulzeDefeats_from_zero y hydef'
+
+lemma reversalCounterexample_two_not_mem_schulze :
+    (2 : Fin 3) ∉ schulze reversalCounterexampleProfile := by
+  classical
+  intro hmem
+  have hcond : ∀ y, ¬ schulzeDefeats reversalCounterexampleProfile y (2 : Fin 3) := by
+    simpa [schulze] using hmem
+  exact (hcond 1) reversalCounterexample_schulzeDefeats_12
+
+lemma reversalCounterexample_schulze_ne_univ :
+    schulze reversalCounterexampleProfile ≠ Finset.univ := by
+  intro hEq
+  have hmem : (2 : Fin 3) ∈ schulze reversalCounterexampleProfile := by
+    simp [hEq]
+  exact reversalCounterexample_two_not_mem_schulze hmem
+
+theorem schulze_not_reversal_symmetry : ¬ ReversalSymmetry schulze := by
+  intro h
+  have hne : schulze reversalCounterexampleProfile ≠ Finset.univ :=
+    reversalCounterexample_schulze_ne_univ
+  have hEq := h (P := reversalCounterexampleProfile) hne
+  have hmem : (0 : Fin 3) ∈
+      schulze reversalCounterexampleProfile ∩
+        schulze (reverse_profile reversalCounterexampleProfile) := by
+    exact Finset.mem_inter.mpr
+      ⟨reversalCounterexample_zero_mem_schulze,
+       reversalCounterexample_zero_mem_schulze_reverse⟩
+  have hmem' := hmem
+  simp [hEq] at hmem'
+
+end SchulzeReversalCounterexample
 
 end SocialChoice

@@ -7,6 +7,7 @@ import SocialChoice.Rules.Minimax.CondorcetLoser
 import SocialChoice.Rules.Minimax.InformationalBasis
 import SocialChoice.Rules.Minimax.Involvement
 import SocialChoice.Rules.Minimax.Neutrality
+import SocialChoice.Rules.Minimax.Reversal
 
 namespace SocialChoice
 
@@ -62,5 +63,12 @@ theorem minimax_not_smithCriterion : ¬ SmithCriterion minimax := by
     Implies.apply smithCriterion_implies_condorcetLoserCriterion_Imp
       (f := minimax) minimax_isVotingRule hsmith
   exact minimax_not_condorcetLoser_criterion hcondLoser
+
+theorem minimax_not_reversalSymmetry : ¬ ReversalSymmetry minimax := by
+  intro hrev
+  have hsingle : SingletonReversalSymmetry minimax :=
+    Implies.apply reversalSymmetry_implies_singletonReversalSymmetry
+      (f := minimax) minimax_isVotingRule hrev
+  exact minimax_not_singletonReversalSymmetry hsingle
 
 end SocialChoice

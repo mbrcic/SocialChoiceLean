@@ -10,6 +10,7 @@ import SocialChoice.Rules.Black.SubsetReinforcement
 import SocialChoice.Rules.Black.Involvement
 import SocialChoice.Rules.Black.Monotonicity
 import SocialChoice.Rules.Black.Smith
+import SocialChoice.Rules.Black.Reversal
 
 namespace SocialChoice
 
@@ -70,5 +71,10 @@ theorem black_not_negativeInvolvement : ¬ NegativeInvolvement black := by
     Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement
       (f := black) black_isVotingRule black_marginBased
   exact black_not_positiveInvolvement (hiff.mpr hneg)
+
+theorem black_singleton_reversal_symmetry : SingletonReversalSymmetry black := by
+  apply Implies.apply reversalSymmetry_implies_singletonReversalSymmetry (f := black)
+  · exact black_isVotingRule
+  · exact black_reversal_symmetry
 
 end SocialChoice

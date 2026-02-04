@@ -10,6 +10,7 @@ import SocialChoice.Rules.TopCycle.MutualMajority
 import SocialChoice.Rules.TopCycle.Involvement
 import SocialChoice.Rules.TopCycle.Monotonicity
 import SocialChoice.Rules.TopCycle.Pareto
+import SocialChoice.Rules.TopCycle.Reversal
 
 namespace SocialChoice
 
@@ -72,5 +73,10 @@ theorem topCycle_not_positiveInvolvement : ¬ PositiveInvolvement topCycle := by
     Implies.apply marginBased_positiveInvolvement_iff_negativeInvolvement
       (f := topCycle) topCycle_isVotingRule topCycle_marginBased
   exact topCycle_not_negativeInvolvement (hiff.mp hpos)
+
+theorem topCycle_singleton_reversal_symmetry : SingletonReversalSymmetry topCycle := by
+  apply Implies.apply reversalSymmetry_implies_singletonReversalSymmetry (f := topCycle)
+  · exact topCycle_isVotingRule
+  exact topCycle_reversal_symmetry
 
 end SocialChoice

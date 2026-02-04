@@ -7,6 +7,7 @@ import SocialChoice.Rules.ScoringElimination.Baldwin.Condorcet
 import SocialChoice.Rules.ScoringElimination.Baldwin.CondorcetLoser
 import SocialChoice.Rules.ScoringElimination.Baldwin.InformationalBasis
 import SocialChoice.Rules.ScoringElimination.Baldwin.PositiveInvolvement
+import SocialChoice.Rules.ScoringElimination.Baldwin.Reversal
 import SocialChoice.Rules.ScoringElimination.Baldwin.Smith
 import SocialChoice.Rules.ScoringElimination.Monotonicity
 import SocialChoice.Rules.ScoringElimination.Neutrality
@@ -60,6 +61,13 @@ theorem baldwin_not_reinforcement : ¬ Reinforcement baldwin := by
   intro hrein
   exact no_condorcet_reinforcement baldwin
     baldwin_isVotingRule baldwin_condorcet_consistency hrein
+
+theorem baldwin_not_reversalSymmetry : ¬ ReversalSymmetry baldwin := by
+  intro hrev
+  have hsingle : SingletonReversalSymmetry baldwin :=
+    Implies.apply reversalSymmetry_implies_singletonReversalSymmetry
+      (f := baldwin) baldwin_isVotingRule hrev
+  exact baldwin_not_singletonReversalSymmetry hsingle
 
 theorem baldwin_not_strongFishburnParticipation : ¬ StrongFishburnParticipation baldwin := by
   intro hpart

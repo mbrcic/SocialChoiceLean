@@ -7,6 +7,7 @@ import SocialChoice.Rules.ScoringRules.Neutrality
 import SocialChoice.Rules.ScoringRules.Participation
 import SocialChoice.Rules.ScoringRules.Reinforcement
 import SocialChoice.Rules.ScoringRules.Veto.Defs
+import SocialChoice.Rules.ScoringRules.Veto.Reversal
 import SocialChoice.Rules.ScoringRules.Veto.Unanimity
 
 namespace SocialChoice
@@ -92,6 +93,19 @@ theorem veto_not_smithCriterion : ¬ SmithCriterion veto := by
       (f := veto) veto_isVotingRule hsmith
   exact veto_not_condorcet hcond
 
+theorem veto_not_majority_criterion : ¬ MajorityCriterion veto := by
+  intro hmaj
+  have hunan : Unanimity veto :=
+    Implies.apply majorityCriterion_implies_unanimity (f := veto) veto_isVotingRule hmaj
+  exact veto_not_unanimity hunan
+
+theorem veto_not_mutual_majority_criterion : ¬ MutualMajorityCriterion veto := by
+  intro hmut
+  have hmaj : MajorityCriterion veto :=
+    Implies.apply mutualMajorityCriterion_implies_majorityCriterion_Imp
+      (f := veto) veto_isVotingRule hmut
+  exact veto_not_majority_criterion hmaj
+
 theorem veto_not_pareto_efficiency : ¬ ParetoEfficiency veto := by
   intro hpareto
   have hunan : Unanimity veto :=
@@ -104,5 +118,12 @@ theorem veto_not_independenceOfDominated : ¬ IndependenceOfDominated veto := by
     Implies.apply independenceOfDominated_implies_paretoEfficiency (f := veto)
       veto_isVotingRule hInd
   exact veto_not_pareto_efficiency hPareto
+
+theorem veto_not_reversalSymmetry : ¬ ReversalSymmetry veto := by
+  intro hrev
+  have hsingle : SingletonReversalSymmetry veto :=
+    Implies.apply reversalSymmetry_implies_singletonReversalSymmetry
+      (f := veto) veto_isVotingRule hrev
+  exact veto_not_singletonReversalSymmetry hsingle
 
 end SocialChoice

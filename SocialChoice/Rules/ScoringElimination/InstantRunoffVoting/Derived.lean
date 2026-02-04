@@ -5,6 +5,7 @@ import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Defs
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Condorcet
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Independence
 import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.MutualMajority
+import SocialChoice.Rules.ScoringElimination.InstantRunoffVoting.Reversal
 import SocialChoice.Rules.PluralityWithRunoff.Involvement
 import SocialChoice.Rules.PluralityWithRunoff.Monotonicity
 import SocialChoice.Rules.PluralityWithRunoff.EqualsIRVForThreeCandidates
@@ -145,5 +146,12 @@ theorem instantRunoffVoting_not_subsetReinforcement :
 theorem instantRunoffVoting_not_reinforcement : ¬ Reinforcement instantRunoffVoting := by
   intro hrein
   exact instantRunoffVoting_not_subsetReinforcement (reinforcement_subset hrein)
+
+theorem instantRunoffVoting_not_reversalSymmetry : ¬ ReversalSymmetry instantRunoffVoting := by
+  intro hrev
+  have hsingle : SingletonReversalSymmetry instantRunoffVoting :=
+    Implies.apply reversalSymmetry_implies_singletonReversalSymmetry
+      (f := instantRunoffVoting) instantRunoffVoting_isVotingRule hrev
+  exact instantRunoffVoting_not_singletonReversalSymmetry hsingle
 
 end SocialChoice
