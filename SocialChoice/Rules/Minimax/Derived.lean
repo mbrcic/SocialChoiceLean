@@ -6,6 +6,7 @@ import SocialChoice.Rules.Minimax.Condorcet
 import SocialChoice.Rules.Minimax.CondorcetLoser
 import SocialChoice.Rules.Minimax.InformationalBasis
 import SocialChoice.Rules.Minimax.Involvement
+import SocialChoice.Rules.Minimax.Majority
 import SocialChoice.Rules.Minimax.Neutrality
 import SocialChoice.Rules.Minimax.Reversal
 
@@ -63,6 +64,13 @@ theorem minimax_not_smithCriterion : ¬ SmithCriterion minimax := by
     Implies.apply smithCriterion_implies_condorcetLoserCriterion_Imp
       (f := minimax) minimax_isVotingRule hsmith
   exact minimax_not_condorcetLoser_criterion hcondLoser
+
+theorem minimax_not_mutualMajorityCriterion : ¬ MutualMajorityCriterion minimax := by
+  intro hmut
+  have hmajloser : MajorityLoserCriterion minimax :=
+    Implies.apply mutualMajorityCriterion_implies_majorityLoserCriterion_Imp
+      (f := minimax) minimax_isVotingRule hmut
+  exact minimax_not_majority_loser_criterion hmajloser
 
 theorem minimax_not_reversalSymmetry : ¬ ReversalSymmetry minimax := by
   intro hrev
