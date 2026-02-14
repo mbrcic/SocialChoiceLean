@@ -1,0 +1,2351 @@
+% !TEX program = lualatex
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Pivato Paper},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Pivato Paper}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\protect\phantomsection\label{s000005}
+1Introduction
+
+Suppose a group of voters must collectively choose some policy from a
+set of alternatives, using a voting rule \(F\). Suppose we split the
+voters into two subgroups, and each subgroup, using rule \(F\), selects
+the alternative \(x\). Then it seems desirable that the combined group,
+using \(F\), should also select alternative \(x\). We say the rule \(F\)
+satisfies reinforcement\textsuperscript{1}1Smith (1973) calls this
+condition `separability', while Young, 1974b, Young, 1975 and~Saari
+(1990) call it `consistency'. Dhillon (1998) and Dhillon and Mertens
+(1999) refer to an analogous property as `extended Pareto', while Gilboa
+and Schmeidler (2003) call it `combination'. if it has this property.
+Smith (1973) and Young, 1974b, Young, 1975 showed that `scoring rules'
+are the only preference aggregation rules\textsuperscript{2}2Smith
+(1973) and Young (1974b) consider rules which produce social preference
+relations as output, whereas Young (1975) considers rules which produce
+subsets of social alternatives as output; these two frameworks yield two
+slightly different definitions of `reinforcement' and `scoring rule'.
+which satisfy reinforcement and are anonymous and neutral
+(i.e.~invariant under relabeling of the voters and/or alternatives).
+These results have led to characterizations of the Borda
+rule,\textsuperscript{3}3See~Young, 1974a, Young, 1975 and Nitzan and
+Rubinstein (1981). Kemeny rule,\textsuperscript{4}4See Young and
+Levenglick (1978). and plurality rule\textsuperscript{5}5See Richelson
+(1978), Morkelyunas (1982), Ching (1996), and~Yeh (2008). each as the
+only preference aggregation rule which satisfies reinforcement along
+with certain other axioms.
+
+Myerson (1995) generalized the Smith--Young results from preference
+aggregators to abstract voting rules. In Myerson's framework, there is a
+finite set of social alternatives \(\mathcal{X}\) and a finite set of
+`signals' \(\mathcal{V}\). A `profile' assigns a signal to each voter,
+and an abstract voting rule selects some nonempty subset of
+\(\mathcal{X}\) for each profile. A scoring rule is a voting rule where
+each element of \(\mathcal{V}\) assigns a real-valued `score' to each
+element of \(\mathcal{X}\); the rule then selects the alternative(s)
+with the highest total score.\textsuperscript{6}6Zwicker (2008) has
+shown that such scoring rules can also be interpreted as `mean proximity
+rules': each element of \(\mathcal{V}\) and \(\mathcal{X}\) is
+represented as a vector in \(\mathbb{R}^{N}\), and the social choice is
+the element of \(\mathcal{X}\) which is closest to the vector average of
+the signals of the voters. Myerson showed that if an abstract voting
+rule satisfied reinforcement, universal domain (i.e.~it is defined for
+all profiles), a form of neutrality (i.e.~all social alternatives are
+treated equally), and an Archimedean/continuity condition he called
+overwhelming majority, then it was a scoring rule. For example, approval
+voting (Brams and Fishburn, 1983) is a scoring rule---indeed, it is the
+only abstract voting rule which satisfies reinforcement along with
+certain other axioms.\textsuperscript{7}7See Fishburn (1978),
+Morkelyunas (1981), and Alós-Ferrer (2006).
+
+In Section~2, I extend Myerson's representation theorem, by considering
+infinite signal sets, and removing the hypotheses of universal domain
+and overwhelming majority. I do this by considering scoring rules where
+the scores can range over an abstract linearly ordered abelian group,
+instead of ranging over the real numbers.\textsuperscript{8}8Smith
+(1973) also considered linearly ordered abelian groups. I also
+characterize balance rules (another class introduced by Myerson, 1995).
+Next, Section~3 shows that the `neutrality'
+(i.e.~permutation-equivariance) properties of a voting rule can be
+reflected by corresponding neutrality properties of its balance
+representation or scoring representation. Section~4 concludes with some
+open problems. Appendix~A gives the technical arguments underlying some
+of the examples which appear in the text. Appendix~B provides some
+background on linearly ordered abelian groups. Appendix~C contains the
+proofs of all results in the paper.
+
+\protect\phantomsection\label{s000010}
+2Model and main results
+
+Let \(\mathcal{X}\) be a set of social alternatives, and let
+\(\mathcal{V}\) be the set of possible signals which could be sent by
+each voter. (The sets \(\mathcal{X}\) and \(\mathcal{V}\) could be
+finite or infinite.)~Let
+\(\mathbb{N} ≔ \left\{ 0,1,2,3,\ldots \right\}\) and
+\(\mathbb{Z} ≔ \left\{ \pm n;n \in \mathbb{N} \right\}\). For any
+\(\mathbf{n} \in \mathbb{Z}^{\mathcal{V}}\), let
+\(\left\| \mathbf{n} \right\|_{} ≔ \sum_{v \in \mathcal{V}}\left| n_{v} \right|\).
+Define
+\(\mathbb{N}^{\langle\mathcal{V}\rangle} ≔ \left\{ \mathbf{n} \in \mathbb{N}^{\mathcal{V}};\left\| \mathbf{n} \right\|_{} < \infty \right\}\).
+If \(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\), then
+\(\mathbf{n}\) represents an anonymous profile of voters: for each
+\(v \in \mathcal{V}\), we interpret \(n_{v}\) as the number of voters
+sending the signal \(v\), while \(\left\| \mathbf{n} \right\|_{}\) is
+the size of the whole population. Note that we do not fix
+\(\left\| \mathbf{n} \right\|_{}\) in advance. Let
+\(\mathbf{0} = (0,0,\ldots,0)\) be the all-zeros vector in
+\(\mathbb{N}^{\langle\mathcal{V}\rangle}\). A domain is any collection
+of profiles
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) such
+that \(\mathbf{0} \in \mathcal{D}\). (The set
+\(\mathbb{N}^{\langle\mathcal{V}\rangle}\) itself is the universal
+domain.)~A variable population, anonymous voting rule is a
+correspondence
+\(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\) such that
+\(F\left( \mathbf{0} \right) = \mathcal{X}\) (this property is often
+called the axiom of general abstention). Thus, for all
+\(\mathbf{d} \in \mathcal{D}\), the outcome
+\(F\left( \mathbf{d} \right) \subseteq \mathcal{X}\) is a nonempty set
+(typically a singleton).
+
+A linearly ordered abelian group is a triple
+\(\left( \mathcal{R}, + , > \right)\), where \(\mathcal{R}\) is a set,
+`\(+\)' is an abelian group operation, and `\(>\)' is a complete,
+antisymmetric, transitive binary relation such that, for all
+\(r,s \in \mathcal{R}\), if \(r > 0\), then \(r + s > s\). For example:
+the set \(\mathbb{R}\) of real numbers is a linearly ordered abelian
+group, with the standard ordering and addition operator. So is any
+subgroup of \(\mathbb{R}\). For any nonzero \(N \in \mathbb{N}\), let
+\(\mathbb{R}_{lex}^{N}\) denote the group \(\mathbb{R}^{N}\) with vector
+addition and the lexicographic order \(\gg\)\textsuperscript{9}9To be
+precise: for any \(\mathbf{r} = \left( r_{1},\ldots,r_{N} \right)\) and
+\(\mathbf{r}' ≔ \left( r_{1}',\ldots,r_{N}' \right)\) in
+\(\mathbb{R}^{N}\), we have \(\mathbf{r} \gg \mathbf{r}'\) if there is
+some \(M \in \lbrack 1\ldots N\rbrack\) such that \(r_{n} = r_{n}'\) for
+all \(n < M\), while \(r_{M} > r_{M}'\).; then \(\mathbb{R}_{lex}^{N}\)
+is a linearly ordered abelian group. Such groups are useful for
+representing preferences where some decision variables have
+lexicographical priority over others.
+
+For any
+\(\mathbf{r} = \left( r_{v} \right)_{v \in \mathcal{V}} \in \mathcal{R}^{\mathcal{V}}\),
+we define a function
+\(\left. \mathbf{r}:\mathbb{N}^{\langle\mathcal{V}\rangle}\longrightarrow\mathcal{R} \right.\)
+by setting
+\(\mathbf{r}\left( \mathbf{n} \right) ≔ \sum_{v \in \mathcal{V}}n_{v}r_{v}\)
+for all
+\(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\).\textsuperscript{10}10Thus,
+if \(\mathcal{R} = \mathbb{R}\), then
+\(\mathbf{r}\left( \mathbf{n} \right) = \mathbf{r}\bullet\mathbf{n}\),
+where `\(\bullet\)' is the inner product operation on
+\(\mathbb{R}^{\mathcal{V}}\). An \(\mathcal{R}\)-valued score system on
+\(\left( \mathcal{X},\mathcal{V} \right)\) is an \(\mathcal{X}\)-indexed
+collection
+\(\mathsf{S} ≔ \left\{ \mathbf{s}^{x} \right\}_{x \in \mathcal{X}} \subset \mathcal{R}^{\mathcal{V}}\).
+For any domain
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\), the
+scoring rule determined by \(\mathsf{S}\) is the voting rule
+\(\left. F_{\mathsf{S}}:\mathcal{D}\rightrightarrows\mathcal{X} \right.\)
+defined as follows:
+\[F_{\mathsf{S}}\left( \mathbf{d} \right) ≔ \underset{x \in \mathcal{X}}{arg~max}\mathbf{s}^{x}\left( \mathbf{d} \right)\text{,}\quad\text{for~all~}\mathbf{d} \in \mathcal{D}\text{.}\]
+Intuitively, \(\mathbf{s}^{x}\left( \mathbf{d} \right)\) is the `score'
+which alternative \(x\) receives from the profile \(\mathbf{d}\); each
+voter who sends the signal \(v\) contributes \(s_{v}^{x}\) `points' to
+this score. The alternative with the highest score wins.
+
+For example, plurality vote is a scoring rule with
+\(\mathcal{V} = \mathcal{X}\), and \(\mathcal{R} = \mathbb{Z}\), and
+\(s_{v}^{x} = 1\) if \(x = v\), while \(s_{v}^{x} = 0\) if \(x \neq v\).
+Approval vote is a scoring rule, where \(\mathcal{V}\) is the set of all
+subsets of \(\mathcal{X}\), and \(\mathcal{R} = \mathbb{Z}\), and
+\(s_{v}^{x} = 1\) if \(x \in v\), while \(s_{v}^{x} = 0\) if
+\(x \notin v\). The Borda rule is a scoring rule where \(\mathcal{V}\)
+is the set of all strict preference orders over \(\mathcal{X}\), and
+\(\mathcal{R} = \mathbb{Z}\), and \(s_{v}^{x} = r\) if \(x\) is ranked
+\(r\)th place from the bottom in the preference order \(v\). If
+\(\left( \mathcal{Y},d \right)\) is a metric space, and
+\(\mathcal{X},\mathcal{V} \subseteq \mathcal{Y}\), then the median rule
+is the scoring rule where \(\mathcal{R} = \mathbb{R}\), and
+\(s_{v}^{x} = - d(x,v)\) for all \(x \in \mathcal{X}\) and
+\(v \in \mathcal{V}\). This rule picks the element(s) of \(\mathcal{X}\)
+which minimize the average distance to the signals sent by the voters.
+(If \(\mathcal{X} = \mathcal{V} \subseteq \mathbb{R}\) with the standard
+metric, then this is the usual notion of the median of a collection of
+real numbers.)~For example, the Kemeny rule is a median rule where
+\(\mathcal{X} = \mathcal{V}\) is the set of all strict preference orders
+over some set \(\mathcal{A}\) of alternatives, and \(d\) is the Kendall
+metric on \(\mathcal{X}\) (so \(d(x,v)\) is the number of pairwise
+comparisons on which the orderings \(x\) and \(v\) disagree).
+
+There are also several scoring rules where \(\mathcal{R} = \mathbb{R}\)
+and \(\mathcal{V}\) is some subset of \(\mathbb{R}^{\mathcal{X}}\), and
+\(s_{x}^{\mathbf{v}} ≔ v_{x}\) for all \(\mathbf{v} \in \mathcal{V}\)
+and \(x \in \mathcal{X}\). Range voting is obtained by setting
+\(\mathcal{V} ≔ \lbrack 0,1\rbrack^{\mathcal{X}}\) (Smith, 2000,
+Gaertner and Xu, 2012). Relative utilitarianism is obtained by setting
+\(\mathcal{V} ≔ \left\{ \mathbf{v} \in \lbrack 0,1\rbrack^{\mathcal{X}};\min_{x \in \mathcal{X}}v_{x} = 0\text{~and~}\max_{x \in \mathcal{X}}v_{x} = 1 \right\}\)
+(Dhillon, 1998, Dhillon and Mertens, 1999). Finally, cumulative voting
+is obtained by setting
+\(\mathcal{V} ≔ \left\{ \mathbf{v} \in \lbrack 0,1\rbrack^{\mathcal{X}};\sum_{x \in \mathcal{X}}v_{x} = 1 \right\}\)
+(Cooper, 2007, Saari, 2010).
+
+Now suppose we first apply one scoring rule \(F_{a}\), and then use a
+second scoring rule \(F_{b}\) only to break any ties which arise in
+\(F_{a}\). This can be modeled as an \(\mathbb{R}_{lex}^{2}\)-valued
+scoring rule. For example, the procedure, `first apply approval vote;
+then break any ties using the Borda rule' can be modeled by defining
+\(\mathcal{V} = \mathcal{V}_{a} \times \mathcal{V}_{b}\), where
+\(\mathcal{V}_{a} ≔ \left\{ \text{all~subsets~of~}\mathcal{X} \right\}\)
+and
+\(\mathcal{V}_{b} ≔ \left\{ \text{all~preference~orders~over~}\mathcal{X} \right\}\).
+For any
+\(\left( v_{a},v_{b} \right) \in \mathcal{V}_{a} \times \mathcal{V}_{b}\),
+we set
+\(s\left( v_{a},v_{b} \right) ≔ \left( s_{a}\left( v_{a} \right),s_{b}\left( v_{b} \right) \right) \in \mathbb{R}_{lex}^{2}\),
+where \(s_{a}\) is the approval score system and \(s_{b}\) is the Borda
+score system (as described above).
+
+Hahn's Embedding Theorem says that any linearly ordered abelian group is
+isomorphic to an ordered subgroup of a lexicographically ordered vector
+space \(\mathbb{R}^{\mathcal{I}}\), where \(\mathcal{I}\) is a (possibly
+infinite) linearly ordered set (Hausner and Wendel, 1952). Thus, any
+scoring rule can be interpreted as a (possibly infinite) chain of
+real-valued scoring rules, with each one acting as a tie-breaker for the
+prior ones.
+
+Let \(\left( \mathcal{R}, + , > \right)\) be a linearly ordered abelian
+group. Let
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) be a
+domain of profiles. An \(\mathcal{R}\)-valued balance system on
+\(\left( \mathcal{X},\mathcal{V},\mathcal{D} \right)\) is an
+\(\mathcal{X}^{2}\)-indexed collection
+\(\mathsf{B} ≔ \left\{ \mathbf{b}^{x,y} \right\}_{x,y \in \mathcal{X}} \subset \mathcal{R}^{\mathcal{V}}\)
+such that \(\mathbf{b}^{x,y} = - \mathbf{b}^{y,x}\) for all
+\(x,y \in \mathcal{X}\) (in particular, \(\mathbf{b}^{x,x} = 0\) for all
+\(x \in \mathcal{X}\)), and such that,
+(1)\[\max\limits_{x \in \mathcal{X}}\min\limits_{y \in \mathcal{X}}\mathbf{b}^{x,y}\left( \mathbf{d} \right) \geq 0\text{,}\quad\text{for~all~}\mathbf{d} \in \mathcal{D}\text{.}\]
+We then define the balance
+rule\(\left. F_{\mathsf{B}}:\mathcal{D}\rightrightarrows\mathcal{X} \right.\)
+as follows: for all \(\mathbf{d} \in \mathcal{D}\) and
+\(x \in \mathcal{X}\), we let
+\(x \in F_{\mathsf{B}}\left( \mathbf{d} \right)\) if and only if
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) \geq 0\) for all
+\(y \in \mathcal{X}\). (The condition (1) is equivalent to stipulating
+that
+\(F_{\mathsf{B}}\left( \mathbf{d} \right) \neq \varnothing\)
+for all \(\mathbf{d} \in \mathcal{D}\).) Example~1
+
+Let \(\mathsf{S} = \left\{ \mathbf{s}^{x} \right\}_{x \in \mathcal{X}}\)
+be an \(\mathcal{R}\)-valued score system on
+\(\left( \mathcal{X},\mathcal{V} \right)\). For all
+\(x,y \in \mathcal{X}\), define
+\(\mathbf{b}^{x,y} ≔ \mathbf{s}^{x} - \mathbf{s}^{y} \in \mathcal{R}^{\mathcal{V}}\),
+to obtain a balance system
+\(\mathsf{B} ≔ \left\{ \mathbf{b}^{x,y} \right\}_{x,y \in \mathcal{X}}\).
+Then
+\(F_{\mathsf{B}}\left( \mathbf{n} \right) = F_{\mathsf{S}}\left( \mathbf{n} \right)\)
+for all
+\(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\).\textsuperscript{11}11This
+example also appears in Myerson (1995, Section 4, p. 65).\(\quad ♦\)
+
+However, not every balance rule is a scoring rule. Example~2
+
+Let \(\mathcal{V} = \mathcal{X} = \left\{ 1,2,3 \right\}\); thus, there
+are three alternatives, and each voter votes for exactly one of these
+alternatives. Consider the following rule, defined on
+\(\mathcal{D} = \mathbb{N}^{\langle\mathcal{V}\rangle}\). If alternative
+1 receives at least half of all votes cast, then alternative 1 wins.
+Otherwise, the winner is whichever of alternatives 2 or 3 receives more
+votes, with multiple winners in the case of a tie. Formally, given any
+profile
+\(\mathbf{d} = \left( d_{1},d_{2},d_{3} \right) \in \mathbb{N}^{\langle\mathcal{V}\rangle}\),
+if \(d_{1} \geq d_{2} + d_{3}\), then 1 wins. Otherwise, if
+\(d_{1} \leq d_{2} + d_{3}\), then 2 wins if \(d_{2} \geq d_{3}\),
+whereas \(d_{3}\) wins if \(d_{2} \leq d_{3}\). (If
+\(d_{1} = d_{2} + d_{3}\) and/or \(d_{2} = d_{3}\), then there are
+multiple winners.) For example, if \(\mathbf{d} = (45,35,30)\), then
+\(F\left( \mathbf{d} \right) = \left\{ 2 \right\}\).
+
+One possible rationale for \(F\) is that alternative 1 is a (disfavored)
+status quo, while alternatives 2 and 3 are two possible reforms. The
+status quo will only be maintained if it receives a clear majority
+mandate; otherwise the more popular of the two reforms will be chosen.
+It is easy to see that \(F\) is a balance rule, with
+\(\mathbf{b}^{1,2} = \mathbf{b}^{1,3} ≔ (1, - 1, - 1)\) and
+\(\mathbf{b}^{2,3} ≔ (0,1, - 1)\). But in Appendix~A, we show that \(F\)
+is not a scoring rule. \(\quad ♦\)
+
+Let \(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) be
+a domain and let
+\(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\) be a voting
+rule. We will say that \(\mathcal{D}\) is weakly additive for \(F\) if,
+for any \(\mathbf{n},\mathbf{m} \in \mathcal{D}\), if
+\(F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right) \neq \varnothing\),
+then \(\mathbf{n} + \mathbf{m} \in \mathcal{D}\). We will say that the
+rule \(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\)
+satisfies reinforcement if \(\mathcal{D}\) is weakly additive for \(F\)
+and the following is true: for any
+\(\mathbf{n},\mathbf{m} \in \mathcal{D}\), if
+\(F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right) \neq \varnothing\),
+then
+\(F\left( \mathbf{n} + \mathbf{m} \right) = F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right)\).\textsuperscript{12}12This
+is slightly weaker than the usual definition of ``reinforcement'',
+because we do not require the domain \(\mathcal{D}\) to be fully closed
+under addition---we only require it to be weakly additive. Of course, in
+almost all of the ``natural'' examples, \(\mathcal{D}\)~will be closed
+under addition. But we allow the possibility that \(\mathcal{D}\) is not
+additively closed, in order to accommodate certain interesting examples,
+such as the ``Condorcet'' balance rule of Example~3 below. Here, the
+profile \(\left( \mathbf{n} + \mathbf{m} \right)\) represents a union of
+two disjoint subgroups, represented by profiles \(\mathbf{n}\) and
+\(\mathbf{m}\). Reinforcement says: if \(x \in \mathcal{X}\) and both
+\(\mathbf{n}\) and \(\mathbf{m}\) endorse \(x\)
+(i.e.~\(x \in F\left( \mathbf{n} \right)\) and
+\(x \in F\left( \mathbf{m} \right)\)), then we should have
+\(x \in F\left( \mathbf{n} + \mathbf{m} \right)\). Furthermore, in this
+case, \(F\left( \mathbf{n} + \mathbf{m} \right)\) should consist of only
+those \(x \in \mathcal{X}\) which receive this joint endorsement. We now
+come to our first main result: Theorem~1
+
+Let \(\mathcal{X}\) and \(\mathcal{V}\) be arbitrary sets, let
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) be any
+domain, and let
+\(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\) be a
+variable population anonymous voting rule for which \(\mathcal{D}\) is
+weakly additive. Then \(F\) satisfies reinforcement if and only if \(F\)
+is a balance rule.
+
+The proof of Theorem~1 is in Appendix~C, but we will sketch the main
+idea here. The first observation is that \(F\) satisfies reinforcement
+if and only if, for all \(x \in \mathcal{V}\), the set
+\(\mathcal{C}_{x} ≔ \left\{ \mathbf{d} \in \mathcal{D};x \in F\left( \mathbf{d} \right) \right\}\)
+is a conoid---i.e.~it is closed under
+addition.\textsuperscript{13}13This is closely related to one of the
+main insights of Saari (1990), although that paper deals mainly with
+weak reinforcement. I thank the referee for pointing out this
+connection. It follows that the set
+\(\mathcal{P}_{x,y} ≔ \mathcal{C}_{x} - \mathcal{C}_{y}\) is a conoid,
+for all \(x,y \in \mathcal{X}\). Such a conoid can be used to define a
+homogeneous preorder on \(\mathbb{Z}^{\langle\mathcal{V}\rangle}\). If
+\(\mathcal{O}_{x,y} \subset \mathbb{Z}^{\langle\mathcal{V}\rangle}\) is
+the set of elements indifferent to \(\mathbf{0}\) in this preorder, then
+\(\mathcal{O}_{x,y}\) is itself a subgroup of
+\(\mathbb{Z}^{\langle\mathcal{V}\rangle}\), and the quotient group
+\(\mathcal{R}_{x,y} ≔ \mathbb{Z}^{\langle\mathcal{V}\rangle}/\mathcal{O}_{x,y}\)
+inherits an order which makes it a linearly ordered abelian group. The
+quotient map
+\(\left. \mathbb{Z}^{\langle\mathcal{V}\rangle}\longrightarrow\mathcal{O}_{x,y} \right.\)
+defines an \(\mathcal{R}_{x,y}\)-valued vector
+\(\mathbf{b}^{x,y} \in \mathcal{R}_{x,y}^{\mathcal{V}}\). We repeat this
+exercise for all \(x,y \in \mathcal{X}\), and then amalgamate all of
+\(\left\{ \mathcal{R}_{x,y} \right\}_{x,y \in \mathcal{X}}\) into a
+single linearly ordered group \(\mathcal{R}\). The vectors
+\(\left\{ \mathbf{b}^{x,y} \right\}_{x,y \in \mathcal{X}}\) then define
+an \(\mathcal{R}\)-valued balance system \(\mathsf{B}\), such that
+\(F_{\mathsf{B}} = F\).
+
+Example~2 showed that not every balance rule is a scoring rule, even if
+we require \(\mathcal{D} = \mathbb{N}^{\langle\mathcal{V}\rangle}\).
+Thus, we must add some other hypotheses to reinforcement to characterize
+scoring rules. Let \(\Pi_{\mathcal{V}}\) be the group of all
+permutations of \(\mathcal{V}\). For any
+\(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\) and
+\(\pi \in \Pi_{\mathcal{V}}\), we define
+\(\pi\left( \mathbf{n} \right) ≔ \mathbf{m}\), where
+\(m_{v} ≔ n_{\pi^{- 1}{(v)}}\) for all \(v \in \mathcal{V}\). Let
+\(\Pi_{\mathcal{X}}\) be the group of all permutations of
+\(\mathcal{X}\). A voting rule
+\(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\) is neutral
+if there exists a group homomorphism
+\(\left. \nu:\Pi_{\mathcal{X}}\longrightarrow\Pi_{\mathcal{V}} \right.\)
+(the neutralizer) such that, for all \(\pi \in \Pi_{\mathcal{X}}\), if
+\(\widetilde{\pi} ≔ \nu(\pi)\), then the domain \(\mathcal{D}\) is
+\(\widetilde{\pi}\)-invariant, and
+\(F\left( \widetilde{\pi}\left( \mathbf{d} \right) \right) = \pi\left( F\left( \mathbf{d} \right) \right)\)
+for all \(\mathbf{d} \in \mathcal{D}\). Thus, every alternative in
+\(\mathcal{X}\) is treated equally: for any \(x,y \in \mathcal{X}\), and
+every profile \(\mathbf{d} \in \mathcal{D}\) such that
+\(x \in F\left( \mathbf{d} \right)\), there exists some permutation
+\(\mathbf{d}'\) of \(\mathbf{d}\) such that
+\(y \in F\left( \mathbf{d}' \right)\).
+
+For any \(\pi \in \Pi_{\mathcal{V}}\) and any
+\(\mathbf{r} \in \mathcal{R}^{\mathcal{V}}\), we define
+\(\mathbf{r}\pi \in \mathcal{R}^{\mathcal{V}}\) by
+\(\left( \mathbf{r}\pi \right)_{v} = r_{\pi{(v)}}\) for all
+\(v \in \mathcal{V}\). Let
+\(\left. \nu:\Pi_{\mathcal{X}}\longrightarrow\Pi_{\mathcal{V}} \right.\)
+be a homomorphism. A score system
+\(\mathsf{S} = \left\{ \mathbf{s}^{x} \right\}_{x \in \mathcal{X}}\) is
+\(\nu\)-neutral if, for all \(\pi \in \Pi_{\mathcal{X}}\) and
+\(x,y \in \mathcal{X}\), if \(\pi(y) = x\) and
+\(\widetilde{\pi} ≔ \nu(\pi)\), then
+\(\mathbf{s}^{x}\,\widetilde{\pi} = \mathbf{s}^{y}\). Except for median
+rules, all the scoring rules mentioned above have neutral score systems,
+with the obvious neutralizers.
+
+A domain
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) is a
+cone if \(\mathbf{d}_{1} + \mathbf{d}_{2} \in \mathcal{D}\) whenever
+\(\mathbf{d}_{1},\mathbf{d}_{2} \in \mathcal{D}\), and also,
+\(\mathbf{d} \in \mathcal{D}\) whenever
+\(n\,\mathbf{d} \in \mathcal{D}\) for some \(n \in \mathbb{N}\). For
+example, the universal domain \(\mathbb{N}^{\langle\mathcal{V}\rangle}\)
+itself is a cone. Also, if
+\(\left. f:\mathbb{R}^{\langle\mathcal{V}\rangle}\longrightarrow\mathbb{R} \right.\)
+is a linear function, then the sets
+\(\left\{ \mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle};f\left( \mathbf{n} \right) \geq 0 \right\}\)
+and
+\(\left\{ \mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle};f\left( \mathbf{n} \right) = 0 \right\}\)
+are cones. The intersection of any collection of cones is a cone. Here
+is our second main result: Theorem~2
+
+Let \(\mathcal{X}\) be a finite set, let \(\mathcal{V}\) be any set, let
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) be a
+cone, and let
+\(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\) be a
+variable population anonymous voting rule. Then \(F\) is neutral and
+satisfies reinforcement if and only if \(F\) is a scoring rule with a
+neutral score system.
+
+Thus, combining reinforcement with neutrality yields a scoring rule with
+a neutral score system. The next example shows why it is necessary that
+\(\mathcal{D}\) be a cone in Theorem~2. Example~3
+
+Let \(\mathcal{V}\) be the set of all nonstrict preference orders over
+\(\mathcal{X}\). For all \(x,y \in \mathcal{X}\) and
+\(v \in \mathcal{V}\), define \(b_{v}^{x,y} ≔ 1\) if \(v\) prefers \(x\)
+to \(y\), while \(b_{v}^{x,y} ≔ - 1\) if \(v\) prefers \(y\) to \(x\),
+and \(b_{v}^{x,y} ≔ 0\) if \(v\) is indifferent between \(x\) and \(y\).
+Then \(F_{\mathsf{B}}\) is the Condorcet rule: for any
+\(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\), we have
+\(x \in F\left( \mathbf{n} \right)\) if and only if \(x\) is a Condorcet
+winner in the profile \(\mathbf{n}\) (i.e.~for any other
+\(y \in \mathcal{X}\), at least as many voters strictly prefer \(x\)
+over \(y\) as the number who strictly prefer \(y\) over \(x\)).
+Unfortunately, \(F\left( \mathbf{n} \right) = \varnothing\)
+for some \(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\) (the
+`Condorcet paradox'). Let
+\(\mathcal{D} \subset \mathbb{N}^{\langle\mathcal{V}\rangle}\) be the
+set of all profiles having a Condorcet winner. Then
+\(\left. F_{\mathsf{B}}:\mathcal{D}\rightrightarrows\mathcal{X} \right.\)
+is a neutral balance rule. However, \(\mathcal{D}\) is not a cone (it is
+not closed under addition), so Theorem~2 does not apply. And indeed,
+\(F_{\mathsf{B}}\) is not a scoring rule.
+
+However, if we restrict \(F_{\mathsf{B}}\) to a smaller domain
+\(\mathcal{D}'\) which is a cone, then Theorem~2 implies that
+\(F_{\mathsf{B}}\) will be equivalent to a scoring rule on
+\(\mathcal{D}'\). For example, let
+\(\left. \alpha:\mathcal{X}\longrightarrow\mathbb{R} \right.\) be an
+injection. A preference order \(\succ\) on \(\mathcal{X}\)single-peaked
+with respect to \(\alpha\) if there is some `ideal point'
+\(z_{\succ} \in \mathcal{X}\) such that, for all
+\(x,y \in \mathcal{X}\), we have \(y \succ x\) if and only if either
+\(\alpha(x) < \alpha(y) < \alpha\left( z_{\succ} \right)\) or
+\(\alpha\left( z_{\succ} \right) > \alpha(y) > \alpha(x)\). Let
+\(\mathcal{V}_{\alpha} \subset \mathcal{V}\) be the set of
+\(\alpha\)-single-peaked preferences, and let
+\(\mathcal{D}_{\alpha} ≔ \mathbb{N}^{\langle\mathcal{V}_{\alpha}\rangle}\)
+be the set of \(\alpha\)-single-peaked profiles. Then
+\(\mathcal{D}_{\alpha}\) is a cone. Furthermore,
+\(\mathcal{D}_{\alpha} \subset \mathcal{D}\)---that is, every
+single-peaked profile has a Condorcet winner Black (1958).
+
+Since the Condorcet rule is neutral, and \(\mathcal{D}_{\alpha}\) is a
+cone, Theorem~2 implies that the Condorcet rule is a scoring rule when
+restricted to \(\mathcal{D}_{\alpha}\). Indeed, for all
+\(v \in \mathcal{V}\), let \(z_{v} \in \mathcal{X}\) be the `ideal
+point' of \(v\), and then, for all \(x \in \mathcal{X}\), define
+\(s_{v}^{x} ≔ - \left| \alpha\left( z_{v} \right) - \alpha(x) \right|\).
+Thus, the scoring rule \(F_{\mathsf{S}}\) picks the element of
+\(\mathcal{X}\) which minimizes the average distance to the ideal points
+of the voters---namely, the median of the voter's ideal points. This is
+the Condorcet winner Black (1958). Thus, \(F_{\mathsf{S}}\) is
+equivalent to the Condorcet rule on \(\mathcal{D}_{\alpha}\).
+\(\quad ♦\)
+
+Despite the hypothesis of neutrality in Theorem~2, not all scoring rules
+are neutral. For example, abstract median rules are generally not
+neutral (but see Example~6 below). Here are two other interesting
+examples of non-neutral scoring rules. These rules also illustrate how
+non-real score systems can be used to encode structural features
+(e.g.~tiebreaking rules, multistage tournaments) which cannot be encoded
+with real-valued scoring systems. This shows that non-real score systems
+have genuine normative interest, and are not merely technical
+curiosities. Example~4
+
+Let \(\mathcal{X} = \left\{ 1,2,\ldots,N \right\}\), and let
+\(\mathsf{S}\) be a neutral, real-valued score system which defines a
+voting rule
+\(\left. F_{\mathsf{S}}:\mathbb{N}^{\langle\mathcal{V}\rangle}\rightrightarrows\mathcal{X} \right.\).
+Suppose a committee employs \(F_{\mathsf{S}}\), with ties broken by the
+chair. We suppose that the chair has fixed, exogenous preferences, and
+that except for tie-breaking, the chair does not vote. Let \(G\) denote
+this modified rule. Then \(G\) is obviously not neutral (unless the
+chair is indifferent). However, in Appendix~A, we show that \(G\) is
+still a scoring rule, with a \(\mathbb{R}_{lex}^{N}\)-valued score
+system. \(\quad ♦\)
+
+Example~5
+
+Let \(\mathcal{A} = \left\{ a,b,c,d \right\}\) be a set of four
+contestants (e.g.~athletes), and let \(\mathcal{V}\) be the set of all
+strict preference orders over \(\mathcal{A}\). The space \(\mathcal{X}\)
+of social alternatives will be a subset of \(\mathcal{V}\). To be
+precise, let \(\mathcal{X} \subset \mathcal{V}\) consist of all
+preference orders on \(\mathcal{A}\) whose top two contestants contain
+exactly one element from \(\left\{ a,b \right\}\) and exactly one
+element from \(\left\{ c,d \right\}\). (For example,
+`\(a \succ c \succ d \succ b\)' is in \(\mathcal{X}\), but
+`\(a \succ b \succ c \succ d\)' is not in \(\mathcal{X}\). Neither is
+`\(c \succ d \succ a \succ b\)'.) Consider the following `tournament'
+rule (used in some sports). Let \(w_{ab}\) be the winner between \(a\)
+and \(b\) in a pairwise vote, and let \(\ell_{ab}\) be the loser. Let
+\(w_{cd}\) be the winner between \(c\) and \(d\) in a pairwise vote, and
+let \(\ell_{cd}\) be the loser. Let \(G\) (`Gold') denote the winner
+between \(w_{ab}\) and \(w_{cd}\) in a pairwise vote, and let \(S\)
+(`Silver') denote the loser. Let \(B\) (`Bronze') denote the winner
+between \(\ell_{ab}\) and \(\ell_{cd}\) in a pairwise vote and let \(L\)
+(`Lead') denote the loser. Then the rule \(F\) selects the preference
+order `\(G \succ S \succ B \succ L\)' in \(\mathcal{X}\).
+
+If there is a tie in one or more of the four pairwise votes described
+above, then \(F\) selects all preference orders in \(\mathcal{X}\) which
+are consistent with breaking these ties in an arbitrary way. (For
+example, if \(a\) ties \(b\) but all other pairwise votes are non-tied,
+then we consider the preference order that would result from the choice
+\(w_{ab} = a\) and \(\ell_{ab} = b\), and also the preference order that
+would result from the choice \(w_{ab} = b\) and \(\ell_{ab} = a\).)
+
+It is easy to see that \(F\) satisfies reinforcement (because pairwise
+votes satisfy reinforcement). But \(F\) is not neutral. For example,
+consider the permutation \(\pi \in \Pi_{\mathcal{X}}\) which switches
+the bottom two entries in each preference order in \(\mathcal{X}\).
+There is no permutation \(\pi' \in \Pi_{\mathcal{V}}\) such that
+\(F\left\lbrack \pi'\left( \mathbf{d} \right) \right\rbrack = \pi\left\lbrack F\left( \mathbf{d} \right) \right\rbrack\)
+for all \(\mathbf{d} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\).
+Nevertheless, in Appendix~A we show that \(F\) is a scoring rule,
+defined by a \(\mathbb{R}_{lex}^{4}\)-valued scoring system. \(\quad ♦\)
+
+These examples illustrate that the neutrality condition in Theorem~2 is
+sufficient, but not necessary, for a balance rule to be a scoring rule.
+Lemma~C.4 (in Appendix~C) provides a simple condition which is both
+necessary and sufficient for a balance rule to be a scoring rule.
+However, this condition is rather technical and has no obvious normative
+interpretation. In Section~3, we will explore the question of neutrality
+further.
+
+We finish this section with one final remark. Theorem~2 considers a rule
+\(F\) defined on a domain
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\). Given
+a score system \(\mathsf{S}\), we have
+\(F_{\mathsf{S}}\left( \mathbf{n} \right) \neq \varnothing\)
+for all \(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\); thus,
+the scoring representation offers a way to `extend' \(F\) from
+\(\mathcal{D}\) to all of \(\mathbb{N}^{\langle\mathcal{V}\rangle}\).
+However, we might still wish to restrict \(F_{\mathsf{S}}\) to the
+smaller domain \(\mathcal{D}\). For example, suppose we have adopted
+\(F\) on the basis of certain normative criteria which only make sense
+inside \(\mathcal{D}\) (e.g.~Condorcet consistency). If
+\(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle} \smallsetminus \mathcal{D}\),
+then we might regard the value of
+\(F_{\mathsf{S}}\left( \mathbf{n} \right)\) as a meaningless artifact;
+the normative criteria which justify \(F\) inside \(\mathcal{D}\) do not
+apply at \(\mathbf{n}\).\textsuperscript{14}14A similar remark applies
+to a balance rule
+\(\left. F_{\mathsf{B}}:\mathcal{D}\rightrightarrows\mathcal{X} \right.\).
+There may exist other profiles
+\(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle} \smallsetminus \mathcal{D}\)
+which satisfy the nontriviality condition (1), so that
+\(F_{\mathsf{B}}\left( \mathbf{n} \right) \neq \varnothing\).
+But the fact that \(F_{\mathsf{B}}\) is well-defined outside
+\(\mathcal{D}\) does not imply that society is normatively compelled to
+apply \(F_{\mathsf{B}}\) outside \(\mathcal{D}\).
+
+\protect\phantomsection\label{s000015}
+3Generalized neutrality
+
+We have defined a voting rule \(F\) to be neutral if it is equivariant
+under all permutations of \(\mathcal{X}\). However, there are many
+voting rules which fail to satisfy this stringent condition, but which
+are still equivariant under some permutations of
+\(\mathcal{X}\)---enough that there is still a sense in which these
+rules treat all elements of \(\mathcal{X}\) the same. In this section,
+we will develop a more general notion of `neutrality' which encompasses
+such rules. The two results of this section then show how the neutrality
+properties of a voting rule \(F\) can be `encoded' in a balance system
+or scoring system for \(F\). They are also key technical steps in the
+proof of Theorem~2.
+
+Let \(\Pi_{\mathcal{X}}' \subseteq \Pi_{\mathcal{X}}\) be any subgroup
+of permutations of \(\mathcal{X}\), and let
+\(\left. \nu:\Pi_{\mathcal{X}}'\longrightarrow\Pi_{\mathcal{V}} \right.\)
+be a group homomorphism (a neutralizer). For any domain
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\), a
+voting rule \(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\)
+is \(\mathsf{\nu}\)-neutral if, for all \(\pi \in \Pi_{\mathcal{X}}'\),
+if \(\widetilde{\pi} = \nu(\pi)\), then \(\mathcal{D}\) is
+\(\widetilde{\pi}\)-invariant and
+\(F\left( \widetilde{\pi}\left( \mathbf{d} \right) \right) = \pi\left( F\left( \mathbf{d} \right) \right)\)
+for all \(\mathbf{d} \in \mathcal{D}\).Example~6
+
+Let \(\mathcal{X} = \mathcal{V}\) be a metric space, with metric \(d\).
+A self-isometry is a function
+\(\left. \pi:\mathcal{X}\longrightarrow\mathcal{X} \right.\) such that
+\(d\left\lbrack \pi(x),\pi(y) \right\rbrack = d(x,y)\) for all
+\(x,y \in \mathcal{X}\). Let \(\Pi_{\mathcal{X}}'\) be the group of all
+self-isometries of \(\mathcal{X}\), and let
+\(\left. \nu:\Pi_{\mathcal{X}}'\longrightarrow\Pi_{\mathcal{X}} = \Pi_{\mathcal{V}} \right.\)
+be the inclusion map. Then the median rule on \(\mathcal{X}\) is
+\(\nu\)-neutral. \(\quad ♦\)
+
+Example~7
+
+The Kemeny rule is not neutral. To see this, let \(\mathcal{A}\) be a
+set of candidates, and let the set \(\mathcal{X}\) of social
+alternatives be the space of all strict preference orders on
+\(\mathcal{A}\). Let \(\mathcal{V} = \mathcal{X}\) (so people vote by
+declaring their complete preference order over \(\mathcal{A}\).) If
+\(\left| \mathcal{A} \right| = N\), then we can represent
+\(\mathcal{X}\) as the space of all bijections
+\(\left. x:\mathcal{A}\longrightarrow\lbrack 1\ldots N\rbrack \right.\).
+Let \(\Pi_{\mathcal{A}}\) be the group of all permutations of
+\(\mathcal{A}\), and let \(\Pi_{N}\) be the group of all permutations of
+\(\lbrack 1\ldots N\rbrack\). Then \(\Pi_{\mathcal{A}}\) acts on
+\(\mathcal{X}\) by ``composition on the right'', while \(\Pi_{N}\) acts
+on \(\mathcal{X}\) by ``composition on the left''. That is, given any
+\(\alpha \in \Pi_{\mathcal{A}}\), any \(x \in \mathcal{X}\) and any
+\(\beta \in \Pi_{N}\), we can define
+\(\alpha^{\ast}(x) ≔ x \circ \alpha\) and
+\(\beta^{\ast}(x) ≔ \beta \circ x\), to obtain permutations
+\(\alpha^{\ast},\beta^{\ast} \in \Pi_{\mathcal{X}}\).
+
+The Kemeny rule is not equivariant under \(\beta^{\ast}\), for any
+nontrivial \(\beta \in \Pi_{N}\). (For example, suppose \(\beta(1) = 2\)
+and \(\beta(2) = 1\); then \(\beta^{\ast}\) switches the top two
+elements of every preference order in \(\mathcal{X}\). But there is no
+permutation of \(\mathcal{V}\) which affects the outcome of the Kemeny
+rule in this way.) However, let
+\(\Pi_{\mathcal{X}}' ≔ \left\{ \alpha^{\ast};\alpha \in \Pi_{\mathcal{A}} \right\}\);
+then \(\Pi_{\mathcal{X}}'\) is a subgroup of \(\Pi_{\mathcal{X}}\).
+Since \(\Pi_{\mathcal{V}} = \Pi_{\mathcal{X}}\), we can also regard
+\(\Pi_{\mathcal{X}}'\) as a subgroup of \(\Pi_{\mathcal{V}}\); let
+\(\left. \nu:\Pi_{\mathcal{X}}'\longrightarrow\Pi_{\mathcal{V}} \right.\)
+be the inclusion map. Then the Kemeny rule is \(\nu\)-neutral.
+\(\quad ♦\)
+
+Example~8
+
+Let \(\mathcal{V} = \mathcal{X} = \left\{ 1,2,3 \right\}\), as in
+Example~2. Consider the following rule: \(F\) chooses the plurality
+winner (i.e.~the alternative which receives the most votes), except in
+the case of ties, which we resolve as follows. Write `\(x \succ y\)' to
+mean that, in the case of a two-way plurality tie between \(x\) and
+\(y\), the rule \(F\) will select \(x\) as the winner. Then we use the
+tiebreaker relations \(1 \succ 2,2 \succ 3\), and \(3 \succ 1\). (In the
+case of a 3-way tie, \(F\) selects the outcome
+\(\left\{ 1,2,3 \right\}\).)
+
+To represent this as a scoring rule, let
+\(\mathcal{R} = \mathbb{R}_{lex}^{2}\). Define \(l ≔ (1,0)\) and
+\(\epsilon ≔ (0,1)\); thus, any
+\(\left( r_{1},r_{2} \right) \in \mathcal{R}\) can be written as
+\(r_{1}l + r_{2}\epsilon\). (Heuristically, think of \(l\) as the number
+1, and \(\epsilon\) is a positive `infinitesimal'.)~Then it is easy to
+verify that \(F = F_{\mathsf{S}}\), where
+\(\mathbf{s}^{1} = (l,0, - \epsilon),\mathbf{s}^{2} = ( - \epsilon,l,0)\),
+and \(\mathbf{s}^{3} ≔ (0, - \epsilon,l)\).
+
+This rule is clearly not neutral. For example, let
+\(\pi \in \Pi_{\mathcal{X}}\) be the permutation which swaps 1 and 2 but
+fixes 3. There is no permutation \(\pi' \in \Pi_{\mathcal{V}}\) such
+that
+\(F\left\lbrack \pi'\left( \mathbf{d} \right) \right\rbrack = \pi\left\lbrack F\left( \mathbf{d} \right) \right\rbrack\)
+for all \(\mathbf{d} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\). (To
+see this, let \(\mathbf{d} ≔ (1,1,0)\).)
+
+However, let \(\Pi_{\mathcal{X}}'\) be the subset of
+\(\Pi_{\mathcal{X}}\) generated by the permutation
+\(\left( 1\rightarrow 2\rightarrow 3\rightarrow 1 \right)\). Since
+\(\Pi_{\mathcal{V}} = \Pi_{\mathcal{X}}\), we can also regard
+\(\Pi_{\mathcal{X}}'\) as a subgroup of \(\Pi_{\mathcal{V}}\); let
+\(\left. \nu:\Pi_{\mathcal{X}}'\longrightarrow\Pi_{\mathcal{V}} \right.\)
+be the inclusion map. Then \(F\) is \(\nu\)-neutral. \(\quad ♦\)
+
+The next result says that it is possible to represent a scoring rule
+\(F\) with a score system \(\mathsf{S}\) such that \(F\)'s neutrality
+properties can be read off explicitly from \(\mathsf{S}\). Proposition~1
+
+Let \(\mathcal{X}\) be a finite set, let \(\mathcal{V}\) be an arbitrary
+set, let
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) be a
+domain, and let
+\(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\) be a
+scoring rule. Let \(\Pi_{\mathcal{X}}'\) be any group of permutations of
+\(\mathcal{X}\), and let
+\(\left. \nu:\Pi_{\mathcal{X}}'\longrightarrow\Pi_{\mathcal{V}} \right.\)
+be a homomorphism. Then \(F\) is \(\nu\)-neutral if and only if
+\(F = F_{\mathsf{S}}\) for some \(\nu\)-neutral score system
+\(\mathsf{S}\).
+
+The corresponding result for balance rules is a bit more complicated. A
+balance system \(\mathsf{B}\) is \(\nu\)-neutral if, for all
+\(x,y,x',y' \in \mathcal{X}\) and \(\pi \in \Pi_{\mathcal{X}}'\), if
+\(x' ≔ \pi^{- 1}(x)\) and \(y' ≔ \pi^{- 1}(y)\) and
+\(\widetilde{\pi} = \nu(\pi)\), then
+\(\mathbf{b}^{x,y}\widetilde{\pi} = \mathbf{b}^{x',y'}\). A score system
+\(\mathsf{S} = \left\{ \mathbf{s}^{x} \right\}_{x \in \mathcal{X}}\) is
+\(\nu\)-neutral if, for all \(\pi \in \Pi_{\mathcal{X}}'\) and
+\(x,y \in \mathcal{X}\), if \(\pi(y) = x\) and
+\(\widetilde{\pi} ≔ \nu(\pi)\), then
+\(\mathbf{s}^{x}\,\widetilde{\pi} = \mathbf{s}^{y}\). A voting rule,
+balance system, or score system is \(\Pi_{\mathcal{X}}'\)-neutral if it
+is \(\nu\)-neutral for some group homomorphism
+\(\left. \nu:\Pi_{\mathcal{X}}'\longrightarrow\Pi_{\mathcal{V}} \right.\).
+Example~9
+
+Let \(\mathcal{V}\) be the set of preference orders over
+\(\mathcal{X}\). Any permutation of \(\mathcal{X}\) acts on
+\(\mathcal{V}\) in the obvious manner; let
+\(\left. \nu:\Pi_{\mathcal{X}}\longrightarrow\Pi_{\mathcal{V}} \right.\)
+be the corresponding homomorphism. Then the Condorcet balance system
+(Example~3) is \(\nu\)-neutral. \(\quad ♦\)
+
+Let \(\Pi_{\mathcal{X}}'\) be a group of permutations of
+\(\mathcal{X}\). We say that \(\Pi_{\mathcal{X}}'\) is doubly transitive
+if, for all \(x,y,x',y' \in \mathcal{X}\) with \(x \neq y\) and
+\(x' \neq y'\), there exists some \(\pi \in \Pi_{\mathcal{X}}'\) such
+that \(\pi(x) = x'\) and \(\pi(y) = y'\). (For example, the group
+\(\Pi_{\mathcal{X}}\) of all permutations of \(\mathcal{X}\) is doubly
+transitive.)
+
+A balance system \(\mathsf{B}\) is perfect on the domain \(\mathcal{D}\)
+if, for any \(\mathbf{d} \in \mathcal{D}\), any
+\(x \in F_{\mathsf{B}}\left( \mathbf{d} \right)\) and any
+\(y \in \mathcal{X} \smallsetminus F_{\mathsf{B}}\left( \mathbf{d} \right)\),
+we have \(\mathbf{b}^{x,y}\left( \mathbf{d} \right) > 0\). (For
+instance: Example~1 is perfect, but Example~2, Example~3 are not
+perfect.) Perfection simplifies the computation of
+\(F\left( \mathbf{d} \right)\): once we find one point
+\(x \in F_{\mathsf{B}}\left( \mathbf{d} \right)\), we have
+\(F_{\mathsf{B}}\left( \mathbf{d} \right) = \left\{ y \in \mathcal{X};\mathbf{b}^{x,y}\left( \mathbf{d} \right) = 0 \right\}\).
+
+The next result says that, assuming double-transitivity, it is possible
+to represent a balance rule in a manner such that its neutrality
+properties can be read off explicitly from its balance system.
+Furthermore, we can ensure that this balance system is perfect.
+Proposition~2
+
+Let \(\mathcal{X}\) be a finite set, let \(\mathcal{V}\) be an arbitrary
+set, let
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) be a
+domain, and let
+\(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\) be a
+balance rule for which \(\mathcal{D}\) is weakly additive. Let
+\(\Pi_{\mathcal{X}}'\) be a doubly transitive group of permutations of
+\(\mathcal{X}\), and let
+\(\left. \nu:\Pi_{\mathcal{X}}'\longrightarrow\Pi_{\mathcal{V}} \right.\)
+be a homomorphism. Then \(F\) is \(\nu\)-neutral if and only if
+\(F = F_{\mathsf{B}}\) for some \(\nu\)-neutral perfect balance system
+\(\mathsf{B}\).
+
+\protect\phantomsection\label{s000020}
+4Conclusion
+
+In the setting of anonymous, variable population voting rules, I have
+characterized the class of balance rules by a single axiom:
+reinforcement. I have also shown that any neutral voting rule which
+satisfies reinforcement is a scoring rule. I allowed the underlying
+balance system or scoring system to range over an arbitrary linearly
+ordered abelian group (rather than the real numbers). This is not just a
+technicality; several examples illustrate how this generalization
+provides the rules with additional flexibility. Pivato (2012b) discusses
+the extent to which real-valued balance or scoring representations of a
+voting rule are unique up to scalar multiplication; this has
+implications for the ways in which scoring rules can be interpreted as
+statistical estimators (Pivato, 2013). Meanwhile, Pivato (2012a) uses
+some of the tools developed in this paper to characterize two scoring
+rules: range voting and formal utilitarianism.
+
+I will end with some open problems. The conditions of reinforcement and
+neutrality are sufficient to obtain a scoring rule (Theorem~2), but
+neutrality is not necessary. Are there normatively compelling conditions
+which are both necessary and sufficient for a scoring rule? Aside from
+Example~2, are there normatively compelling balance rules which are not
+scoring rules? Finally, most of the results in this paper assume
+\(\mathcal{X}\) is finite---can this hypothesis be eliminated?
+
+Acknowledgments
+
+This paper was written while visiting the Department of Economics at the
+Université de Montréal, and the Centre for Philosophy of Natural and
+Social Sciences at the London School of Economics. I would like to thank
+the UdM, CIREQ, and LSE-CPNSS for their hospitality. I am also grateful
+to Matias Nuñez Rodriguez for his comments on a draft of the paper.
+Finally, I would like to thank the anonymous referee for many
+suggestions which improved the expositional clarity of the paper. This
+research was supported by NSERC grant \#262620-2008.
+
+\protect\phantomsection\label{s000025}
+Appendix AProofs of some examples
+
+Proof of Example~2
+
+\textsuperscript{15}15I thank the referee for suggesting this simplified
+version of the proof. By contradiction, suppose \(F\) was a scoring
+rule, with score system
+\(\mathsf{S} = \left\{ \mathbf{s}^{1},\mathbf{s}^{2},\mathbf{s}^{3} \right\}\),
+where
+\(\mathbf{s}^{x} = \left( s_{1}^{x},s_{2}^{x},s_{3}^{x} \right) \in \mathcal{R}^{3}\)
+for all \(x \in \mathcal{X} = \left\{ 1,2,3 \right\}\).
+
+Now, \(F(1,0,0) = \left\{ 1 \right\}\); thus, if
+\(\mathbf{d} = (1,0,0)\), then we must have
+\(\mathbf{s}^{1}\left( \mathbf{d} \right) > \mathbf{s}^{2}\left( \mathbf{d} \right)\),
+which means \(s_{1}^{1} > s_{1}^{2}\), which means
+\(s_{1}^{2} = s_{1}^{1} - p_{1}\) for some \(p_{1} \in \mathcal{R}\)
+with \(p_{1} > 0\). Likewise, \(F(0,1,0) = \left\{ 2 \right\}\); thus,
+\(s_{2}^{2} > s_{2}^{1}\), which means \(s_{2}^{1} = s_{2}^{2} - p_{2}\)
+for some \(p_{2} > 0\). Finally, \(F(1,1,0) = \left\{ 1,2 \right\}\).
+Thus, we must have \(s_{1}^{1} + s_{2}^{1} = s_{1}^{2} + s_{2}^{2}\); in
+other words,
+\(s_{1}^{1} + s_{2}^{2} - p_{2} = s_{1}^{1} - p_{1} + s_{2}^{2}\), from
+which it follows that \(p_{1} = p_{2}\). We conclude that there is a
+single value \(p > 0\) such that \(s_{1}^{2} = s_{1}^{1} - p\) and
+\(s_{2}^{1} = s_{2}^{2} - p\).
+
+By identical arguments, we can show that there exists \(q > 0\) such
+that \(s_{1}^{3} = s_{1}^{1} - q\) and \(s_{3}^{1} = s_{3}^{3} - q\),
+and there exists \(r > 0\) such that \(s_{3}^{2} = s_{3}^{3} - r\) and
+\(s_{2}^{3} = s_{2}^{2} - r\).
+
+Finally, observe that \(F(2,1,1) = \left\{ 1,2,3 \right\}\). Thus, if
+\(\mathbf{d} = (2,1,1)\), then we must have
+\(\mathbf{s}^{1}\left( \mathbf{d} \right) = \mathbf{s}^{2}\left( \mathbf{d} \right) = \mathbf{s}^{3}\left( \mathbf{d} \right)\),
+which means
+\[2s_{1}^{1} + s_{2}^{1} + s_{3}^{1} = 2s_{1}^{2} + s_{2}^{2} + s_{3}^{2} = 2s_{1}^{3} + s_{2}^{3} + s_{3}^{3}\text{.}\]
+Substituting in the identities discovered above, this becomes:
+\[2s_{1}^{1} + s_{2}^{2} - p + s_{3}^{3} - q = 2s_{1}^{1} - 2p + s_{2}^{2} + s_{3}^{3} - r = 2s_{1}^{1} - 2q + s_{2}^{2} - r + s_{3}^{3}\]
+which reduces to \(- p - q = - 2p - r = - 2q - r\). This implies that
+\(p = q\), which then implies that \(r = 0\). But \(r > 0\), a
+contradiction. □~Example~2
+
+Proof of Example~4
+
+Let \(\mathcal{R} ≔ \mathbb{R}_{lex}^{N}\), and let \(\gg\) denote the
+lexicographical order on \(\mathbb{R}_{lex}^{N}\). Recall that
+\(\mathcal{X} = \left\{ 1,2,\ldots,N \right\}\). Suppose the committee
+chair has the preference order \(1 \prec 2 \prec \cdots \prec N\).
+Define the \(\mathbb{R}_{lex}^{N}\)-valued scoring rule
+\(\left\{ {\widetilde{\mathbf{s}}}^{x} \right\}_{x \in \mathcal{X}}\) as
+follows: for all \(v \in \mathcal{V}\),
+\[{\widetilde{s}}_{v}^{1} = \left( s_{v}^{1},0,0,0,\ldots,0 \right) \in \mathbb{R}_{lex}^{N}\text{,}\]\[{\widetilde{s}}_{v}^{2} = \left( s_{v}^{2},1,0,0,\ldots,0 \right) \in \mathbb{R}_{lex}^{N}\text{,}\]\[{\widetilde{s}}_{v}^{3} = \left( s_{v}^{3},1,1,0,\ldots,0 \right) \in \mathbb{R}_{lex}^{N}\text{,}\]\[\vdots\]\[\text{and}\quad{\widetilde{s}}_{v}^{N} = \left( s_{v}^{N},1,1,1,\ldots,1 \right) \in \mathbb{R}_{lex}^{N}\text{.}\]
+Then \(F_{\widetilde{\mathsf{S}}} = G\). To see this, let
+\(\mathbf{d} \in \mathcal{D}\) be a profile, and let
+\(x,y \in \mathcal{X}\). Then
+\({\widetilde{\mathbf{s}}}^{x}\left( \mathbf{d} \right)\) and
+\({\widetilde{\mathbf{s}}}^{y}\left( \mathbf{d} \right)\) are elements
+of \(\mathbb{R}_{lex}^{N}\) whose first (i.e.~lexicographically
+dominant) coordinates are \(\mathbf{s}^{x}\left( \mathbf{d} \right)\)
+and \(\mathbf{s}^{y}\left( \mathbf{d} \right)\), respectively.
+Meanwhile, the next \(x - 1\) coordinates of
+\(\mathbf{s}^{x}\left( \mathbf{d} \right)\) are positive, whereas the
+next \(y - 1\) coordinates of
+\(\mathbf{s}^{y}\left( \mathbf{d} \right)\) are positive, and the
+remaining coordinates of both are zero. Thus, if
+\(\mathbf{s}^{x}\left( \mathbf{d} \right) > \mathbf{s}^{y}\left( \mathbf{d} \right)\),
+then
+\({\widetilde{\mathbf{s}}}^{x}\left( \mathbf{d} \right) \gg {\widetilde{\mathbf{s}}}^{y}\left( \mathbf{d} \right)\).
+But if
+\(\mathbf{s}^{x}\left( \mathbf{d} \right) = \mathbf{s}^{y}\left( \mathbf{d} \right)\),
+then
+\({\widetilde{\mathbf{s}}}^{x}\left( \mathbf{d} \right) \gg {\widetilde{\mathbf{s}}}^{y}\left( \mathbf{d} \right)\)
+if and only if \(x > y\). It follows: if
+\(F_{\mathsf{S}}\left( \mathbf{d} \right) = \left\{ x \right\}\), then
+\(F_{\widetilde{\mathsf{S}}}\left( \mathbf{d} \right) = \left\{ x \right\}\).
+But if
+\(\left| F_{\mathsf{S}}\left( \mathbf{d} \right) \right| \geq 2\), then
+\(F_{\widetilde{\mathsf{S}}}\left( \mathbf{d} \right)\) is the
+numerically largest element of
+\(F_{\mathsf{S}}\left( \mathbf{d} \right)\)---that is, the chair's
+preferred choice. Hence \(F_{\widetilde{\mathsf{S}}} = G\). □~Example~4
+
+Proof of Example~5
+
+Let \(\mathcal{R} ≔ \mathbb{R}_{lex}^{4}\). For any
+\(x \in \mathcal{X}\) and \(v \in \mathcal{V}\), define
+\(s_{v}^{x} = \left( {}_{{}_{1}}s_{v}^{x},\,{}_{{}_{2}}s_{v}^{x},{}_{{}_{3}}s_{v}^{x},\,{}_{{}_{4}}s_{v}^{x} \right) \in \mathbb{R}_{lex}^{4}\)
+as follows: First, \({}_{{}_{1}}s_{v}^{x} = 1\) if \(v\) agrees with
+\(x\)'s ranking of \(a\) vs. \(b\); otherwise
+\({}_{{}_{1}}s_{v}^{x} = - 1\). Next, \({}_{{}_{2}}s_{v}^{x} = 1\) if
+\(v\) agrees with \(x\)'s ranking of \(c\) vs. \(d\); otherwise
+\({}_{{}_{2}}s_{v}^{x} = - 1\). Now suppose the top two choices of \(x\)
+are \(g\) and \(h\). Then \({}_{{}_{3}}s_{v}^{x} = 1\) if \(v\) agrees
+with \(x\)'s ranking of \(g\) vs. \(h\); otherwise
+\({}_{{}_{3}}s_{v}^{x} = - 1\). Finally, suppose the bottom two choices
+of \(x\) are \(i\) and \(j\). Then \({}_{{}_{4}}s_{v}^{x} = 1\) if \(v\)
+agrees with \(x\)'s ranking of \(i\) vs. \(j\); otherwise
+\({}_{{}_{4}}s_{v}^{x} = - 1\).
+
+We claim that \(F_{\mathsf{S}} = F\). To see this, let
+\(\mathbf{d} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\) be some
+profile. If (for example), a strict majority favors \(a\) over \(b\),
+then for all \(x \in \mathcal{X}\), we will have
+\({}_{{}_{1}}\mathbf{s}^{x}\left( \mathbf{d} \right) > 0\) if and only
+if \(x \in \mathcal{X}_{ab}\), where
+\(\mathcal{X}_{ab} ≔ \left\{ x \in \mathcal{X};x\text{~favors~}a\text{~over~}b \right\}\).
+Thus,
+\(F_{\mathsf{S}}\left( \mathbf{d} \right) \subseteq \mathcal{X}_{ab}\)
+(by the lexicographical ordering of \(\mathbb{R}_{lex}^{4}\)).
+Furthermore, \({}_{{}_{1}}\mathbf{s}^{x}\left( \mathbf{d} \right)\) has
+the same value for all \(x \in \mathcal{X}_{ab}\); thus, the choice
+amongst these elements must be made by looking at
+\({}_{{}_{2}}\mathbf{s}^{x}\left( \mathbf{d} \right)\). Next, if (for
+example) a strict majority favors \(c\) over \(d\), then for all
+\(x \in \mathcal{X}_{ab}\), we will have
+\({}_{{}_{2}}\mathbf{s}^{x}\left( \mathbf{d} \right) > 0\) if and only
+if \(x \in \mathcal{X}_{cd}\), where
+\(\mathcal{X}_{cd} ≔ \left\{ x \in \mathcal{X};x\text{~favors~}c\text{~over~}d \right\}\).
+Thus,
+\(F_{\mathsf{S}}\left( \mathbf{d} \right) \subseteq \mathcal{X}_{ab} \cap \mathcal{X}_{cd}\)
+(by the lexicographical ordering of \(\mathbb{R}_{lex}^{4}\)).
+Furthermore, \({}_{{}_{2}}\mathbf{s}^{x}\left( \mathbf{d} \right)\) has
+the same value for all \(x \in \mathcal{X}_{ab} \cap \mathcal{X}_{cd}\);
+thus, the choice amongst these elements must be made by looking at
+\({}_{{}_{3}}\mathbf{s}^{x}\left( \mathbf{d} \right)\). Next, if (for
+example) a strict majority favors \(c\) over \(a\), then for all
+\(x \in \mathcal{X}_{ab} \cap \mathcal{X}_{cd}\), we will have
+\({}_{{}_{3}}\mathbf{s}^{x}\left( \mathbf{d} \right) > 0\) if and only
+if
+\(x \in \mathcal{X}_{ca} ≔ \left\{ x \in \mathcal{X}; x\text{~favors~}c\text{~over~}a \right\}\).
+Thus,
+\(F_{\mathsf{S}}\left( \mathbf{d} \right) \subseteq \mathcal{X}_{ab} \cap \mathcal{X}_{cd} \cap \mathcal{X}_{ca}\).
+Furthermore, \({}_{{}_{3}}\mathbf{s}^{x}\left( \mathbf{d} \right)\) has
+the same value for all
+\(x \in \mathcal{X}_{ab} \cap \mathcal{X}_{cd} \cap \mathcal{X}_{ca}\);
+thus, the choice amongst these elements must be made by looking at
+\({}_{{}_{4}}\mathbf{s}^{x}\left( \mathbf{d} \right)\). Finally, if (for
+example) a strict majority favors \(b\) over \(d\), then for all
+\(x \in \mathcal{X}_{ab} \cap \mathcal{X}_{cd} \cap \mathcal{X}_{ca}\),
+we will have \({}_{{}_{4}}\mathbf{s}^{x}\left( \mathbf{d} \right) > 0\)
+if and only if
+\(x \in \mathcal{X}_{bd} ≔ \left\{ x \in \mathcal{X};x\text{~favors~}b\text{~over~}d \right\}\).
+Thus,
+\(F_{\mathsf{S}}\left( \mathbf{d} \right) \subseteq \mathcal{X}_{ab} \cap \mathcal{X}_{cd} \cap \mathcal{X}_{ca} \cap \mathcal{X}_{bd} = \left\{ c \succ a \succ b \succ d \right\}\).
+□~Example~5
+
+\protect\phantomsection\label{s000030}
+Appendix BHomogeneous orders on abelian groups
+
+Let \(\left( \mathcal{R}, + \right)\) be an abelian group, and let
+\(( \succeq )\) be a binary relation on \(\mathcal{R}\). We say that
+\(( \succeq )\) is homogeneous if, for all \(r,s \in \mathcal{R}\), we
+have
+\(\left. (r \succeq s)\;\Longleftrightarrow\;(r - s \succeq 0) \right.\).
+The positive conoid\textsuperscript{16}16This object is often called the
+positive cone. However, we are reserving the term cone for a set which
+is divisible. Hence the ungainly term `conoid'. of \(( \succeq )\) is
+the set
+\(\mathcal{P}_{\succeq} ≔ \left\{ r \in \mathcal{R};r \succeq 0 \right\}\).
+The conoid \(\mathcal{P}_{\succeq}\) completely encodes the relation
+\(( \succeq )\): for any \(r,s \in \mathcal{R}\), we have
+(B.1)\[\left. (r \succeq s)\;\Longleftrightarrow\;\left( r - s \in \mathcal{P}_{\succeq} \right)\text{.} \right.\]
+Conversely, given any subset \(\mathcal{P} \subseteq \mathcal{R}\), we
+can use formula (B.1) to define a unique homogeneous binary relation
+\(( \succeq )\) such that \(\mathcal{P}_{\succeq} = \mathcal{P}\). Thus,
+there is a bijective correspondence between homogeneous binary relations
+on \(\mathcal{R}\) and subsets of \(\mathcal{R}\).
+
+Let \(\mathcal{P} \subseteq \mathcal{R}\). Recall that \(\mathcal{P}\)
+is additively closed if \(p_{1} + p_{2} \in \mathcal{P}\) whenever
+\(p_{1},p_{2} \in \mathcal{P}\). We say that \(\mathcal{P}\) is
+divisible if, for all \(r \in \mathcal{R}\) and \(n \in \mathbb{N}\), if
+\(n\, r \in \mathcal{P}\), then \(r \in \mathcal{P}\) also. Thus,
+\(\mathcal{P}\) is a cone if it is both additively closed and divisible.
+A preorder conoid is an additively closed subset of \(\mathcal{R}\)
+which contains 0. A partial order conoid is an additively closed subset
+of \(\mathcal{R}\) which does not contain 0. (Equivalently: for all
+\(r \in \mathcal{R}\), at most one of \(r\) or \(- r\) is in
+\(\mathcal{P}\)).~A preorder or partial order conoid \(\mathcal{P}\) is
+complete if, for all
+\(r \in \mathcal{R} \smallsetminus \left\{ 0 \right\}\), at least one of
+\(r\) or \(- r\) is in \(\mathcal{P}\). (Any complete preorder or
+partial order conoid is divisible.)~A linear order cone is a complete
+partial order conoid. (Thus, for all
+\(r \in \mathcal{R} \smallsetminus \left\{ 0 \right\}\), exactly one of
+\(r \in \mathcal{P}\) or \(- r \in \mathcal{P}\).)~Properties of
+\(( \succeq )\) correspond to properties of the conoid
+\(\mathcal{P}_{\succeq}\) as follows: Lemma~B.1
+
+Let \(\left( \mathcal{R}, + \right)\) be an abelian group. Let
+\(( \succeq )\) be a homogeneous binary relation on \(\mathcal{R}\).(a)
+
+\(( \succeq )\) is transitive iff \(\mathcal{P}_{\succeq}\) is
+additively closed. Likewise, \(( \succeq )\) is a preorder iff
+\(\mathcal{P}_{\succeq}\) is a preorder conoid. Also, \(( \succeq )\) is
+a partial order iff \(\mathcal{P}_{\succeq}\) is a partial order conoid.
+Finally, \(( \succeq )\) is a linear order iff \(\mathcal{P}_{\succeq}\)
+is a linear order cone.
+
+(b)
+
+Suppose \(( \succeq )\) is a homogeneous preorder; let \(( \succ )\) be
+its asymmetric part, and let \(( \approx )\) be its symmetric part. The
+set \(\mathcal{O} ≔ \left\{ r \in \mathcal{R};r \approx 0 \right\}\) is
+a subgroup of \(\mathcal{R}\) . Let
+\(\mathcal{R}' ≔ \mathcal{R}/\mathcal{O}\) be the quotient group, let
+\(\left. \phi:\mathcal{R}\longrightarrow\mathcal{R}' \right.\) be the
+quotient map, and define
+\(\mathcal{P}' ≔ \phi\left( \mathcal{P} \right) \smallsetminus \left\{ 0' \right\}\),
+where \(0'\) is the identity element in \(\mathcal{R}'\) . Then
+\(\mathcal{P}'\) is a partial order conoid on \(\mathcal{R}'\).
+
+Let \(\left( \succ ' \right)\) be the homogeneous partial order on
+\(\mathcal{R}'\) defined by the conoid \(\mathcal{P}'\) . Then for all
+\(r,s \in \mathcal{R}\), we have \(\phi(r) \succ '\phi(s)\) if and only
+if \(r \succ s\).
+
+Proof
+
+(a)
+
+\(( \succeq )\) is transitive \(\left. \;\Longleftrightarrow\; \right.\)
+(for all \(r,s,t \in \mathcal{R}\), if \(r \succeq s\) and
+\(s \succeq t\), then \(r \succeq t\))
+\(\left. \;\Longleftrightarrow\; \right.\) (for all
+\(r,s,t \in \mathcal{R}\), if \((r - s) \in \mathcal{P}_{\succeq}\) and
+\((s - t) \in \mathcal{P}_{\succeq}\), then
+\((r - t) \in \mathcal{P}_{\succeq}\))
+\(\left. \;\Longleftrightarrow\; \right.\) (for all
+\(a,b \in \mathcal{R}\), if \(a \in \mathcal{P}_{\succeq}\) and
+\(b \in \mathcal{P}_{\succeq}\), then \(a + b \in \mathcal{P}\))
+\(\left. \;\Longleftrightarrow\;\mathcal{P}_{\succeq} \right.\) is
+additively closed. The proofs of the other statements are similar.
+
+(b)
+
+Observe that \(\mathcal{O} = - \mathcal{P} \cap \mathcal{P}\); thus,
+\(\mathcal{O}\) is closed under addition because \(\mathcal{P}\) is
+closed under addition. Furthermore, \(\mathcal{O}\) is closed under
+negation by definition; thus it is a subgroup of \(\mathcal{R}\).
+
+By definition, \(0' = \phi\left( \mathcal{O} \right)\). The set
+\(\mathcal{P}'\) excludes \(0'\) by definition. To see that
+\(\mathcal{P}'\) is closed under addition, let
+\(p',q' \in \mathcal{P}\); then there exist \(p,q \in \mathcal{P}\) such
+that \(\phi(p) = p'\) and \(\phi(q) = q'\). Thus,
+\(p + q \in \mathcal{P}\) (because \(\mathcal{P}\) is additively
+closed), and \(\phi(p + q) = p' + q'\) (because \(\phi\) is a
+homomorphism). To show that \(p' + q' \in \mathcal{P}\), we must show
+that \(p' + q' \neq 0'\).
+
+By contradiction, suppose \(p' + q' = 0'\); then
+\(p + q \in \mathcal{O}\). Then \(- p - q \in \mathcal{O}\) (because
+\(\mathcal{O}\) is closed under negation). Thus,
+\(- p - q \in \mathcal{P}\) (because
+\(\mathcal{O} \subseteq \mathcal{P}\)). Thus,
+\(- q = p + ( - p - q) \in \mathcal{P}\), and
+\(- p = q + ( - p - q) \in \mathcal{P}\) (because \(\mathcal{P}\) is
+closed under addition). It follows that \(p,q \in \mathcal{O}\). But
+then \(p' = 0' = q'\), so \(p',q' \notin \mathcal{P}'\), a
+contradiction.
+
+It follows that \(\mathcal{P}'\) is a partial order cone. Finally, for
+any \(r,s \in \mathcal{R}\), we have
+\(\left. (r \succ s)\;\Longleftrightarrow\;\left( (r - s) \in \mathcal{P} \smallsetminus \mathcal{O} \right)\;\Longleftrightarrow\;\left( \phi(r) - \phi(s) \in \mathcal{P}' \right)\;\Longleftrightarrow\;\left( \phi(r) \succ '\phi(s) \right) \right.\).
+□~Lemma~B.1
+
+Next, we extend a classic result about partial orders to the setting of
+homogeneous orders. If \(( \succeq )\) and \(\left( \succeq ' \right)\)
+are two relations on \(\mathcal{R}\), we say that
+\(\left( \succeq ' \right)\)extends\(( \succeq )\) if, for all
+\(r,s \in \mathcal{R}\), we have
+\(\left. (r \succeq s)\Longrightarrow\left( r \succeq 's \right) \right.\).
+An abelian group \(\left( \mathcal{R}, + \right)\) is torsion-free if
+\(n\, r \neq 0\) for any
+\(n \in \mathbb{Z} \smallsetminus \left\{ 0 \right\}\) and
+\(r \in \mathcal{R} \smallsetminus \left\{ 0 \right\}\). Homogeneous
+Szpilrajn Lemma
+
+Let \(\left( \mathcal{R}, + \right)\) be a torsion-free abelian group.
+Any homogeneous partial order on \(\mathcal{R}\) is extended by a
+homogeneous linear order.
+
+Proof
+
+See Fuchs (1950) or Everett (1950).□
+
+Corollary~B.1
+
+Let \(\left( \mathcal{A}, + \right)\) be an abelian group.(a)
+
+If \(\left( \mathcal{A}, + \right)\) is torsion-free, then
+\(\mathcal{A}\) has a homogeneous linear ordering.
+
+(b)
+
+Let \(\mathcal{B} \subset \mathcal{A}\) be a divisible proper subgroup.
+Then there exists a complete, homogeneous preorder \(( \succeq )\) on
+\(\mathcal{A}\) such that
+\(\mathcal{B} = \left\{ a \in \mathcal{A};a \approx 0 \right\}\).
+
+Proof
+
+(a)
+
+Let \(a \in \mathcal{A}\) be arbitrary. Let
+\(\mathcal{P} ≔ \left\{ n\, a;n \in \mathbb{N} \right\}\). Then
+\(\mathcal{P}\) is additively closed and \(0 \notin \mathcal{P}\)
+(because \(\mathcal{A}\) is torsion-free), so \(\mathcal{P}\) is a
+partial order conoid on \(\mathcal{A}\). If \(( \succ )\) is the
+homogeneous partial order defined by \(\mathcal{P}\), then the
+Homogeneous Szpilrajn Lemma extends \(( \succ )\) to a homogeneous
+linear order on \(\mathcal{A}\).
+
+(b)
+
+Let \(\mathcal{Q} ≔ \mathcal{A}/\mathcal{B}\), and let
+\(\left. q:\mathcal{A}\longrightarrow\mathcal{Q} \right.\) be the
+quotient map. Then \(\mathcal{Q}\) is a torsion-free group, because
+\(\mathcal{B}\) is divisible. Thus, part (a) yields a linear order
+\(( > )\) on \(\mathcal{Q}\). Now, define \(( \succeq )\) on
+\(\mathcal{A}\) by stipulating that \(a_{1} \succeq a_{2}\) if and only
+if \(q\left( a_{1} \right) \geq q\left( a_{2} \right)\). It is easy to
+check that \(( \succeq )\) is a complete, homogeneous preorder, and
+clearly,
+\(\mathcal{B} = \left\{ a \in \mathcal{A};q(a) = 0 \right\} = \left\{ a \in \mathcal{A};a \approx 0 \right\}\).□~Corollary~B.1
+
+\protect\phantomsection\label{s000035}
+Appendix CProofs of the main results
+
+Proof of Theorem~1
+
+``\(\Longleftarrow\)'' Suppose \(F\) is a balance rule determined by
+some balance system
+\(\mathsf{B} = \left\{ \mathbf{b}^{x,y} \right\}_{x,y \in \mathcal{X}}\).
+We must show that \(F\) satisfies reinforcement. Let
+\(\mathbf{n},\mathbf{m} \in \mathcal{D}\), and suppose
+\(F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right) \neq \varnothing\).
+Then \(\mathbf{n} + \mathbf{m} \in \mathcal{D}\), because
+\(\mathcal{D}\) is weakly additive. Now, let
+\(x \in F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right)\).
+Then \(x \in F\left( \mathbf{n} \right)\) and
+\(x \in F\left( \mathbf{m} \right)\). Thus, for all
+\(y \in \mathcal{X}\), we have
+\(\mathbf{s}^{x}\left( \mathbf{n} \right) \geq \mathbf{s}^{y}\left( \mathbf{n} \right)\)
+and
+\(\mathbf{s}^{x}\left( \mathbf{m} \right) \geq \mathbf{s}^{y}\left( \mathbf{m} \right)\).
+Thus,
+\[\mathbf{s}^{x}\left( \mathbf{n} + \mathbf{m} \right) = \mathbf{s}^{x}\left( \mathbf{n} \right) + \mathbf{s}^{x}\left( \mathbf{m} \right) \geq \mathbf{s}^{y}\left( \mathbf{n} \right) + \mathbf{s}^{y}\left( \mathbf{m} \right) = \mathbf{s}^{y}\left( \mathbf{n} + \mathbf{m} \right)\text{.}\]
+Since this holds for all \(y \in \mathcal{X}\), we deduce that
+\(x \in F\left( \mathbf{n} + \mathbf{m} \right)\). Since this works for
+any
+\(x \in F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right)\), we
+conclude that
+\(F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right) \subseteq F\left( \mathbf{n} + \mathbf{m} \right)\).
+
+On the other hand, suppose
+\(y \in \mathcal{X} \smallsetminus F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right)\).
+Then either \(y \notin F\left( \mathbf{n} \right)\) or
+\(y \notin F\left( \mathbf{m} \right)\). Suppose without loss of
+generality that \(y \notin F\left( \mathbf{n} \right)\). Let
+\(x \in F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right)\).
+Then
+\(\mathbf{s}^{y}\left( \mathbf{n} \right) < \mathbf{s}^{x}\left( \mathbf{n} \right)\),
+while
+\(\mathbf{s}^{y}\left( \mathbf{m} \right) \leq \mathbf{s}^{x}\left( \mathbf{m} \right)\).
+Thus,
+\[\mathbf{s}^{y}\left( \mathbf{n} + \mathbf{m} \right) = \mathbf{s}^{y}\left( \mathbf{n} \right) + \mathbf{s}^{y}\left( \mathbf{m} \right) < \mathbf{s}^{x}\left( \mathbf{n} \right) + \mathbf{s}^{x}\left( \mathbf{m} \right) = \mathbf{s}^{x}\left( \mathbf{n} + \mathbf{m} \right)\text{.}\]
+Thus, \(y \notin F\left( \mathbf{n} + \mathbf{m} \right)\). Since this
+works for any
+\(y \in \mathcal{X} \smallsetminus F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right)\),
+we conclude that
+\(F\left( \mathbf{n} \right) \cap F\left( \mathbf{m} \right) \supseteq F\left( \mathbf{n} + \mathbf{m} \right)\).
+
+This proves ``\(\Longleftarrow\)''. Meanwhile, ``\(\Longrightarrow\)''
+is an immediate consequence of Lemma~C.1, which we prove next.
+□~Theorem~1
+
+Let
+\(\mathbb{Z}^{\langle\mathcal{V}\rangle} ≔ \left\{ \mathbf{n} \in \mathbb{Z}^{\mathcal{V}};\left\| \mathbf{n} \right\|_{} < \infty \right\}\);
+then \(\mathbb{Z}^{\langle\mathcal{V}\rangle}\) is a torsion-free
+abelian group. Let \(\mathcal{R}\) be another abelian group. There is a
+bijective correspondence (actually, a group isomorphism) between
+\(\mathcal{R}^{\mathcal{V}}\) and the set of group homomorphisms from
+\(\mathbb{Z}^{\langle\mathcal{V}\rangle}\) into \(\mathcal{R}\). To see
+this, note that any vector
+\(\mathbf{b} = \left( b_{v} \right)_{v \in \mathcal{V}} \in \mathcal{R}^{\mathcal{V}}\)
+defines a group homomorphism
+\(\left. \mathbf{b}^{\ast}:\mathbb{Z}^{\langle\mathcal{V}\rangle}\longrightarrow\mathcal{R} \right.\)
+by setting
+\(\mathbf{b}^{\ast}\left( \mathbf{n} \right) ≔ \sum_{v \in \mathcal{V}}n_{v}b_{v}\)
+for all \(\mathbf{n} \in \mathbb{Z}^{\langle\mathcal{V}\rangle}\).
+Conversely, for all \(v \in \mathcal{V}\), let
+\(\mathbf{1}_{v} \in \mathbb{Z}^{\langle\mathcal{V}\rangle}\) be the
+vector with a 1 in the \(v\) coordinate, and 0 in all other coordinates.
+Then given any homomorphism
+\(\left. \beta:\mathbb{Z}^{\langle\mathcal{V}\rangle}\longrightarrow\mathcal{R} \right.\),
+we can define a vector
+\(\mathbf{b} = \left( b_{v} \right)_{v \in \mathcal{V}} \in \mathcal{R}^{\mathcal{V}}\)
+by setting \(b_{v} ≔ \beta\left( \mathbf{1}_{v} \right)\) for all
+\(v \in \mathcal{V}\). We then have \(\mathbf{b}^{\ast} = \beta\).
+
+Thus, we can equivalently define a balance system
+\(\left\{ \mathbf{b}^{x,y} \right\}_{x,y \in \mathcal{X}}\) or score
+system \(\left\{ \mathbf{s}^{x} \right\}_{x \in \mathcal{X}}\) as a
+collection of \(\mathcal{R}\)-valued group homomorphisms on
+\(\mathbb{Z}^{\langle\mathcal{V}\rangle}\), rather than as a collection
+of vectors in \(\mathcal{R}^{\mathcal{V}}\). We will make use of this
+fact repeatedly in what follows. For simplicity, we will abuse notation
+by using the same symbol (e.g.~`\(\mathbf{b}^{x,y}\)') to represent both
+a vector in \(\mathcal{R}^{\mathcal{V}}\) and its associated group
+homomorphism (i.e.~we will not write the `\(\ast\)'). This notational
+convention should be kept in mind when reading the next proof.
+
+Recall that a balance system \(\mathsf{B}\) is perfect on the domain
+\(\mathcal{D}\) if, for any \(\mathbf{d} \in \mathcal{D}\), any
+\(x \in F_{\mathsf{B}}\left( \mathbf{d} \right)\) and any
+\(y \in \mathcal{X} \smallsetminus F_{\mathsf{B}}\left( \mathbf{d} \right)\),
+we have \(\mathbf{b}^{x,y}\left( \mathbf{d} \right) > 0\). Not every
+balance system is perfect (see Section~3). However, in addition to
+completing the proof of Theorem~1, the next result implies that every
+balance rule has a perfect balance system. Lemma~C.1
+
+Let \(\mathcal{D} \subset \mathbb{N}^{\langle\mathcal{V}\rangle}\) be a
+domain. If \(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\)
+satisfies reinforcement, then \(F = F_{\mathsf{B}}\) for some perfect
+balance system \(\mathsf{B}\).
+
+Proof
+
+For all \(x \in \mathcal{X}\), let
+\(\mathcal{C}_{x} ≔ \left\{ \mathbf{d} \in \mathcal{D};x \in F\left( \mathbf{d} \right) \right\}\).
+Then \(\mathcal{C}_{x}\) is a preorder conoid in the abelian group
+\(\mathbb{Z}^{\langle\mathcal{V}\rangle}\). (We have
+\(\mathbf{0} \in \mathcal{C}_{x}\) because
+\(\mathbf{0} \in \mathcal{D}\) and
+\(F\left( \mathbf{0} \right) = \mathcal{X}\) by definition. Meanwhile,
+\(\mathcal{C}_{x}\) is closed under addition because \(F\) satisfies
+reinforcement.)
+
+For any \(x,y \in \mathcal{X}\), let
+\(\mathcal{P}_{x,y} ≔ \left\{ \mathbf{c}_{x} - \mathbf{c}_{y};\mathbf{c}_{x} \in \mathcal{C}_{x}\text{~and~}\mathbf{c}_{y} \in \mathcal{C}_{y} \right\}\).
+Then \(\mathcal{P}_{x,y}\) is a preorder conoid. (\(\mathcal{P}_{x,y}\)
+is closed under addition because \(\mathcal{C}_{x}\) and
+\(\mathcal{C}_{y}\) are closed under addition.)~Note that
+\(\mathcal{P}_{y,x} = - \mathcal{P}_{x,y}\).
+
+Let \(( \succeq )\) be the homogeneous preorder on
+\(\mathbb{Z}^{\langle\mathcal{V}\rangle}\) defined by
+\(\mathcal{P}_{x,y}\) via formula (B.1). Let
+\(\mathcal{O}_{x,y} ≔ \left\{ \mathbf{z} \in \mathbb{Z}^{\langle\mathcal{V}\rangle};\mathbf{z} \approx \mathbf{0} \right\}\),
+and let
+\(\mathcal{R}_{x,y} ≔ \mathbb{Z}^{\langle\mathcal{V}\rangle}/\mathcal{O}_{x,y}\),
+with the homogeneous partial order \(( \succ )\) described in
+Lemma~B.1(b). Use the Homogeneous Szpilrajn Lemma to extend
+\(( \succ )\) to a homogeneous linear order
+\(\left( \underset{x,y}{>} \right)\) on \(\mathcal{R}_{x,y}\). Let
+\(\left. \mathbf{b}^{x,y}:\mathbb{Z}^{\langle\mathcal{V}\rangle}\longrightarrow\mathcal{R}_{x,y} \right.\)
+be the quotient map
+(i.e.~\(\mathbf{b}^{x,y}\left( \mathbf{z} \right) ≔ \mathbf{z} + \mathcal{O}_{x,y}\)
+for all \(\mathbf{z} \in \mathbb{Z}^{\langle\mathcal{V}\rangle}\)). Note
+that \(\mathcal{O}_{y,x} = \mathcal{O}_{x,y}\), so
+\(\mathcal{R}_{y,x} = \mathcal{R}_{x,y}\) as groups, and
+\(\mathbf{b}^{y,x} = \mathbf{b}^{x,y}\). However,
+\(\left( \underset{x,y}{>} \right)\) is the negative ordering to
+\(\left( \underset{y,x}{>} \right)\)
+(i.e.~\(\left. \left( r\underset{x,y}{>}r' \right)\;\Longleftrightarrow\;\left( - r\underset{y,x}{>} - r' \right) \right.\)).
+Thus, without loss of generality, we can redefine
+\(\left( \underset{y,x}{>} \right)\) to be identical with
+\(\left( \underset{x,y}{>} \right)\), and redefine \(\mathbf{b}^{y,x}\)
+to be \(- \mathbf{b}^{x,y}\) (or vice versa; it does not matter whether
+we reverse \(\mathbf{b}^{x,y}\) or \(\mathbf{b}^{y,x}\), as long as we
+reverse only one of them). Finally, define \(\mathbf{b}^{x,x} ≔ 0\) for
+all \(x \in \mathcal{X}\). Claim~C.1.1
+
+Let \(\mathbf{d} \in \mathcal{D}\) and let
+\(x \in F\left( \mathbf{d} \right)\) . Then:(a)
+
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) \geq 0\) for all
+\(y \in \mathcal{X}\) (~hence,
+\(x \in F_{\mathsf{B}}\left( \mathbf{d} \right)\) ).
+
+(b)
+
+Furthermore, if \(y \notin F\left( \mathbf{d} \right)\), then
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) > 0\) (~hence,
+\(y \notin F_{\mathsf{B}}\left( \mathbf{d} \right)\) ).
+
+Proof
+
+(a)
+
+If \(x \in F\left( \mathbf{d} \right)\), then
+\(\mathbf{d} \in \mathcal{C}_{x}\). Meanwhile
+\(\mathbf{0} \in \mathcal{C}_{y}\); thus,
+\(\mathbf{d} = \mathbf{d} - \mathbf{0} \in \mathcal{P}_{x,y}\), so
+\(\mathbf{d} \succeq \mathbf{0}\), so
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) \geq 0\).
+
+(b)
+
+(by contradiction) Suppose
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) = 0\). Then
+\(\mathbf{d} \in \mathcal{O}_{x,y}\). Thus,
+\(\mathbf{d} \preceq \mathbf{0}\), so
+\(- \mathbf{d} \succeq \mathbf{0}\), so
+\(- \mathbf{d} \in \mathcal{P}_{x,y}\). Thus,
+\(- \mathbf{d} = \mathbf{c}_{x} - \mathbf{c}_{y}\) for some
+\(\mathbf{c}_{x} \in \mathcal{C}_{x}\) and
+\(\mathbf{c}_{y} \in \mathcal{C}_{y}\). But then
+\(\mathbf{c}_{y} = \mathbf{c}_{x} + \mathbf{d}\). Now,
+\(x \in F\left( \mathbf{d} \right)\) and
+\(x \in F\left( \mathbf{c}_{x} \right)\), so
+\(F\left( \mathbf{d} \right) \cap F\left( \mathbf{c}_{x} \right) \neq \varnothing\);
+thus
+\(F\left( \mathbf{c}_{y} \right) = F\left( \mathbf{d} + \mathbf{c}_{x} \right) = F\left( \mathbf{d} \right) \cap F\left( \mathbf{c}_{x} \right)\),
+by reinforcement. But \(y \notin F\left( \mathbf{d} \right)\) by
+hypothesis, so
+\(y \notin F\left( \mathbf{d} \right) \cap F\left( \mathbf{c}_{x} \right)\),
+so \(y \notin F\left( \mathbf{c}_{y} \right)\). But this contradicts the
+fact that \(\mathbf{c}_{y} \in \mathcal{C}_{y}\). By contradiction, we
+cannot have \(\mathbf{b}^{x,y}\left( \mathbf{d} \right) = 0\). Thus,
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) > 0\). ♢Claim~C.1.1
+
+For all \(\mathbf{d} \in \mathcal{D}\), Claim~C.1.1(a) implies that
+\(F\left( \mathbf{d} \right) \subseteq F_{\mathsf{B}}\left( \mathbf{d} \right)\),
+while Claim~C.1.1(b) implies that
+\(F\left( \mathbf{d} \right) \supseteq F_{\mathsf{B}}\left( \mathbf{d} \right)\).
+We conclude that \(F = F_{\mathsf{B}}\). Furthermore, Claim~C.1.1(b)
+implies that the balance system \(\mathsf{B}\) is perfect.
+
+Now we must construct a single linearly ordered abelian group
+\(\mathcal{R}\) and a collection of functions
+\(\left. {\widetilde{\mathbf{b}}}_{x,y}:\mathcal{V}\longrightarrow\mathcal{R} \right.\)
+(for all \(x,y \in \mathcal{X}\)) such that
+\(F_{\mathsf{B}} = F_{\widetilde{\mathsf{B}}}\). Let
+\(\mathcal{R} ≔ \prod_{x,y \in \mathcal{X}}\mathcal{R}_{x,y}\) with the
+coordinatewise dominance order it gets from the linear orders on the
+components. Then extend this to a homogeneous linear order on
+\(\mathcal{R}\) using the Homogeneous Szpilrajn Lemma.□ Lemma~C.1
+
+The proof of Theorem~2 depends upon Proposition~1, Proposition~2, so it
+is deferred.
+
+\protect\phantomsection\label{s000040}
+Towards the proof of Proposition~1
+
+Lemma~C.2
+
+Let \(\mathbf{b} \in \mathcal{R}^{\mathcal{V}}\).(a)
+
+For any \(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\) and
+\(\pi \in \Pi_{\mathcal{V}}\), we have
+\(\left( \mathbf{b}\pi \right)\left( \mathbf{n} \right) = \mathbf{b}\left( \pi\left( \mathbf{n} \right) \right)\).
+
+(b)
+
+For any \(\pi,\phi \in \Pi_{\mathcal{V}}\), we have
+\(\left( \mathbf{b}\,\pi \right)\phi = \mathbf{b}(\pi\phi)\).
+
+Proof
+
+(a)
+
+\(\left( \mathbf{b}\pi \right)\left( \mathbf{n} \right) = \sum_{v \in \mathcal{V}}n_{v}\left( \mathbf{b}\pi \right)_{v} = \sum_{v \in \mathcal{V}}n_{v}b_{\pi{(v)}}\underset{( \ast )}{=}\sum_{v' \in \mathcal{V}}n_{\pi^{- 1}{(v')}}b_{v'} = \sum_{v \in \mathcal{V}}\pi\left( \mathbf{n} \right)_{v'}b_{v'} = \mathbf{b}\left( \pi\left( \mathbf{n} \right) \right)\).
+Here, \(( \ast )\) is the change of variables \(v' ≔ \pi(v)\).
+
+(b)
+
+For any \(v \in \mathcal{V}\), if \(w ≔ \phi(v)\), then
+\(\left( \left( \mathbf{b}\pi \right)\phi \right)_{v} = \left( \mathbf{b}\pi \right)_{\phi{(v)}} = \left( \mathbf{b}\pi \right)_{w} = b_{\pi{(w)}} = b_{\pi\phi{(v)}} = \left( \mathbf{b}\,(\pi\phi) \right)_{v}\),
+as desired.□ Lemma~C.2
+
+Proof of Proposition~1
+
+``\(\Longleftarrow\)'' Let \(\mathsf{S}\) be a \(\nu\)-neutral score
+system. Let \(\pi \in \Pi_{\mathcal{X}}'\), let
+\(\widetilde{\pi} ≔ \nu(\pi) \in \Pi_{\mathcal{V}}\), and let
+\(\mathbf{d} \in \mathcal{D}\). We must show that
+\(F_{\mathsf{S}}\left\lbrack \widetilde{\pi}\left( \mathbf{d} \right) \right\rbrack = \pi\left\lbrack F_{\mathsf{S}}\left( \mathbf{d} \right) \right\rbrack\).
+To see this, observe that, for any \(y \in \mathcal{X}\), if
+\(x = \pi(y)\), then
+(C.1)\[\mathbf{s}^{x}\left\lbrack \widetilde{\pi}\left( \mathbf{d} \right) \right\rbrack\underset{( \ast )}{=}\left( \mathbf{s}^{x}\widetilde{\pi} \right)\left( \mathbf{d} \right)\underset{( \dagger )}{=}\mathbf{s}^{y}\left( \mathbf{d} \right)\text{,}\]
+where \(( \ast )\) is by Lemma~C.2(a) and \(( \dagger )\) because
+\(\mathsf{B}\) is \(\nu\)-neutral. Thus,
+\[\left. \left( y \in F_{\mathsf{B}}\left( \mathbf{d} \right) \right)\underset{( \dagger )}{\left. \Leftarrow = \Rightarrow \right.}\left( \mathbf{s}^{y}\left( \mathbf{d} \right) \geq \mathbf{s}^{z}\left( \mathbf{d} \right)\text{,~for~all~}z \in \mathcal{X} \right)\underset{( \ast )}{\left. \Leftarrow = \Rightarrow \right.}\left( \mathbf{s}^{x}\left\lbrack \widetilde{\pi}\left( \mathbf{d} \right) \right\rbrack \geq \mathbf{s}^{w}\left\lbrack \widetilde{\pi}\left( \mathbf{d} \right) \right\rbrack\text{,~for~all~}w \in \mathcal{X} \right)\underset{( \dagger )}{\left. \Leftarrow = \Rightarrow \right.}\left( x \in F_{\mathsf{B}}\left\lbrack \widetilde{\pi}\left( \mathbf{d} \right) \right\rbrack \right)\;\Longleftrightarrow\;\left( \pi(y) \in F_{\mathsf{B}}\left\lbrack \widetilde{\pi}\left( \mathbf{d} \right) \right\rbrack \right)\text{.} \right.\]
+It follows that
+\(F_{\mathsf{S}}\left\lbrack \widetilde{\pi}\left( \mathbf{d} \right) \right\rbrack = \pi\left\lbrack F_{\mathsf{S}}\left( \mathbf{d} \right) \right\rbrack\),
+as desired. Here, \(( \dagger )\) is by definition of ``scoring rule'',
+and \(( \ast )\) is by Eq. (C.1) (along with the change of variables
+\(w = \pi(z)\)).
+
+``\(\Longrightarrow\)'' For any \(\pi \in \Pi_{\mathcal{X}}'\), define
+\(\widetilde{\pi} ≔ \nu(\pi)\) (an element of \(\Pi_{\mathcal{V}}\)).
+Recall that \(\widetilde{\pi}\) acts on \(\mathcal{R}^{\mathcal{V}}\) by
+coordinate permutations---i.e.~for any
+\(\mathbf{r} = \left( r_{v} \right)_{v \in \mathcal{V}} \in \mathcal{R}^{\mathcal{V}}\),
+we define
+\(\mathbf{r}\widetilde{\pi} ≔ \left( r_{\widetilde{\pi}{(v)}} \right)_{v \in \mathcal{V}}\).
+
+Now let
+\(\mathsf{S} = \left\{ \mathbf{s}^{x} \right\}_{x \in \mathcal{X}}\) be
+a score system such that \(F = F_{\mathsf{S}}\). Define the score system
+\(\overline{\mathsf{S}} = \left\{ {\overline{\mathbf{s}}}^{x} \right\}_{x \in \mathcal{X}}\)
+by setting
+\[{\overline{\mathbf{s}}}^{x} ≔ \sum\limits_{\pi \in \Pi_{\mathcal{X}}'}\mathbf{s}^{\pi{(x)}}\,\widetilde{\pi}\text{,}\quad\text{for~all~}x \in \mathcal{X}\text{.}\]
+
+Claim~1.1
+
+\(F_{\overline{\mathsf{S}}} = F\).
+
+Proof
+
+`\(\supseteq\)' Let \(\mathbf{d} \in \mathcal{D}\) and
+\(x \in \mathcal{X}\). Suppose \(x \in F\left( \mathbf{d} \right)\); we
+will show that
+\(x \in F_{\overline{\mathsf{S}}}\left( \mathbf{d} \right)\). For any
+\(\pi \in \Pi_{\mathcal{X}}'\), neutrality implies that
+\(\pi(x) \in F\left( \widetilde{\pi}\left( \mathbf{d} \right) \right)\).
+Thus,
+\(\mathbf{s}^{\pi{(x)}}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right) \geq \mathbf{s}^{y}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right)\)
+for all \(y \in \mathcal{X}\) and \(\pi \in \Pi_{\mathcal{X}}'\).
+Equivalently,
+\(\mathbf{s}^{\pi{(x)}}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right) \geq \mathbf{s}^{\pi{(z)}}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right)\)
+for all \(z \in \mathcal{X}\)and \(\pi \in \Pi_{\mathcal{X}}'\). Thus,
+Lemma~C.2(a) says
+\(\left( \mathbf{s}^{\pi{(x)}}\widetilde{\pi} \right)\left( \mathbf{d} \right) \geq \left( \mathbf{s}^{\pi{(z)}}\widetilde{\pi} \right)\left( \mathbf{d} \right)\)
+for all \(z \in \mathcal{X}\) and \(\pi \in \Pi_{\mathcal{X}}'\). Thus,
+\[{\overline{\mathbf{s}}}^{x}\left( \mathbf{d} \right) = \sum\limits_{\pi \in \Pi_{\mathcal{X}}'}\left( \mathbf{s}^{\pi{(x)}}\,\widetilde{\pi} \right)\left( \mathbf{d} \right) \geq \sum\limits_{\pi \in \underset{\mathcal{X}}{\overset{'}{\Pi}}}\left( \mathbf{s}^{\pi{(z)}}\,\widetilde{\pi} \right)\left( \mathbf{d} \right) = {\overline{\mathbf{s}}}^{z}\left( \mathbf{d} \right)\text{,}\]
+for all \(z \in \mathcal{X}\). Thus,
+\(x \in F_{\overline{\mathsf{S}}}\left( \mathbf{d} \right)\), as
+desired.
+
+`\(\subseteq\)' (by contrapositive)~Now suppose
+\(x \notin F\left( \mathbf{d} \right)\); we will show that
+\(x \notin F_{\overline{\mathsf{S}}}\left( \mathbf{d} \right)\). Let
+\(y \in F\left( \mathbf{d} \right)\). Then for any
+\(\pi \in \Pi_{\mathcal{X}}'\), neutrality implies that
+\(\pi(x) \notin F\left( \widetilde{\pi}\left( \mathbf{d} \right) \right)\)
+and
+\(\pi(y) \in F\left( \widetilde{\pi}\left( \mathbf{d} \right) \right)\).
+Thus,
+\(\mathbf{s}^{\pi{(x)}}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right) < \mathbf{s}^{\pi{(y)}}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right)\)
+for all \(\pi \in \Pi_{\mathcal{X}}'\). Thus, Lemma~C.2(a) says
+\(\left( \mathbf{s}^{\pi{(x)}}\widetilde{\pi} \right)\left( \mathbf{d} \right) < \left( \mathbf{s}^{\pi{(y)}}\widetilde{\pi} \right)\left( \mathbf{d} \right)\)
+for all \(\pi \in \Pi_{\mathcal{X}}'\). Thus,
+\[{\overline{\mathbf{s}}}^{x}\left( \mathbf{d} \right) = \sum\limits_{\pi \in \Pi_{\mathcal{X}}'}\left( \mathbf{s}^{\pi{(x)}}\,\widetilde{\pi} \right)\left( \mathbf{d} \right) < \sum\limits_{\pi \in \underset{\mathcal{X}}{\overset{'}{\Pi}}}\left( \mathbf{s}^{\pi{(y)}}\,\widetilde{\pi} \right)\left( \mathbf{d} \right) = {\overline{\mathbf{s}}}^{y}\left( \mathbf{d} \right)\text{.}\]
+Thus, \(x \notin F_{\overline{\mathsf{S}}}\left( \mathbf{d} \right)\),
+as desired. ♢~Claim~1.1
+
+It remains to check that the system
+\(\overline{\mathsf{S}} ≔ \left\{ {\overline{\mathbf{s}}}^{x} \right\}_{x \in \mathcal{X}}\)
+is \(\nu\)-neutral. To see this, let \(x,y \in \mathcal{X}\), let
+\(\phi \in \Pi_{\mathcal{X}}'\), and suppose \(\phi(y) = x\). Then
+\[{\overline{\mathbf{s}}}^{x}\,\widetilde{\phi} = \left( \sum\limits_{\pi \in \Pi_{\mathcal{X}}'}\mathbf{s}^{\pi{(x)}}\,\widetilde{\pi} \right)\widetilde{\phi}\underset{( \ast )}{=}\sum\limits_{\pi \in \Pi_{\mathcal{X}}'}\mathbf{s}^{\pi{(x)}}\,\left( \widetilde{\pi}\widetilde{\phi} \right)\underset{(\diamondsuit)}{=}\sum\limits_{\pi \in \underset{\mathcal{X}}{\overset{'}{\Pi}}}\mathbf{s}^{\pi{(x)}}\,\widetilde{\pi\phi}\underset{( \dagger )}{=}\sum\limits_{\pi' \in \underset{\mathcal{X}}{\overset{'}{\Pi}}}\mathbf{s}^{\pi'\phi^{- 1}{(x)}}\,{\widetilde{\pi}}' = \sum\limits_{\pi' \in \underset{\mathcal{X}}{\overset{'}{\Pi}}}\mathbf{s}^{\pi'{(y)}}\,{\widetilde{\pi}}' = {\overline{\mathbf{s}}}^{y}\text{,}\]
+as desired. Here, \(( \ast )\) is by linearity and Lemma~C.2(b),
+\((\diamondsuit)\) is because \(\nu\) is a group homomorphism, and
+\(( \dagger )\) is the change of variables \(\pi' ≔ \pi\phi\).□
+Proposition~1
+
+\protect\phantomsection\label{s000045}
+Towards the proof of Proposition~2
+
+Lemma~C.3
+
+Let \(\mathcal{X}\) be a finite set, let \(\mathcal{V}\) be an arbitrary
+set, let
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) be a
+domain, and let
+\(\left. \nu:\Pi_{\mathcal{X}}'\longrightarrow\Pi_{\mathcal{V}} \right.\)
+be a homomorphism. Let \(\mathcal{R}\) be a linearly ordered abelian
+group, and let \(\widetilde{\mathsf{B}}\) be a \(\mathcal{R}\)-valued
+perfect balance system on \(\left( \mathcal{X},\mathcal{V} \right)\) .
+The balance rule
+\(\left. F_{\widetilde{\mathsf{B}}}:\mathcal{D}\rightrightarrows\mathcal{X} \right.\)
+is \(\nu\)-neutral if and only if
+\(F_{\widetilde{\mathsf{B}}} = F_{\mathsf{B}}\) for some
+\(\mathcal{R}\)-valued, \(\nu\)-neutral, perfect balance system
+\(\mathsf{B}\) on \(\left( \mathcal{X},\mathcal{V} \right)\).
+
+Proof
+
+``\(\Longleftarrow\)'' Let \(\mathsf{B}\) be a \(\nu\)-neutral balance
+system. Let \(\mathbf{d} \in \mathcal{D}\) and let
+\(\pi \in \Pi_{\mathcal{X}}'\). We must show that
+\(F_{\mathsf{B}}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right) = \pi\left( F_{\mathsf{B}}\left( \mathbf{d} \right) \right)\).
+
+``\(\supseteq\)'' Let \(x \in F_{\mathsf{B}}\left( \mathbf{d} \right)\),
+and let \(y = \pi(x)\). For all \(z \in \mathcal{X}\), if
+\(w = \pi^{- 1}(z)\), then
+(C.2)\[\mathbf{b}^{y,z}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right)\underset{( \ast )}{=}\left( \mathbf{b}^{y,z}\widetilde{\pi} \right)\left( \mathbf{d} \right)\underset{( \dagger )}{=}\mathbf{b}^{x,w}\left( \mathbf{d} \right)\underset{(\diamondsuit)}{\geq}0\text{.}\]
+Here, \(( \ast )\) is by Lemma~C.2(a), \(( \dagger )\) is because
+\(\mathsf{B}\) is \(\nu\)-neutral, and \((\diamondsuit)\) is because
+\(x \in F_{\mathsf{B}}\left( \mathbf{d} \right)\). Since this holds for
+all \(z \in \mathcal{X}\), we conclude that
+\(y \in F_{\mathsf{B}}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right)\).
+
+``\(\subseteq\)'' (by contrapositive) Now suppose
+\(x \notin F_{\mathsf{B}}\left( \mathbf{d} \right)\). Then there is some
+\(w \in \mathcal{X}\) such that
+\(\mathbf{b}^{x,w}\left( \mathbf{d} \right) < 0\). Thus, if
+\(y = \pi(x)\) and \(z = \pi(w)\), then the inequality
+`\(\underset{(\diamondsuit)}{\geq}\)' in Eq. (C.2) changes to `\(<\)';
+thus,
+\(y \notin F_{\mathsf{B}}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right)\).
+
+Thus
+\(F_{\mathsf{B}}\left( \widetilde{\pi}\left( \mathbf{d} \right) \right) = \pi\left( F_{\mathsf{B}}\left( \mathbf{d} \right) \right)\).
+This holds for all \(\mathbf{d} \in \mathcal{D}\) and
+\(\pi \in \Pi_{\mathcal{X}}'\). Thus, \(F_{\mathsf{B}}\) is
+\(\nu\)-neutral.
+
+``\(\Longrightarrow\)'' Fix \(x,y \in \mathcal{X}\) with \(x \neq y\).
+Double transitivity yields some \(\alpha \in \Pi_{\mathcal{X}}'\) such
+that \(\alpha(x) = y\) and \(\alpha(y) = x\). Let
+\(\widetilde{\alpha} ≔ \nu(\alpha) \in \Pi_{\mathcal{V}}\). Let \(N\) be
+the order of \(\alpha\) (so that \(\alpha^{N} = {Id}_{\mathcal{X}}\) and
+\({\widetilde{\alpha}}^{N} = {Id}_{\mathcal{V}}\)). Then \(N\) is
+finite, because \(\mathcal{X}\) is finite. Also, \(N\) is even, because
+\(\alpha(x) = y\) and \(\alpha^{2}(x) = x\). Let \(M = N/2\). Define
+(C.3)\[{\overline{\mathbf{b}}}^{x,y} ≔ \sum\limits_{m = 0}^{M - 1}\left( {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m} - {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} \right)\text{.}\]
+
+Claim~C.3.1
+
+\({\overline{\mathbf{b}}}^{x,y}\widetilde{\alpha} = - {\overline{\mathbf{b}}}^{x,y}\).
+
+Proof
+
+We have
+\[{\overline{\mathbf{b}}}^{x,y}\widetilde{\alpha}\underset{}{=}\left( \sum\limits_{m = 0}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m} - \sum\limits_{m = 0}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} \right)\widetilde{\alpha} = \sum\limits_{m = 0}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} - \sum\limits_{m = 0}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 2}\underset{( \ast )}{=}\sum\limits_{m = 0}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} - \sum\limits_{m' = 1}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m'} - {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2M}\underset{( \dagger )}{=}\sum\limits_{m = 0}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} - \sum\limits_{m' = 1}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m'} - {\widetilde{\mathbf{b}}}^{x,y} = \sum\limits_{m = 0}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} - \sum\limits_{m' = 0}^{M - 1}{\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m'}\underset{}{=} - {\overline{\mathbf{b}}}^{x,y}\text{,}\]
+as desired. Here, \(( \ast )\) is the change of variables
+\(m' ≔ m + 1\), while \(( \dagger )\) is because
+\({\widetilde{\alpha}}^{2M} = {\widetilde{\alpha}}^{N} = {Id}_{\mathcal{V}}\).
+♢Claim~C.3.1
+
+Recall that
+\(\left. F_{\widetilde{\mathsf{B}}}:\mathcal{D}\rightrightarrows\mathcal{X} \right.\)
+is the balance rule defined by the perfect balance system
+\(\widetilde{\mathsf{B}}\).
+
+Claim~C.3.2
+
+Let \(\mathbf{d} \in \mathcal{D}\).(a)
+
+If \(x \in F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\), then
+\({\overline{\mathbf{b}}}^{x,y}\left( \mathbf{d} \right) \geq 0\).
+
+(b)
+
+If \(x \notin F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\), but
+\(y \in F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\), then
+\({\overline{\mathbf{b}}}^{x,y}\left( \mathbf{d} \right) < 0\).
+
+Proof
+
+(a)
+
+If \(x \in F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\), then
+for all \(m \in \lbrack 0\ldots M)\), the neutrality of
+\(F_{\widetilde{\mathsf{B}}}\) implies that
+\(x \in F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\alpha}}^{2m}\left( \mathbf{d} \right) \right)\),
+while
+\(y \in F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\alpha}}^{2m + 1}\left( \mathbf{d} \right) \right)\)
+(because \(\alpha^{2m}(x) = x\), while \(\alpha^{2m + 1}(x) = y\)).
+Thus,
+\({\widetilde{\mathbf{b}}}^{x,y}\left( {\widetilde{\alpha}}^{2m}\left( \mathbf{d} \right) \right) \geq 0\),
+while
+\({\widetilde{\mathbf{b}}}^{x,y}\left( {\widetilde{\alpha}}^{2m + 1}\left( \mathbf{d} \right) \right) \leq 0\).
+Thus, Lemma~C.2(a) says
+\(\left( {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m} \right)\left( \mathbf{d} \right) \geq 0\),
+while
+\(\left( {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} \right)\left( \mathbf{d} \right) \leq 0\).
+Thus,\[{\overline{\mathbf{b}}}^{x,y}\left( \mathbf{d} \right)\underset{}{=}\sum\limits_{m = 0}^{M - 1}\left( \left( {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m} \right)\left( \mathbf{d} \right) - \left( {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} \right)\left( \mathbf{d} \right) \right) \geq 0\text{.}\]
+
+(b)
+
+If \(x \notin F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\) and
+\(y \in F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\), then for
+all \(m \in \lbrack 0\ldots M)\), neutrality implies that
+\(x \notin F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\alpha}}^{2m}\left( \mathbf{d} \right) \right)\)
+and
+\(y \in F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\alpha}}^{2m}\left( \mathbf{d} \right) \right)\),
+while
+\(y \notin F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\alpha}}^{2m + 1}\left( \mathbf{d} \right) \right)\)
+and
+\(x \in F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\alpha}}^{2m + 1}\left( \mathbf{d} \right) \right)\)
+(because \(\alpha^{2m}(x) = x\) and \(\alpha^{2m}(y) = y\), while
+\(\alpha^{2m + 1}(x) = y\) and \(\alpha^{2m + 1}(y) = x\)). Thus,
+\({\widetilde{\mathbf{b}}}^{x,y}\left( {\widetilde{\alpha}}^{2m}\left( \mathbf{d} \right) \right) < 0\),
+while
+\({\widetilde{\mathbf{b}}}^{x,y}\left( {\widetilde{\alpha}}^{2m + 1}\left( \mathbf{d} \right) \right) > 0\),
+because \(\widetilde{\mathsf{B}}\) is perfect. Thus, Lemma~C.2(a) says
+\(\left( {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m} \right)\left( \mathbf{d} \right) < 0\),
+while
+\(\left( {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} \right)\left( \mathbf{d} \right) > 0\).
+Thus,
+\[{\overline{\mathbf{b}}}^{x,y}\left( \mathbf{d} \right)\underset{}{=}\sum\limits_{m = 0}^{M - 1}\left( \left( {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m} \right)\left( \mathbf{d} \right) - \left( {\widetilde{\mathbf{b}}}^{x,y}{\widetilde{\alpha}}^{2m + 1} \right)\left( \mathbf{d} \right) \right) < 0\text{,}\]
+because every summand is negative. ♢Claim~C.3.2
+
+Let
+\(\Pi_{x,y} ≔ \left\{ \pi \in \Pi_{\mathcal{X}}';\pi(x) = x\text{~and~}\pi(y) = y \right\}\)
+(a subgroup of \(\Pi_{\mathcal{X}}'\)). Then \(\Pi_{x,y}\) is finite
+because \(\Pi_{\mathcal{X}}'\) is finite (and \(\Pi_{\mathcal{X}}'\) is
+finite because \(\mathcal{X}\) is finite). Define
+(C.4)\[\mathbf{b}^{x,y} ≔ \sum\limits_{\pi \in \Pi_{x,y}}\left( {\overline{\mathbf{b}}}^{x,y}\widetilde{\pi} \right)\text{.}\]
+
+Claim~C.3.3
+
+\(\mathbf{b}^{x,y}\widetilde{\alpha} = - \mathbf{b}^{x,y}\).
+
+Proof
+
+\[\mathbf{b}^{x,y}\widetilde{\alpha}\underset{}{=}\left( \sum\limits_{\pi \in \Pi_{x,y}}{\overline{\mathbf{b}}}^{x,y}\,\widetilde{\pi} \right)\,\widetilde{\alpha} = \sum\limits_{\pi \in \Pi_{x,y}}\left( {\overline{\mathbf{b}}}^{x,y}\,\widetilde{\pi} \right)\,\widetilde{\alpha}\underset{(\diamondsuit)}{=}\sum\limits_{\pi \in \Pi_{x,y}}{\overline{\mathbf{b}}}^{x,y}\,\widetilde{\pi\alpha} = \sum\limits_{\pi \in \Pi_{x,y}}{\overline{\mathbf{b}}}^{x,y}\widetilde{\left( \alpha\alpha^{-1}\pi\alpha \right)}\underset{(\diamondsuit)}{=}\sum\limits_{\pi \in \Pi_{x,y}}\left( {\overline{\mathbf{b}}}^{x,y}\,\widetilde{\alpha} \right)\widetilde{\alpha^{-1}\pi\alpha}\underset{( \ast )}{=}\sum\limits_{\pi' \in \Pi_{x,y}}\left( {\overline{\mathbf{b}}}^{x,y}\,\widetilde{\alpha} \right)\,{\widetilde{\pi}}'\underset{( \dagger )}{=}\sum\limits_{\pi' \in \Pi_{x,y}} - {\overline{\mathbf{b}}}^{x,y}\,{\widetilde{\pi}}' = - \sum\limits_{\pi' \in \Pi_{x,y}}{\overline{\mathbf{b}}}^{x,y}\,{\widetilde{\pi}}'\underset{}{=} - \mathbf{b}^{x,y}\text{.}\]
+Here, both \((\diamondsuit)\) are by Lemma~C.2(b) (and the fact that
+\(\nu\) is a homomorphism). Meanwhile, \(( \ast )\) is by the change of
+variables \(\pi' ≔ \alpha\pi\alpha^{- 1}\) for all \(\pi \in \Pi_{x,y}\)
+(observe that the map \(\left( \pi\mapsto\alpha\pi\alpha^{- 1} \right)\)
+is a permutation of \(\Pi_{x,y}\), because \(\alpha(x) = y\) and
+\(\alpha(y) = x\)). Finally, \(( \dagger )\) is by Claim~C.3.1.
+♢~Claim~C.3.3
+
+Claim~C.3.4
+
+For any \(\phi \in \Pi_{x,y}\), we have
+\(\mathbf{b}^{x,y}\,\widetilde{\phi} = \mathbf{b}^{x,y}\).
+
+Proof
+
+\(\mathbf{b}^{x,y}\,\widetilde{\phi}\underset{}{=}\left( \sum_{\pi \in \Pi_{x,y}}{\overline{\mathbf{b}}}^{x,y}\,\widetilde{\pi} \right)\widetilde{\phi}\underset{(\diamondsuit)}{=}\sum_{\pi \in \Pi_{x,y}}{\overline{\mathbf{b}}}^{x,y}\,\widetilde{\pi\phi}\underset{( \ast )}{=}\sum_{\pi' \in \Pi_{x,y}}{\overline{\mathbf{b}}}^{x,y}\,{\widetilde{\pi}}'\underset{}{=}\mathbf{b}^{x,y}\).
+
+Here, \((\diamondsuit)\) is by linearity and Lemma~C.2(b), while
+\(( \ast )\) is the change of variables \(\pi' ≔ \pi\phi\) (the map
+\(\left( \pi\mapsto\pi\phi \right)\) is a permutation of \(\Pi_{x,y}\),
+because \(\phi \in \Pi_{x,y}\)). ♢Claim~C.3.4
+
+Now, for all \(w,z \in \mathcal{X}\), define
+\(\Pi_{w,z} ≔ \left\{ \pi \in \Pi_{\mathcal{X}}';\pi(w) = x \right.\)
+and \(\left. \pi(z) = y \right\}\); then
+\(\Pi_{w,z} \neq \varnothing\) by the double-transitivity of
+\(\Pi_{\mathcal{X}}'\). Define
+\(\mathbf{b}^{w,z} ≔ \mathbf{b}^{x,y}\,{\widetilde{\pi}}_{w,z}\), for
+any \(\pi_{w,z} \in \Pi_{w,z}\). Claim~C.3.5
+
+\(\mathbf{b}^{w,z}\) is well-defined independent of the choice of
+\(\pi_{w,z} \in \Pi_{w,z}\).
+
+Proof
+
+Suppose \(\pi_{w,z} \in \Pi_{w,z}\) and \(\phi_{w,z} \in \Pi_{w,z}\).
+Then \(\pi_{w,z}\,\phi_{w,z}^{- 1} \in \Pi_{x,y}\). Thus,
+(C.5)\[\left( {\overline{\mathbf{b}}}^{x,y}\,{\widetilde{\pi}}_{w,z} \right)\,{\widetilde{\phi}}_{w,z}^{- 1}\underset{( \ast )}{=}{\overline{\mathbf{b}}}^{x,y}\left( \widetilde{\pi_{w,z}\,\phi_{w,z}^{-1}} \right)\underset{( \dagger )}{=}{\overline{\mathbf{b}}}^{x,y}\text{,}\]
+where \(( \ast )\) is by Lemma~C.2(b), and \(( \dagger )\) is by
+Claim~C.3.4. Multiplying both ends of (C.5) by
+\({\widetilde{\phi}}_{w,z}\), we obtain:
+\({\overline{\mathbf{b}}}^{x,y}\,{\widetilde{\pi}}_{w,z} = {\overline{\mathbf{b}}}^{x,y}\,{\widetilde{\phi}}_{w,z}\),
+as desired. ♢Claim~C.3.5
+
+Claim~C.3.6
+
+For any \(w,z,w',z' \in \mathcal{X}\) and
+\(\phi \in \Pi_{\mathcal{X}}'\), if \(\phi^{- 1}(w) = w'\) and
+\(\phi^{- 1}(z) = z'\), then
+\(\mathbf{b}^{w,z}\widetilde{\phi} = \mathbf{b}^{w',z'}\).
+
+Proof
+
+Let \(\pi_{w,z} \in \Pi_{w,z}\). Then
+\(\mathbf{b}^{w,z} = \mathbf{b}^{x,y}{\widetilde{\pi}}_{w,z}\) by
+definition (and Claim~C.3.5). But \(\pi_{w,z}\phi \in \Pi_{w',z'}\)
+(because \(\pi_{w,z}\phi\left( w' \right) = \pi_{w,z}(w) = x\) and
+\(\pi_{w,z}\phi\left( z' \right) = \pi_{w,z}(z) = y\)). Thus,
+\[\mathbf{b}^{w,z}\widetilde{\phi} = \left( \mathbf{b}^{x,y}\,{\widetilde{\pi}}_{w,z} \right)\,\widetilde{\phi}\underset{( \ast )}{=}\mathbf{b}^{x,y}\,\left( \widetilde{\pi_{w,z}\phi} \right)\underset{( \dagger )}{=}\mathbf{b}^{w',z'}\text{,}\]
+as desired. Here, \(( \ast )\) is by Lemma~C.2(b) and \(( \dagger )\) is
+by definition (and Claim~C.3.5). ♢~Claim~C.3.6
+
+Claim~C.3.7
+
+\(\mathbf{b}^{z,w} = - \mathbf{b}^{w,z}\) for all
+\(w,z \in \mathcal{X}\).
+
+Proof
+
+Let \(\pi_{w,z} \in \Pi_{w,z}\). Then \(\alpha\pi_{w,z} \in \Pi_{z,w}\)
+(because \(\alpha\pi_{w,z}(z) = \alpha(y) = x\), etc.). Thus,
+\[\mathbf{b}^{z,w}\underset{( \ast )}{=}\mathbf{b}^{x,y}\,\left( \widetilde{\alpha\pi_{w,z}} \right)\underset{( \ddagger )}{=}\left( \mathbf{b}^{x,y}\widetilde{\alpha} \right){\widetilde{\pi}}_{w,z}\underset{(\diamondsuit)}{=} - \mathbf{b}^{x,y}{\widetilde{\pi}}_{w,z}\underset{( \dagger )}{=} - \mathbf{b}^{w,z}\text{.}\]
+Here, \(( \ast )\) is by definition of \(\mathbf{b}^{z,w}\) (and
+Claim~C.3.5). Next, \(( \ddagger )\) is by Lemma~C.2(b),
+\((\diamondsuit)\) is by Claim~C.3.3, and \(( \dagger )\) is by
+definition of \(\mathbf{b}^{w,z}\) (and Claim~C.3.5). ♢~Claim~C.3.7
+
+Now define
+\(\mathsf{B} ≔ \left\{ \mathbf{b}^{x,y} \right\}_{x,y \in \mathcal{X}}\).
+Then \(\mathsf{B}\) is a balance system by Claim~C.3.7, and
+\(\mathsf{B}\) is \(\nu\)-neutral by Claim~C.3.6. The
+`\(\Longleftarrow\)' direction of the theorem (already established) then
+implies that the balance rule \(F_{\mathsf{B}}\) is \(\nu\)-neutral.
+
+Claim~C.3.8
+
+\(F_{\mathsf{B}}\left( \mathbf{d} \right) = F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\)
+for all \(\mathbf{d} \in \mathcal{D}\) . Also, \(\mathsf{B}\) is a
+perfect balance rule on \(\mathcal{D}\).
+
+Proof
+
+``\(\supseteq\)'' Let \(\mathbf{d} \in \mathcal{D}\) and let
+\(w \in F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\). Fix
+\(z \in \mathcal{X}\) and let \(\pi_{w,z} \in \Pi_{w,z}\). Then
+\(\pi(w) = x\) and \(\pi(z) = y\). Since \(F_{\widetilde{\mathsf{B}}}\)
+is \(\nu\)-neutral, we have
+\(F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right) = \pi_{w,z}\left( F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right) \right)\);
+thus
+\(x \in F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right)\).
+Now, for any \(\phi \in \Pi_{x,y}\), neutrality implies that
+\(x \in F_{\widetilde{\mathsf{B}}}\left( \widetilde{\phi}\,{\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right)\);
+thus, Claim~C.3.2(a) says that
+\({\overline{\mathbf{b}}}^{x,y}\left( \widetilde{\phi}\,{\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right) \geq 0\).
+But Lemma~C.2(a) says
+\({\overline{\mathbf{b}}}^{x,y}\left( \widetilde{\phi}\,{\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right) = \left( {\overline{\mathbf{b}}}^{x,y}\widetilde{\phi} \right)\left( {\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right)\).
+Thus, we have
+(C.6)\[\left( {\overline{\mathbf{b}}}^{x,y}\,\widetilde{\phi} \right)\left( {\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right) \geq 0\text{,}\quad\text{for~all~}\phi \in \Pi_{x,y}\text{.}\](C.7)\[\text{Thus},\mathbf{b}^{w,z}\left( \mathbf{d} \right)\underset{( \ast )}{=}\left( \mathbf{b}^{x,y}{\widetilde{\pi}}_{w,z} \right)\left( \mathbf{d} \right)\underset{( \dagger )}{=}\mathbf{b}^{x,y}\left( {\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right)\underset{}{=}\sum\limits_{\phi \in \Pi_{x,y}}\left( {\overline{\mathbf{b}}}^{x,y}\,\widetilde{\phi} \right)\left( {\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right)\underset{}{\geq}0\text{.}\]
+Here, \(( \ast )\) is by definition of \(\mathbf{b}^{w,z}\) (and
+Claim~C.3.5), while \(( \dagger )\) is by Lemma~C.2(a).
+
+Inequality (C.7) holds for any \(z \in \mathcal{X}\). Thus,
+\(w \in F_{\mathsf{B}}\left( \mathbf{d} \right)\). ``\(\subseteq\)''
+
+(by contrapositive)~Suppose
+\(w \notin F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\). Let
+\(z \in F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right)\). We will
+show that \(\mathbf{b}^{w,z}\left( \mathbf{d} \right) < 0\), thereby
+showing both that \(w \notin F_{\mathsf{B}}\left( \mathbf{d} \right)\)
+and that \(\mathsf{B}\) is perfect.
+
+If \(\pi_{w,z} \in \Pi_{w,z}\), then the neutrality of
+\(F_{\widetilde{\mathsf{B}}}\) implies that
+\(x \notin F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right)\),
+while
+\(y \in F_{\widetilde{\mathsf{B}}}\left( {\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right)\).
+Thus, for all \(\phi \in \Pi_{x,y}\), we have
+\(x \notin F_{\widetilde{\mathsf{B}}}\left( \widetilde{\phi}\,{\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right)\),
+while
+\(y \in F_{\widetilde{\mathsf{B}}}\left( \widetilde{\phi}\,{\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right)\).
+Thus, Claim~C.3.2(b) says that
+\({\overline{\mathbf{b}}}^{x,y}\left( \widetilde{\phi}\,{\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right) < 0\);
+hence Lemma~C.2(a) says that
+\(\left( {\overline{\mathbf{b}}}^{x,y}\,\widetilde{\phi} \right)\left( {\widetilde{\pi}}_{w,z}\left( \mathbf{d} \right) \right) < 0\).
+This holds for all \(\phi \in \Pi_{x,y}\); thus, an argument similar to
+Eq. (C.7) yields \(\mathbf{b}^{w,z}\left( \mathbf{d} \right) < 0\).
+Thus, \(w \notin F_{\mathsf{B}}\left( \mathbf{d} \right)\).
+♢~Claim~C.3.8
+
+The ``\(\Longrightarrow\)'' direction of the lemma now follows from
+Claim~C.3.6, Claim~C.3.8. □ Lemma~C.3
+
+Proof of Proposition~2
+
+``\(\Longleftarrow\)'' follows immediately from
+Lemma~C.3\(\left( \Leftarrow \right)\).
+
+``\(\Longrightarrow\)''~If \(F\) is a balance rule and \(\mathcal{D}\)
+is weakly additive, then \(F\) satisfies reinforcement (by Theorem~1).
+Then \(F = F_{\widetilde{\mathsf{B}}}\) for some perfect balance system
+\(\widetilde{\mathsf{B}}\) (by Lemma~C.1). Now apply
+Lemma~C.3\(\left( \Rightarrow \right)\). □~Proposition~2
+
+\protect\phantomsection\label{s000050}
+Towards the proof of Theorem~2
+
+Lemma~C.4
+
+Let \(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) be
+a domain. A voting rule
+\(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\) is a
+scoring rule if and only if \(F\) is a balance rule with a balance
+system
+\(\mathsf{B} = \left\{ \mathbf{b}^{x,y} \right\}_{x,y \in \mathcal{X}}\)
+satisfying:(C.8)\[\mathbf{b}^{x,y}\left( \mathbf{d} \right) + \mathbf{b}^{y,z}\left( \mathbf{d} \right) = \mathbf{b}^{x,z}\left( \mathbf{d} \right)\text{,}\quad\ x,y,z \in \mathcal{X}\text{~~}\mathbf{d} \in \mathcal{D}\]
+
+Proof
+
+`\(\Longrightarrow\)' Let
+\(\mathsf{S} = \left\{ \mathbf{s}^{x} \right\}_{x \in \mathcal{X}}\) be
+an \(\mathcal{R}\)-valued score system on
+\(\left( \mathcal{X},\mathcal{V} \right)\). For all
+\(x,y \in \mathcal{X}\), define
+\(\mathbf{b}^{x,y} ≔ \mathbf{s}^{x} - \mathbf{s}^{y} \in \mathcal{R}^{\mathcal{V}}\),
+to obtain a balance system
+\(\mathsf{B} ≔ \left\{ \mathbf{b}^{x,y} \right\}_{x,y \in \mathcal{X}}\).
+Then
+\(F_{\mathsf{B}}\left( \mathbf{n} \right) = F_{\mathsf{S}}\left( \mathbf{n} \right)\)
+for all \(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\) (as
+observed in Example~1).
+
+`\(\Longleftarrow\)' Let
+\(\mathsf{B} = \left\{ \mathbf{b}^{x,y} \right\}_{x,y \in \mathcal{X}}\)
+be a balance system on \(\mathcal{V}\) satisfying (C.8), and such that
+\(F_{\mathsf{B}}\left( \mathbf{d} \right) = F\left( \mathbf{d} \right)\)
+for all \(\mathbf{d} \in \mathcal{D}\). Fix \(o \in \mathcal{X}\), and
+define \(\mathbf{s}^{o} ≔ \mathbf{0}\). Then for all
+\(x \in \mathcal{X}\), define \(\mathbf{s}^{x} ≔ \mathbf{b}^{x,o}\).
+This yields a score system
+\(\mathsf{S} = \left\{ \mathbf{s}^{x} \right\}_{x \in \mathcal{X}}\) on
+\(\mathcal{V}\). Let
+\({\widetilde{\mathbf{b}}}^{x,y} ≔ \mathbf{s}^{x} - \mathbf{s}^{y}\) for
+all \(x,y \in \mathcal{X}\). Thus, Example~1 implies that
+\(F_{\mathsf{S}}\left( \mathbf{n} \right) = F_{\widetilde{\mathsf{B}}}\left( \mathbf{n} \right)\)
+for all \(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle}\). For
+any \(\mathbf{d} \in \mathcal{D}\), and all \(x,y \in \mathcal{X}\), we
+have
+\[{\widetilde{\mathbf{b}}}^{x,y}\left( \mathbf{d} \right) = \mathbf{s}^{x}\left( \mathbf{d} \right) - \mathbf{s}^{y}\left( \mathbf{d} \right) = \mathbf{b}^{x,o}\left( \mathbf{d} \right) - \mathbf{b}^{y,o}\left( \mathbf{d} \right)\underset{( \ast )}{=}\mathbf{b}^{x,y}\left( \mathbf{d} \right)\text{,}\]
+where \(( \ast )\) is by condition (C.8). Thus,
+\(F_{\widetilde{\mathsf{B}}}\left( \mathbf{d} \right) = F_{\mathsf{B}}\left( \mathbf{d} \right)\)
+for all \(\mathbf{d} \in \mathcal{D}\). But
+\(F_{\mathsf{B}}\left( \mathbf{d} \right) = F\left( \mathbf{d} \right)\)
+for all \(\mathbf{d} \in \mathcal{D}\), by hypothesis. We conclude that
+\(F_{\mathsf{S}}\left( \mathbf{d} \right) = F\left( \mathbf{d} \right)\)
+for all \(\mathbf{d} \in \mathcal{D}\). □~Lemma~C.4
+
+Let \(\left( \mathcal{A}, + \right)\) be an abelian group. For any
+subset \(\mathcal{S} \subseteq \mathcal{A}\), let
+\(\langle\mathcal{S}\rangle\) denote the divisible subgroup generated by
+\(\mathcal{S}\)---that is, \(\langle\mathcal{S}\rangle\) is the smallest
+divisible subgroup of \(\mathcal{A}\) which contains \(\mathcal{S}\).
+
+Lemma~C.5
+
+Let \(\left( \mathcal{A}, + \right)\) be an abelian group, let
+\(\left( \mathcal{R}, + \right)\) be a torsion-free abelian group, and
+let \(\left. \phi:\mathcal{A}\longrightarrow\mathcal{R} \right.\) be a
+group homomorphism. Let \(\mathcal{S} \subset \mathcal{A}\) . If
+\(\phi(s) = 0\) for all \(s \in \mathcal{S}\), then \(\phi(a) = 0\) for
+all \(a \in {\langle\mathcal{S}\rangle}\).
+
+Proof
+
+Let \(\mathcal{K} ≔ \left\{ a \in \mathcal{A};\phi(a) = 0 \right\}\).
+Then \(\mathcal{S} \subseteq \mathcal{K}\). We must show that
+\({\langle\mathcal{S}\rangle} \subseteq \mathcal{K}\). To do this, it
+suffices to show that \(\mathcal{K}\) is a divisible subgroup. Clearly,
+\(\mathcal{K}\) is a subgroup. To see that \(\mathcal{K}\) is divisible,
+let \(a \in \mathcal{A}\) and \(n \in \mathbb{N}\) and suppose
+\(n\, a \in \mathcal{K}\). Then we have
+\(0 = \phi(n\, a) = n\,\phi(a)\). But \(\mathcal{R}\) is torsion-free,
+so if \(n\,\phi(a) = 0\) then \(\phi(a) = 0\). Thus
+\(a \in \mathcal{K}\).□~Lemma~C.5
+
+Lemma~C.6
+
+Let \(\left( \mathcal{A}, + \right)\) be an abelian group. Let
+\(\mathcal{S}_{1},\mathcal{S}_{2} \subseteq \mathcal{A}\) be arbitrary
+subsets, and suppose that
+\(\mathcal{S} ≔ \mathcal{S}_{1} \cup \mathcal{S}_{2}\) is additively
+closed. Then either
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}_{1}\rangle}\), or
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}_{2}\rangle}\).
+
+Proof
+
+Suppose
+\({\langle\mathcal{S}_{1}\rangle} \neq {\langle\mathcal{S}\rangle}\); we
+will show that
+\({\langle\mathcal{S}_{2}\rangle} = {\langle\mathcal{S}\rangle}\).
+Clearly,
+\({\langle\mathcal{S}_{1}\rangle} \subseteq {\langle\mathcal{S}\rangle}\).
+Thus, if
+\({\langle\mathcal{S}\rangle} \neq {\langle\mathcal{S}_{1}\rangle}\),
+then
+\({\langle\mathcal{S}\rangle} \nsubseteq {\langle\mathcal{S}_{1}\rangle}\),
+which means that
+\(\mathcal{S} \nsubseteq {\langle\mathcal{S}_{1}\rangle}\). Thus,
+\(\mathcal{S} \smallsetminus {\langle\mathcal{S}_{1}\rangle} \neq \varnothing\).
+Fix some element
+\(s_{2} \in \mathcal{S} \smallsetminus {\langle\mathcal{S}_{1}\rangle}\).
+Thus,
+\(s_{2} \in \mathcal{S} \smallsetminus \mathcal{S}_{1} \subseteq \mathcal{S}_{2}\).
+
+Claim~C.6.1
+
+\(\mathcal{S}_{1} \subseteq {\langle\mathcal{S}_{2}\rangle}\).
+
+Proof
+
+Let \(s_{1} \in \mathcal{S}_{1}\). Let \(t ≔ s_{1} + s_{2}\). Then
+\(t \in \mathcal{S}\), because \(s_{2} \in \mathcal{S}\) and
+\(s_{1} \in \mathcal{S}_{1} \subset \mathcal{S}\) and \(\mathcal{S}\) is
+additively closed.
+
+First note that \(t \notin \mathcal{S}_{1}\). (Proof: (by contradiction)
+Note that \(s_{2} = t - s_{1}\), and \(s_{1} \in \mathcal{S}_{1}\). So
+if \(t \in \mathcal{S}_{1}\) also, then
+\(s_{2} \in {\langle\mathcal{S}_{1}\rangle}\). But
+\(s_{2} \notin {\langle\mathcal{S}_{1}\rangle}\) by definition, so this
+is a contradiction. To avoid the contradiction, we cannot have
+\(t \in \mathcal{S}_{1}\).)
+
+Thus,
+\(t \in \mathcal{S} \smallsetminus \mathcal{S}_{1} \subseteq \mathcal{S}_{2}\).
+But \(s_{1} = t - s_{2}\). Thus,
+\(s_{1} \in {\langle\mathcal{S}_{2}\rangle}\). This argument works for
+all \(s_{1} \in \mathcal{S}_{1}\). The claim follows. ♢~Claim~C.6.1
+
+Now,
+\[{\langle\mathcal{S}_{2}\rangle}\underset{( \ast )}{\subseteq}{\langle\mathcal{S}\rangle}\underset{( \dagger )}{=}{\langle\mathcal{S}_{1} \cup \mathcal{S}_{2}\rangle}\underset{(\diamondsuit)}{\subseteq}{\langle{\langle\mathcal{S}_{2}\rangle} \cup \mathcal{S}_{2}\rangle} = {\langle\mathcal{S}_{2}\rangle}\text{,}\]
+where \(( \ast )\) is because \(\mathcal{S}_{2} \subseteq \mathcal{S}\),
+~\(( \dagger )\) is because
+\(\mathcal{S} = \mathcal{S}_{1} \cup \mathcal{S}_{2}\), and
+\((\diamondsuit)\) is by Claim~C.6.1. We conclude that
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}_{2}\rangle}\), as
+desired.□~Lemma~C.6
+
+Lemma~C.7
+
+Let \(\left( \mathcal{A}, + \right)\) be an abelian group. Let
+\(\mathcal{S}_{1},\ldots,\mathcal{S}_{N} \subseteq \mathcal{A}\) be
+cones, and suppose
+\(\mathcal{S} ≔ \mathcal{S}_{1} \cup \cdots \cup \mathcal{S}_{N}\) is
+additively closed. Then there exists \(n \in \lbrack 1\ldots N\rbrack\)
+such that
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}_{n}\rangle}\).
+
+ProofBy Induction on \(N\)
+
+If \(N = 1\), then \(\mathcal{S} = \mathcal{S}_{1}\), and the result is
+trivially true.
+
+Now suppose \(N \geq 2\). By induction, suppose that, for any collection
+\(\mathcal{S}_{1},\ldots,\mathcal{S}_{N - 1} \subseteq \mathcal{A}\) of
+\(N - 1\) cones such that
+\(\mathcal{S} ≔ \mathcal{S}_{1} \cup \cdots \cup \mathcal{S}_{N - 1}\)
+is additively closed, there exists
+\(n \in \lbrack 1\ldots N - 1\rbrack\) such that
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}_{n}\rangle}\).
+
+Now let \(\mathcal{S}_{1},\ldots,\mathcal{S}_{N} \subseteq \mathcal{A}\)
+be a collection of \(N\) cones such that
+\(\mathcal{S} ≔ \mathcal{S}_{1} \cup \cdots \cup \mathcal{S}_{N}\) is
+additively closed. We must find some \(n \in \lbrack 1\ldots N\rbrack\)
+such that
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}_{n}\rangle}\). If
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}_{N}\rangle}\), then
+we are done. So, suppose
+\({\langle\mathcal{S}_{N}\rangle} \subsetneq {\langle\mathcal{S}\rangle}\).
+Then \(\langle\mathcal{S}_{N}\rangle\) is a divisible proper subgroup of
+\(\mathcal{A}\). Corollary~B.1(b) yields a complete, homogeneous
+preorder \(( \succeq )\) on \(\mathcal{A}\) such that
+\({\langle\mathcal{S}_{N}\rangle} = \left\{ a \in \mathcal{A};a \approx 0 \right\}\).
+
+Define
+\(\mathcal{S}^{\succeq} ≔ \left\{ s \in \mathcal{S};s \succeq 0 \right\}\)
+and
+\(\mathcal{S}^{\preceq} ≔ \left\{ s \in \mathcal{S};s \preceq 0 \right\}\).
+Then \(\mathcal{S} = \mathcal{S}^{\succeq} \cup \mathcal{S}^{\preceq}\),
+and \(\mathcal{S}\) is additively closed, so Lemma~C.6 says that either
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}^{\succeq}\rangle}\)
+or
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}^{\preceq}\rangle}\).
+Without loss of generality, suppose
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}^{\succeq}\rangle}\).
+
+Define
+\(\mathcal{S}^{\succ} ≔ \left\{ s \in \mathcal{S};s \succ 0 \right\}\)
+and
+\(\mathcal{S}^{0} ≔ \left\{ s \in \mathcal{S};s \approx 0 \right\} = \mathcal{S} \cap {\langle\mathcal{S}_{N}\rangle}\).
+Then
+\(\mathcal{S}^{\succeq} = \mathcal{S}^{\succ} \cup \mathcal{S}^{0}\).
+Also \(\mathcal{S}^{\succeq}\) is itself additively closed (because it
+is an intersection of two additively closed sets) so Lemma~C.6 says that
+either
+\({\langle\mathcal{S}^{\succeq}\rangle} = {\langle\mathcal{S}^{\succ}\rangle}\)
+or
+\({\langle\mathcal{S}^{\succeq}\rangle} = {\langle\mathcal{S}^{0}\rangle}\).
+However, by hypothesis,
+\({\langle\mathcal{S}^{\succeq}\rangle} = {\langle\mathcal{S}\rangle} \supsetneq {\langle\mathcal{S}_{N}\rangle} = {\langle{\langle\mathcal{S}_{N}\rangle}\rangle} \supseteq {\langle\mathcal{S} \cap {\langle\mathcal{S}_{N}\rangle}\rangle} = {\langle\mathcal{S}^{0}\rangle}\).
+Thus,
+\({\langle\mathcal{S}^{\succeq}\rangle} \neq {\langle\mathcal{S}^{0}\rangle}\).
+Thus,
+\({\langle\mathcal{S}^{\succeq}\rangle} = {\langle\mathcal{S}^{\succ}\rangle}\).
+But we have supposed
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}^{\succeq}\rangle}\),
+so we conclude that
+\({\langle\mathcal{S}\rangle} = {\langle\mathcal{S}^{\succ}\rangle}\).
+
+For all \(n \in \lbrack 1\ldots N\rbrack\), define
+\(\mathcal{S}_{n}^{\succ} ≔ \left\{ s \in \mathcal{S}_{n};s \succ 0 \right\}\).
+Then
+\(\mathcal{S}^{\succ} = \mathcal{S}_{1}^{\succ} \cup \cdots \cup \mathcal{S}_{N - 1}^{\succ} \cup \mathcal{S}_{N}^{\succ}\),
+(because
+\(\mathcal{S} = \mathcal{S}_{1} \cup \cdots \cup \mathcal{S}_{N - 1} \cup \mathcal{S}_{N}\)).
+But \(\mathcal{S}_{N}^{\succ} = \varnothing\) (because
+\(s \approx 0\) for all \(s \in \mathcal{S}_{N}\), by the construction
+of the homogeneous preorder \(( \succeq )\)). Thus,
+\(\mathcal{S}^{\succ} = \mathcal{S}_{1}^{\succ} \cup \cdots \cup \mathcal{S}_{N - 1}^{\succ}\).
+Furthermore, \(\mathcal{S}^{\succ}\) is additively closed and
+\(\mathcal{S}_{1}^{\succ},\ldots,\mathcal{S}_{N - 1}^{\succ}\) are all
+cones (because \(\mathcal{S}\) is additively closed and
+\(\mathcal{S}_{1},\ldots,\mathcal{S}_{N - 1}\) are cones, and the set
+\(\left\{ a \in \mathcal{A};a \succ 0 \right\}\) is itself a cone).
+Thus, the induction hypothesis yields some
+\(n \in \lbrack 1\ldots N - 1\rbrack\) such that
+\({\langle\mathcal{S}^{\succ}\rangle} = {\langle\mathcal{S}_{n}^{\succ}\rangle}\).
+But then we have:
+\[{\langle\mathcal{S}\rangle} = {\langle\mathcal{S}^{\succ}\rangle} = {\langle\mathcal{S}_{n}^{\succ}\rangle} \subseteq {\langle\mathcal{S}_{n}\rangle} \subseteq {\langle\mathcal{S}\rangle}\text{.}\]
+We conclude that
+\({\langle\mathcal{S}_{n}\rangle} = {\langle\mathcal{S}\rangle}\), as
+desired. □~Lemma~C.7
+
+Let \(\left. \pi:\mathcal{X}\longrightarrow\mathcal{X} \right.\) be a
+permutation, and let \(x \in \mathcal{X}\). The \(\phi\)-orbit of \(x\)
+is the set
+\(\mathcal{O}_{x}^{\phi} = \left\{ x,\phi(x),\phi^{2}(x),\phi^{3}(x),\ldots \right\}\).
+This set must be finite, because \(\mathcal{X}\) is finite. Thus, there
+is some \(n \in \mathbb{N}\) such that \(\phi^{n}(x) = x\). Note that
+\(\mathcal{O}_{x}^{\phi}\) is also the \(\phi\)-orbit of any other
+element in \(\mathcal{O}_{x}^{\phi}\). If \(x,y \in \mathcal{X}\), then
+it is easy to see that either
+\(\mathcal{O}_{x}^{\phi} = \mathcal{O}_{y}^{\phi}\), or
+\(\mathcal{O}_{x}^{\phi}\) is disjoint from \(\mathcal{O}_{y}^{\phi}\).
+Thus, we can partition \(\mathcal{X}\) into disjoint \(\phi\)-orbits
+\(\mathcal{O}_{x_{1}}^{\phi},\mathcal{O}_{x_{2}}^{\phi},\ldots,\mathcal{O}_{x_{M}}^{\phi}\)
+for some \(x_{1},x_{2},\ldots,x_{M} \in \mathcal{X}\); this is called
+the \(\phi\)-orbit partition of \(\mathcal{X}\). Lemma~C.8
+
+Let \(\mathcal{R}\) be a linearly ordered abelian group. Let
+\(\mathcal{X}\) be a finite set, let \(\mathcal{V}\) be any set, let
+\(\mathcal{D} \subseteq \mathbb{N}^{\langle\mathcal{V}\rangle}\) be a
+cone, and let
+\(\left. F:\mathcal{D}\rightrightarrows\mathcal{X} \right.\) be a
+balance rule determined by a perfect \(\mathcal{R}\)-valued balance
+system. Then \(F\) is neutral if and only if \(F\) is a scoring rule
+with an \(\mathcal{R}\)-valued neutral score system.
+
+Proof
+
+``\(\Longleftarrow\)'' If the score function of \(F\) is neutral, then
+\(F\) itself is neutral.
+
+``\(\Longrightarrow\)'' Suppose \(F\) is a perfect
+\(\mathcal{R}\)-valued balance system. If \(F\) is
+\(\Pi_{\mathcal{X}}\)-neutral, then Lemma~C.3 says that
+\(F = F_{\mathsf{B}}\), where \(\mathsf{B}\) is a neutral,
+\(\mathcal{R}\)-valued balance system.
+
+First suppose \(\left| \mathcal{X} \right| = 2\). If
+\(\mathcal{X} = \left\{ x,y \right\}\), then
+\(\mathsf{B} = \left\{ \mathbf{b}^{x,y},\mathbf{b}^{y,x} \right\}\),
+where \(\mathbf{b}^{y,x} = - \mathbf{b}^{x,y}\). Thus, if we define
+\(\mathbf{s}^{x} ≔ \mathbf{b}^{x,y}\) and
+\(\mathbf{s}^{y} ≔ \mathbf{0}\), then \(F = F_{\mathsf{S}}\).
+
+Now suppose \(\left| \mathcal{X} \right| \geq 3\). There are three
+cases: either \(\left| \mathcal{X} \right| \equiv 0\) or
+\(\left| \mathcal{X} \right| \equiv 1\) or
+\(\left| \mathcal{X} \right| \equiv 2,\operatorname{mod}3\). Refer to
+these as Cases 0, 1, and 2. Partition \(\mathcal{X}\) as
+\(\mathcal{X} = \mathcal{X}_{0} \sqcup \mathcal{X}_{1} \sqcup \mathcal{X}_{2} \sqcup \cdots \sqcup \mathcal{X}_{N}\),
+(for some \(N \geq 0\)), where \(\left| \mathcal{X}_{n} \right| = 3\)
+for all \(n \in \lbrack 1\ldots N\rbrack\), and where
+\(\mathcal{X}_{0} = \varnothing\) in Case 0,
+\(\left| \mathcal{X}_{0} \right| = 4\) in Case 1, and
+\(\left| \mathcal{X}_{0} \right| = 5\) in Case 2.
+
+Let
+\({\widetilde{\Pi}}_{\mathcal{X}} ≔ \left\{ \widetilde{\pi};\pi \in \Pi_{\mathcal{X}} \right\} \subseteq \Pi_{\mathcal{V}}\).
+Then \(\mathcal{D}\) is a \({\widetilde{\Pi}}_{\mathcal{X}}\)-invariant
+subset of \(\mathbb{N}^{\langle\mathcal{V}\rangle}\), because \(F\) is
+neutral. Let \(\Phi \subset \Pi_{\mathcal{X}}\) be the set of all
+permutations whose orbit-partition of \(\mathcal{X}\) is
+\(\left\{ \mathcal{X}_{0},\mathcal{X}_{1},\ldots,\mathcal{X}_{N} \right\}\).
+All elements of \(\Phi\) have the same order
+\(m\).\textsuperscript{17}17\(m = 3\) in Case 0. If \(N = 0\), then
+\(m = 4\) in Case 1 and \(m = 5\) in Case 2. If \(N \geq 1\), then
+\(m = 12\) in Case 1 and \(m = 15\) in Case 2. Let \(M ≔ m - 1\). For
+any \(\phi \in \Phi\) and \(\mathbf{d} \in \mathcal{D}\), define
+\(\mathbf{d}^{\phi} ≔ \mathbf{d} + \widetilde{\phi}\left( \mathbf{d} \right) + {\widetilde{\phi}}^{2}\left( \mathbf{d} \right) + \cdots + {\widetilde{\phi}}^{M}\left( \mathbf{d} \right)\);
+then \(\mathbf{d}^{\phi} \in \mathcal{D}\) also, because \(\mathcal{D}\)
+is \(\widetilde{\phi}\)-invariant and additively closed. Thus,
+\(F_{\mathsf{B}}\left( \mathbf{d}^{\phi} \right) \neq \varnothing\).
+For all \(n \in \lbrack 0\ldots N\rbrack\), let
+\(\mathcal{D}_{n}^{\phi} ≔ \left\{ \mathbf{d} \in \mathcal{D};\mathcal{X}_{n} \subseteq F_{\mathsf{B}}\left( \mathbf{d}^{\phi} \right) \right\}\).
+Claim~C.8.1
+
+For any \(\phi \in \Phi\) and any \(n \in \lbrack 0\ldots N\rbrack\),
+the set \(\mathcal{D}_{n}^{\phi}\) is a cone.
+
+ProofAdditively Closed
+
+Let \(\mathbf{d}_{1},\mathbf{d}_{2} \in \mathcal{D}_{n}^{\phi}\). We
+must show that
+\(\mathbf{d}_{1} + \mathbf{d}_{2} \in \mathcal{D}_{n}^{\phi}\). By
+hypothesis,
+\(\mathcal{X}_{n} \subseteq F_{\mathsf{B}}\left( \mathbf{d}_{1}^{\phi} \right)\)
+and
+\(\mathcal{X}_{n} \subseteq F_{\mathsf{B}}\left( \mathbf{d}_{1}^{\phi} \right)\).
+Thus, reinforcement implies that
+\(\mathcal{X}_{n} \subseteq F_{\mathsf{B}}\left( \mathbf{d}_{1}^{\phi} + \mathbf{d}_{2}^{\phi} \right)\).
+But
+\(\mathbf{d}_{1}^{\phi} + \mathbf{d}_{2}^{\phi} = \left( \mathbf{d}_{1} + \mathbf{d}_{2} \right)^{\phi}\);
+thus
+\(\mathcal{X}_{n} \subseteq F_{\mathsf{B}}\left( \left( \mathbf{d}_{1} + \mathbf{d}_{2} \right)^{\phi} \right)\),
+which means
+\(\mathbf{d}_{1} + \mathbf{d}_{2} \in \mathcal{D}_{n}^{\phi}\).
+
+(Divisible)~Let
+\(\mathbf{z} \in \mathbb{Z}^{\langle\mathcal{V}\rangle}\) and
+\(m \in \mathbb{N}\), and suppose
+\(m\,\mathbf{z} \in \mathcal{D}_{n}^{\phi}\). We must show that
+\(\mathbf{z} \in \mathcal{D}_{n}^{\phi}\). By hypothesis,
+\(\mathcal{X}_{n} \subseteq F_{\mathsf{B}}\left( \left( m\,\mathbf{z} \right)^{\phi} \right)\).
+But \(\left( m\,\mathbf{z} \right)^{\phi} = m\,\mathbf{z}^{\phi}\).
+Thus, \(\mathbf{z}^{\phi} \in \mathcal{D}\) (because \(\mathcal{D}\) is
+a cone), and
+\(F_{\mathsf{B}}\left( m\,\mathbf{z}^{\phi} \right) = F_{\mathsf{B}}\left( \mathbf{z}^{\phi} \right)\),
+by reinforcement. Thus,
+\(\mathcal{X}_{n} \subseteq F_{\mathsf{B}}\left( \mathbf{z}^{\phi} \right)\).
+Thus, \(\mathbf{z} \in \mathcal{D}_{n}^{\phi}\). ♢Claim~C.8.1
+
+Claim~C.8.2
+
+For any \(\phi \in \Phi\), we have
+\(\mathcal{D} = \mathcal{D}_{0}^{\phi} \cup \mathcal{D}_{1}^{\phi} \cup \cdots \cup \mathcal{D}_{N}^{\phi}\).
+
+Proof
+
+For any \(\mathbf{d} \in \mathcal{D}\), we have
+\(\widetilde{\phi}\left( \mathbf{d}^{\phi} \right) = \mathbf{d}^{\phi}\).
+Thus neutrality implies that
+\(\phi\left\lbrack F_{\mathsf{B}}\left( \mathbf{d}^{\phi} \right) \right\rbrack = F_{\mathsf{B}}\left( \mathbf{d}^{\phi} \right)\).
+Thus, \(F_{\mathsf{B}}\left( \mathbf{d}^{\phi} \right)\) must be a union
+of \(\phi\)-orbits. Thus,
+\(F_{\mathsf{B}}\left( \mathbf{d}^{\phi} \right)\) contains
+\(\mathcal{X}_{n}\) for some \(n \in \lbrack 0\ldots N\rbrack\). Thus,
+\(\mathbf{d} \in \mathcal{D}_{n}^{\phi}\) for some
+\(n \in \lbrack 0\ldots N\rbrack\). ♢Claim~C.8.2
+
+Claim~C.8.3
+
+Suppose there exists some \(\phi \in \Phi\) and some
+\(n \in \lbrack 1\ldots N\rbrack\) such that
+\({\langle\mathcal{D}_{n}^{\phi}\rangle} = {\langle\mathcal{D}\rangle}\)
+. Let \(\mathcal{X}_{n} = \left\{ x,y,z \right\}\), where
+\(\phi(x) = z,\phi(y) = x\), and \(\phi(z) = y\) . Then
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) + \mathbf{b}^{y,z}\left( \mathbf{d} \right) = \mathbf{b}^{x,z}\left( \mathbf{d} \right)\)
+for all \(\mathbf{d} \in \mathcal{D}\).
+
+Proof
+
+For any \(\mathbf{d} \in \mathcal{D}_{n}^{\phi}\), we have
+\(\mathcal{X}_{n} \subseteq F_{\mathsf{B}}\left( \mathbf{d}^{\phi} \right)\).
+Then we must have
+\[0 = \mathbf{b}^{x,y}\left( \mathbf{d}^{\phi} \right) = \mathbf{b}^{x,y}\left( \mathbf{d} + \widetilde{\phi}\left( \mathbf{d} \right) + {\widetilde{\phi}}^{2}\left( \mathbf{d} \right) + \cdots + {\widetilde{\phi}}^{M}\left( \mathbf{d} \right) \right)\underset{(\diamondsuit)}{=}\left( \mathbf{b}^{x,y} + \mathbf{b}^{x,y}\widetilde{\phi} + \mathbf{b}^{x,y}{\widetilde{\phi}}^{2} + \cdots + \mathbf{b}^{x,y}{\widetilde{\phi}}^{M} \right)\left( \mathbf{d} \right)\underset{( \ast )}{=}\left( \mathbf{b}^{x,y} + \mathbf{b}^{\phi^{- 1}{(x)},\phi^{- 1}{(y)}} + \cdots + \mathbf{b}^{\phi^{- M}{(x)},\phi^{- M}{(y)}} \right)\left( \mathbf{d} \right) = \frac{M + 1}{3}\left( \mathbf{b}^{x,y} + \mathbf{b}^{y,z} + \mathbf{b}^{z,x} \right)\left( \mathbf{d} \right)\text{,}\]
+where \((\diamondsuit)\) is by Lemma~C.2(a), and \(( \ast )\) is because
+\(\mathsf{B}\) is neutral. But
+\({\langle\mathcal{D}_{n}^{\phi}\rangle} = {\langle\mathcal{D}\rangle}\),
+so Lemma~C.5 then implies that
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) + \mathbf{b}^{y,z}\left( \mathbf{d} \right) + \mathbf{b}^{z,x}\left( \mathbf{d} \right) = 0\)
+for all \(\mathbf{d} \in \mathcal{D}\). In other words:
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) + \mathbf{b}^{y,z}\left( \mathbf{d} \right) = - \mathbf{b}^{z,x}\left( \mathbf{d} \right) = \mathbf{b}^{x,z}\left( \mathbf{d} \right)\),
+as desired. ♢Claim~C.8.3
+
+Claim~C.8.4
+
+Suppose there exists no \(\phi \in \Phi\) and
+\(n \in \lbrack 1\ldots N\rbrack\) such that
+\({\langle\mathcal{D}_{n}^{\phi}\rangle} = {\langle\mathcal{D}\rangle}\)
+. Suppose that either
+\(\mathcal{X}_{0} = \left\{ x,y,z,s \right\}\)~(in~Case~1), or
+\(\mathcal{X}_{0} = \left\{ x,y,z,s,t \right\}\)~(in~Case~2). Then
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) + \mathbf{b}^{y,z}\left( \mathbf{d} \right) = \mathbf{b}^{x,z}\left( \mathbf{d} \right)\)
+for all \(\mathbf{d} \in \mathcal{D}\).
+
+Proof
+
+For all \(\phi \in \Phi\), if there is no
+\(n \in \lbrack 1\ldots N\rbrack\) such that
+\({\langle\mathcal{D}_{n}^{\phi}\rangle} = {\langle\mathcal{D}\rangle}\),
+then Claim~C.8.1, Claim~C.8.2 and Lemma~C.7 imply that
+\({\langle\mathcal{D}_{0}^{\phi}\rangle} = {\langle\mathcal{D}\rangle}\).
+
+(Case~1)~Let \(\phi \in \Phi\), and suppose
+\(\phi(y) = x,\phi(z) = y,\phi(s) = z\), and \(\phi(x) = s\). Then by an
+argument similar to Claim~C.8.3, we conclude that
+(C.9)\[\left( \mathbf{b}^{x,y} + \mathbf{b}^{y,z} + \mathbf{b}^{z,s} + \mathbf{b}^{s,x} \right)\left( \mathbf{d} \right) = 0\text{,}\]
+for all \(\mathbf{d} \in \mathcal{D}\). By choosing other permutations
+in \(\Phi\), we can similarly derive the following five equations. For
+all \(\mathbf{d} \in \mathcal{D}\),
+(C.10)\[\left( \mathbf{b}^{x,y} + \mathbf{b}^{y,s} + \mathbf{b}^{s,z} + \mathbf{b}^{z,x} \right)\left( \mathbf{d} \right) = 0\text{,}\](C.11)\[\left( \mathbf{b}^{y,z} + \mathbf{b}^{z,x} + \mathbf{b}^{x,s} + \mathbf{b}^{s,y} \right)\left( \mathbf{d} \right) = 0\text{,}\](C.12)\[\left( \mathbf{b}^{y,z} + \mathbf{b}^{z,s} + \mathbf{b}^{s,x} + \mathbf{b}^{x,y} \right)\left( \mathbf{d} \right) = 0\text{,}\](C.13)\[\left( \mathbf{b}^{z,x} + \mathbf{b}^{x,y} + \mathbf{b}^{y,s} + \mathbf{b}^{s,z} \right)\left( \mathbf{d} \right) = 0\text{,}\](C.14)\[\text{and}\quad\left( \mathbf{b}^{z,x} + \mathbf{b}^{x,s} + \mathbf{b}^{s,y} + \mathbf{b}^{y,z} \right)\left( \mathbf{d} \right) = 0\text{.}\]
+Recall that \(\mathbf{b}^{y,s} = - \mathbf{b}^{s,y}\), and
+\(\mathbf{b}^{z,s} = - \mathbf{b}^{s,z}\), etc. Thus, by adding Eqs.
+(C.9), (C.10), (C.11), (C.12), (C.13), (C.14) together and canceling, we
+obtain
+\(4\left( \mathbf{b}^{x,y} + \mathbf{b}^{y,z} + \mathbf{b}^{z,x} \right)\left( \mathbf{d} \right) = 0\),
+for all \(\mathbf{d} \in \mathcal{D}\). Thus,
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) + \mathbf{b}^{y,z}\left( \mathbf{d} \right) = - \mathbf{b}^{z,x}\left( \mathbf{d} \right) = \mathbf{b}^{x,z}\left( \mathbf{d} \right)\),
+as desired.
+
+(Case~2) Let \(\phi \in \Phi\), and suppose
+\(\phi(y) = x,\phi(z) = y,\phi(s) = z,\phi(t) = s\), and
+\(\phi(x) = t\). Then by an argument similar to Claim~C.8.3, we conclude
+that
+(C.15)\[\left( \mathbf{b}^{x,y} + \mathbf{b}^{y,z} + \mathbf{b}^{z,s} + \mathbf{b}^{s,t} + \mathbf{b}^{t,x} \right)\left( \mathbf{d} \right) = 0\text{,}\]
+for all \(\mathbf{d} \in \mathcal{D}\). By choosing other permutations
+in \(\Phi\), we can similarly derive the following five equations. For
+all \(\mathbf{d} \in \mathcal{D}\),
+(C.16)\[\left( \mathbf{b}^{x,y} + \mathbf{b}^{y,z} + \mathbf{b}^{z,t} + \mathbf{b}^{t,s} + \mathbf{b}^{s,x} \right)\left( \mathbf{d} \right) = 0\text{,}\](C.17)\[\left( \mathbf{b}^{y,z} + \mathbf{b}^{z,x} + \mathbf{b}^{x,s} + \mathbf{b}^{s,t} + \mathbf{b}^{t,y} \right)\left( \mathbf{d} \right) = 0\text{,}\](C.18)\[\left( \mathbf{b}^{y,z} + \mathbf{b}^{z,x} + \mathbf{b}^{x,t} + \mathbf{b}^{t,s} + \mathbf{b}^{s,y} \right)\left( \mathbf{d} \right) = 0\text{,}\](C.19)\[\left( \mathbf{b}^{z,x} + \mathbf{b}^{x,y} + \mathbf{b}^{y,s} + \mathbf{b}^{s,t} + \mathbf{b}^{t,z} \right)\left( \mathbf{d} \right) = 0\text{,}\](C.20)\[\text{and}\quad\left( \mathbf{b}^{z,x} + \mathbf{b}^{x,y} + \mathbf{b}^{y,t} + \mathbf{b}^{t,s} + \mathbf{b}^{s,z} \right)\left( \mathbf{d} \right) = 0\text{.}\]
+By adding Eqs. (C.15), (C.16), (C.17), (C.18), (C.19), (C.20) together
+and canceling, we obtain
+\(4\left( \mathbf{b}^{x,y} + \mathbf{b}^{y,z} + \mathbf{b}^{z,x} \right)\left( \mathbf{d} \right) = 0\),
+for all \(\mathbf{d} \in \mathcal{D}\), Thus,
+\(\mathbf{b}^{x,y}\left( \mathbf{d} \right) + \mathbf{b}^{y,z}\left( \mathbf{d} \right) = \mathbf{b}^{x,z}\left( \mathbf{d} \right)\),
+as desired. ♢~Claim~C.8.4
+
+In Case 0, we have \(\mathcal{D}_{0} = \varnothing\), so
+\(\mathcal{D} = \mathcal{D}_{1} \cup \cdots \cup \mathcal{D}_{N}\).
+Thus, Claim~C.8.1, Claim~C.8.2 and Lemma~C.7 yields some
+\(n \in \lbrack 1\ldots N\rbrack\) such that
+\({\langle\mathcal{D}_{n}\rangle} = {\langle\mathcal{D}\rangle}\). Thus,
+Claim~C.8.3 applies. In Cases 1 or 2, either the hypothesis of
+Claim~C.8.3 holds or the hypothesis of Claim~C.8.4 holds. In any of
+these cases, we obtain some distinct elements \(x,y,z \in \mathcal{X}\)
+such that
+(C.21)\[\mathbf{b}^{x,y}\left( \mathbf{d} \right) + \mathbf{b}^{y,z}\left( \mathbf{d} \right) = \mathbf{b}^{x,z}\left( \mathbf{d} \right)\text{,}\quad\text{for~all~}\mathbf{d} \in \mathcal{D}\text{.}\]
+
+Claim~C.8.5
+
+For any \(x',y',z' \in \mathcal{X}\), and all
+\(\mathbf{d} \in \mathcal{D}\), we have
+\(\mathbf{b}^{x',y'}\left( \mathbf{d} \right) + \mathbf{b}^{y',z'}\left( \mathbf{d} \right) = \mathbf{b}^{x',z'}\left( \mathbf{d} \right)\).
+
+Proof
+
+There exists some \(\alpha \in \Pi_{\mathcal{X}}\) such that
+\(\alpha\left( x' \right) = x\), \(\alpha\left( y' \right) = y\), and
+\(\alpha\left( z' \right) = z\). Thus,
+\[\mathbf{b}^{x',y'}\left( \mathbf{d} \right) + \mathbf{b}^{y',z'}\left( \mathbf{d} \right)\underset{(\diamondsuit)}{=}\left( \mathbf{b}^{x,y}\widetilde{\alpha} \right)\left( \mathbf{d} \right) + \left( \mathbf{b}^{y,z}\widetilde{\alpha} \right)\left( \mathbf{d} \right)\underset{( \dagger )}{=}\left( \mathbf{b}^{x,y} + \mathbf{b}^{y,z} \right)\left( \widetilde{\alpha}\left( \mathbf{d} \right) \right)\underset{( \ast )}{=}\mathbf{b}^{x,z}\left( \widetilde{\alpha}\left( \mathbf{d} \right) \right)\underset{(\diamondsuit)}{=}\mathbf{b}^{x',z'}\left( \mathbf{d} \right)\text{,}\]
+as desired. Here, \(( \ast )\) is by Eq. (C.21) (because
+\(\widetilde{\alpha}\left( \mathbf{d} \right) \in \mathcal{D}\) because
+\(\mathcal{D}\) is \({\widetilde{\Pi}}_{\mathcal{X}}\)-invariant), and
+\(( \dagger )\) is by Lemma~C.2(a), while both \((\diamondsuit)\) are
+because \(\mathsf{B}\) is neutral. ♢~Claim~C.8.5
+
+Now, Claim~C.8.5 and Lemma~C.4 imply that \(F_{\mathsf{B}}\) is a
+scoring rule. Finally, if \(F_{\mathsf{B}}\) is neutral, then
+Proposition~1 says that \(F_{\mathsf{B}}\) has a neutral score function.
+□~Lemma~C.8
+
+Proof of Theorem~2
+
+``\(\Longleftarrow\)'' It is easy to check that any scoring rule
+satisfies reinforcement. If the score system of \(F\) is neutral, then
+\(F\) itself is neutral.
+
+``\(\Longrightarrow\)'' If \(F\) satisfies reinforcement, then Theorem~1
+says \(F\) is a balance rule. If \(F\) is neutral, then Lemma~C.8 says
+\(F\) is scoring rule with a neutral score system.□~Theorem~2
+
+1Smith (1973) calls this condition `separability', while Young, 1974b,
+Young, 1975 and~Saari (1990) call it `consistency'. Dhillon (1998) and
+Dhillon and Mertens (1999) refer to an analogous property as `extended
+Pareto', while Gilboa and Schmeidler (2003) call it `combination'.2Smith
+(1973) and Young (1974b) consider rules which produce social preference
+relations as output, whereas Young (1975) considers rules which produce
+subsets of social alternatives as output; these two frameworks yield two
+slightly different definitions of `reinforcement' and `scoring
+rule'.3See~Young, 1974a, Young, 1975 and Nitzan and Rubinstein
+(1981).4See Young and Levenglick (1978).5See Richelson (1978),
+Morkelyunas (1982), Ching (1996), and~Yeh (2008).6Zwicker (2008) has
+shown that such scoring rules can also be interpreted as `mean proximity
+rules': each element of \(\mathcal{V}\) and \(\mathcal{X}\) is
+represented as a vector in \(\mathbb{R}^{N}\), and the social choice is
+the element of \(\mathcal{X}\) which is closest to the vector average of
+the signals of the voters.7See Fishburn (1978), Morkelyunas (1981), and
+Alós-Ferrer (2006).8Smith (1973) also considered linearly ordered
+abelian groups.9To be precise: for any
+\(\mathbf{r} = \left( r_{1},\ldots,r_{N} \right)\) and
+\(\mathbf{r}' ≔ \left( r_{1}',\ldots,r_{N}' \right)\) in
+\(\mathbb{R}^{N}\), we have \(\mathbf{r} \gg \mathbf{r}'\) if there is
+some \(M \in \lbrack 1\ldots N\rbrack\) such that \(r_{n} = r_{n}'\) for
+all \(n < M\), while \(r_{M} > r_{M}'\).10Thus, if
+\(\mathcal{R} = \mathbb{R}\), then
+\(\mathbf{r}\left( \mathbf{n} \right) = \mathbf{r}\bullet\mathbf{n}\),
+where `\(\bullet\)' is the inner product operation on
+\(\mathbb{R}^{\mathcal{V}}\).11This example also appears in Myerson
+(1995, Section 4, p. 65).12This is slightly weaker than the usual
+definition of ``reinforcement'', because we do not require the domain
+\(\mathcal{D}\) to be fully closed under addition---we only require it
+to be weakly additive. Of course, in almost all of the ``natural''
+examples, \(\mathcal{D}\)~will be closed under addition. But we allow
+the possibility that \(\mathcal{D}\) is not additively closed, in order
+to accommodate certain interesting examples, such as the ``Condorcet''
+balance rule of Example~3 below.13This is closely related to one of the
+main insights of Saari (1990), although that paper deals mainly with
+weak reinforcement. I thank the referee for pointing out this
+connection.14A similar remark applies to a balance rule
+\(\left. F_{\mathsf{B}}:\mathcal{D}\rightrightarrows\mathcal{X} \right.\).
+There may exist other profiles
+\(\mathbf{n} \in \mathbb{N}^{\langle\mathcal{V}\rangle} \smallsetminus \mathcal{D}\)
+which satisfy the nontriviality condition (1), so that
+\(F_{\mathsf{B}}\left( \mathbf{n} \right) \neq \varnothing\).
+But the fact that \(F_{\mathsf{B}}\) is well-defined outside
+\(\mathcal{D}\) does not imply that society is normatively compelled to
+apply \(F_{\mathsf{B}}\) outside \(\mathcal{D}\).15I thank the referee
+for suggesting this simplified version of the proof.16This object is
+often called the positive cone. However, we are reserving the term cone
+for a set which is divisible. Hence the ungainly term
+`conoid'.17\(m = 3\) in Case 0. If \(N = 0\), then \(m = 4\) in Case 1
+and \(m = 5\) in Case 2. If \(N \geq 1\), then \(m = 12\) in Case 1 and
+\(m = 15\) in Case 2.
+
+\end{document}
