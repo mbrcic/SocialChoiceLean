@@ -7,7 +7,7 @@ import Pivato.Theorem1.Skewification
 
 This file packages the C.1 raw codomain with an ordered-additive linear
 extension (when the raw codomain is torsion-free), and provides helper lemmas
-for deriving torsion-freeness from divisible pairwise kernels.
+to build that torsion-freeness from the saturated pairwise-kernel construction.
 -/
 
 namespace Pivato
@@ -184,17 +184,6 @@ theorem c1PairCoord_isAddTorsionFree
     (pairwiseLinearQuotient_isAddTorsionFree
       (F := F) hD hA hR p.1 p.2)
 
-/-- Backward-compatible alias: divisibility inputs are now redundant. -/
-theorem c1PairCoord_isAddTorsionFree_of_divisibleKernel
-    (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
-    (_hDiv :
-      ∀ p : X × X,
-        IsDivisibleSubgroup
-          (pairwiseKernelSubgroup (F := F) hD hA hR p.1 p.2)) :
-    ∀ p : X × X, IsAddTorsionFree (C1PairCoord (F := F) hD hA hR p) := by
-  intro p
-  simpa using c1PairCoord_isAddTorsionFree (F := F) hD hA hR p
-
 /-- Build torsion-freeness of the C.1 raw codomain from coordinatewise
 pairwise torsion-freeness. -/
 theorem c1RawCodomain_isAddTorsionFree_of_pairwise
@@ -204,19 +193,6 @@ theorem c1RawCodomain_isAddTorsionFree_of_pairwise
     IsAddTorsionFree (C1RawCodomain (F := F) hD hA hR) := by
   letI : ∀ p : X × X, IsAddTorsionFree (C1PairCoord (F := F) hD hA hR p) := hTF
   infer_instance
-
-/-- Build torsion-freeness of the C.1 raw codomain from divisibility of all
-pairwise kernel subgroups. -/
-theorem c1RawCodomain_isAddTorsionFree_of_divisibleKernels
-    (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
-    (hDiv :
-      ∀ p : X × X,
-        IsDivisibleSubgroup
-          (pairwiseKernelSubgroup (F := F) hD hA hR p.1 p.2)) :
-    IsAddTorsionFree (C1RawCodomain (F := F) hD hA hR) := by
-  exact
-    c1RawCodomain_isAddTorsionFree_of_pairwise (F := F) hD hA hR
-      (c1PairCoord_isAddTorsionFree_of_divisibleKernel (F := F) hD hA hR hDiv)
 
 /-- Unconditional torsion-freeness of the C.1 raw codomain. -/
 theorem c1RawCodomain_isAddTorsionFree
@@ -435,23 +411,6 @@ theorem lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable
   exact
     ⟨C1RawCodomain (F := F) hD hA hR, inferInstance, instLin,
       instCovLe', instCovLt', B, hSkew, hPerfect, hEqRule⟩
-
-/-- Corollary wrapper for the C.1 skew bridge:
-it suffices to assume pairwise-kernel divisibility; torsion-freeness of the
-raw C.1 codomain is then inferred via quotient torsion-freeness
-(still in the corrected domain-purity setting). -/
-theorem lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable_of_divisibleKernels
-    [DecidableEq X] [DecidableEq V]
-    (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
-    (_hDiv :
-      ∀ p : X × X,
-        IsDivisibleSubgroup
-          (pairwiseKernelSubgroup (F := F) hD hA hR p.1 p.2))
-    (hNE : NonemptyOnDomain D F) :
-    IsPerfectSkewBalanceRepresentable.{uV, uX, max uV uX} (F := F) := by
-  exact
-    lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable
-      (F := F) hD hA hR hNE
 
 end C1OrderedCodomain
 

@@ -770,27 +770,6 @@ theorem pairwiseLinearQuotient_isAddTorsionFree
   simpa [PairwiseLinearQuotient] using
     pairwiseQuotient_isAddTorsionFree (F := F) hD hA hR x y
 
-/-- Backward-compatible alias: the extra divisibility argument is now redundant. -/
-theorem pairwiseQuotient_isAddTorsionFree_of_divisibleKernel
-    {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
-    (hR : Reinforcement D F) (x y : X)
-    (_hDiv :
-      IsDivisibleSubgroup
-        (pairwiseKernelSubgroup (F := F) hD hA hR x y)) :
-    IsAddTorsionFree (PairwiseQuotient (F := F) hD hA hR x y) := by
-  simpa using pairwiseQuotient_isAddTorsionFree (F := F) hD hA hR x y
-
-/-- Backward-compatible alias: the extra divisibility argument is now redundant. -/
-theorem pairwiseLinearQuotient_isAddTorsionFree_of_divisibleKernel
-    {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
-    (hR : Reinforcement D F) (x y : X)
-    (_hDiv :
-      IsDivisibleSubgroup
-        (pairwiseKernelSubgroup (F := F) hD hA hR x y)) :
-    IsAddTorsionFree (PairwiseLinearQuotient (F := F) hD hA hR x y) := by
-  simpa [PairwiseLinearQuotient] using
-    pairwiseQuotient_isAddTorsionFree (F := F) hD hA hR x y
-
 end PairwiseCones
 
 end Pivato

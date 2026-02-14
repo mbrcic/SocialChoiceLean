@@ -1,5 +1,4 @@
 import Pivato.Theorem1.Cones
-import Pivato.Theorem1.DomainPurity
 import Pivato.Theorem1.PairwiseOrders
 import Pivato.Theorem1.Representation
 import Pivato.Theorem1.Packaging

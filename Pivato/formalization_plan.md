@@ -14,7 +14,6 @@ Current baseline (as of February 11, 2026):
   - `Pivato/Scoring.lean`
   - `Pivato/Balance.lean`
   - `Pivato/Theorem1/Cones.lean`
-  - `Pivato/Theorem1/DomainPurity.lean`
   - `Pivato/Theorem1/PairwiseOrders.lean`
   - `Pivato/Theorem1/Representation.lean`
 
@@ -47,7 +46,6 @@ Pivato/
   Balance.lean
   Theorem1/
     Cones.lean
-    DomainPurity.lean
     PairwiseOrders.lean
     OrderedAdditiveExtension.lean
     C1OrderedCodomain.lean
@@ -141,15 +139,11 @@ In this phase, we provide a reusable scaffold for pairwise quotient data and map
   - score-to-balance translation skeleton.
 
 ### Stage C (implemented now): Theorem 1 core scaffolding
-- Implement `Theorem1/Cones.lean`, `Theorem1/DomainPurity.lean`,
+- Implement `Theorem1/Cones.lean`,
   `Theorem1/PairwiseOrders.lean`, `Theorem1/Main.lean`.
 - Include:
   - winner cones `C_x`,
   - proof that `C_x` is additively closed under reinforcement,
-  - positive-scaling lemmas under reinforcement + nonemptiness
-    (`reinforcement_nsmul_mem_and_eq`, `reinforcement_eq_at_nsmul`),
-  - winner-cone divisibility from domain purity
-    (`winnerCone_divisible_of_domainDivisible`),
   - pairwise difference cone `P_{x,y}` in `ZProfile`,
   - induced relation from conoid form,
   - symmetric-kernel set placeholder,
