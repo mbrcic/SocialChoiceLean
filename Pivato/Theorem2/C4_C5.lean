@@ -144,6 +144,37 @@ def IsDivisibleHull [AddCommGroup A] (S : Set A) (K : AddSubgroup A) : Prop :=
     S ⊆ K ∧
       ∀ L : AddSubgroup A, IsDivisibleSubgroup L → S ⊆ L → K ≤ L
 
+lemma IsDivisibleHull.eq
+    [AddCommGroup A] {S : Set A} {K L : AddSubgroup A}
+    (hK : IsDivisibleHull S K) (hL : IsDivisibleHull S L) :
+    K = L := by
+  rcases hK with ⟨hKDiv, hSsubK, hKmin⟩
+  rcases hL with ⟨hLDiv, hSsubL, hLmin⟩
+  exact le_antisymm (hKmin L hLDiv hSsubL) (hLmin K hKDiv hSsubK)
+
+/-- Existence of a divisible hull for any subset of an additive commutative
+group, as the infimum of all divisible subgroups containing the subset. -/
+theorem exists_divisibleHull
+    [AddCommGroup A] (S : Set A) :
+    ∃ K : AddSubgroup A, IsDivisibleHull S K := by
+  let C : Set (AddSubgroup A) := {L | IsDivisibleSubgroup L ∧ S ⊆ (L : Set A)}
+  let K : AddSubgroup A := sInf C
+  have hKDiv : IsDivisibleSubgroup K := by
+    intro a n hn hna
+    rw [AddSubgroup.mem_sInf] at hna ⊢
+    intro L hLC
+    exact hLC.1 hn (hna L hLC)
+  have hSsubK : S ⊆ (K : Set A) := by
+    intro s hs
+    change s ∈ (sInf C : AddSubgroup A)
+    rw [AddSubgroup.mem_sInf]
+    intro L hLC
+    exact hLC.2 hs
+  have hKmin : ∀ L : AddSubgroup A, IsDivisibleSubgroup L → S ⊆ (L : Set A) → K ≤ L := by
+    intro L hLDiv hSsubL
+    exact sInf_le ⟨hLDiv, hSsubL⟩
+  exact ⟨K, hKDiv, hSsubK, hKmin⟩
+
 /-- Lemma C.5 (hull form):
 if a homomorphism into a torsion-free codomain vanishes on `S`, then it
 vanishes on the divisible hull of `S`. -/
