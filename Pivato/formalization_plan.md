@@ -103,7 +103,13 @@ Exit criterion: satisfied.
 
 ### Stage F (Theorem 2): main technical milestone
 
-Status: not started.
+Status: in progress.
+
+Current scaffolding (tracked by `sorry` TODOs):
+- `Theorem2/C4_C5.lean`
+- `Theorem2/C6_C7.lean`
+- `Theorem2/C8Orbit.lean`
+- `Theorem2/Main.lean`
 
 Tasks:
 1. Formalize the C.4 equivalence layer (balance/scoring transfer piece used by Theorem 2).
@@ -133,9 +139,9 @@ Completed:
 2. M2: scoring/balance semantics
 3. M3: Theorem 1 cone/quotient scaffolding
 4. M4: Theorem 1 + Lemma C.1 pipeline
+5. M5: neutrality layer stabilization for Theorem 2 inputs
 
 Upcoming:
-5. M5: neutrality layer stabilization for Theorem 2 inputs
 6. M6: full Theorem 2 formalization
 7. M7: bridge to `SocialChoice`
 

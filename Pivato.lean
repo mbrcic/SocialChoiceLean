@@ -7,3 +7,4 @@ import Pivato.HomogeneousSzpilrajn
 import Pivato.AppendixB
 import Pivato.Theorem1.Main
 import Pivato.Neutrality.Main
+import Pivato.Theorem2.Main
