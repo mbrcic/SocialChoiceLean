@@ -174,19 +174,26 @@ lemma c1RawRel_nonpos_of_winner_loser_swapped
       (pairwiseQuotientRel_isPartialOrderRel (F := F) hD hA hR p.1 p.2).1.1 0
     simpa [c1_balanceAt_apply (F := F) hD hA hR x y d p, hp] using hrefl
 
-/-- Torsion-freeness of each pairwise linear quotient from divisibility of the
-corresponding pairwise kernel subgroup. -/
+/-- Torsion-freeness of each pairwise linear quotient. -/
+theorem c1PairCoord_isAddTorsionFree
+    (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
+    :
+    ∀ p : X × X, IsAddTorsionFree (C1PairCoord (F := F) hD hA hR p) := by
+  intro p
+  simpa [C1PairCoord, PairwiseLinearQuotient] using
+    (pairwiseLinearQuotient_isAddTorsionFree
+      (F := F) hD hA hR p.1 p.2)
+
+/-- Backward-compatible alias: divisibility inputs are now redundant. -/
 theorem c1PairCoord_isAddTorsionFree_of_divisibleKernel
     (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
-    (hDiv :
+    (_hDiv :
       ∀ p : X × X,
         IsDivisibleSubgroup
           (pairwiseKernelSubgroup (F := F) hD hA hR p.1 p.2)) :
     ∀ p : X × X, IsAddTorsionFree (C1PairCoord (F := F) hD hA hR p) := by
   intro p
-  simpa [C1PairCoord, PairwiseLinearQuotient] using
-    (pairwiseLinearQuotient_isAddTorsionFree_of_divisibleKernel
-      (F := F) hD hA hR p.1 p.2 (hDiv p))
+  simpa using c1PairCoord_isAddTorsionFree (F := F) hD hA hR p
 
 /-- Build torsion-freeness of the C.1 raw codomain from coordinatewise
 pairwise torsion-freeness. -/
@@ -210,6 +217,14 @@ theorem c1RawCodomain_isAddTorsionFree_of_divisibleKernels
   exact
     c1RawCodomain_isAddTorsionFree_of_pairwise (F := F) hD hA hR
       (c1PairCoord_isAddTorsionFree_of_divisibleKernel (F := F) hD hA hR hDiv)
+
+/-- Unconditional torsion-freeness of the C.1 raw codomain. -/
+theorem c1RawCodomain_isAddTorsionFree
+    (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F) :
+    IsAddTorsionFree (C1RawCodomain (F := F) hD hA hR) := by
+  exact
+    c1RawCodomain_isAddTorsionFree_of_pairwise (F := F) hD hA hR
+      (c1PairCoord_isAddTorsionFree (F := F) hD hA hR)
 
 /-- Ordered-additive package for the C.1 raw codomain relation. -/
 theorem c1RawCodomain_orderedAdditive
@@ -253,11 +268,11 @@ codomain (under torsion-freeness of that codomain), in the corrected
 domain-purity setting. -/
 theorem lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable
     [DecidableEq X] [DecidableEq V]
-    (_hPure : DomainPure D)
     (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
-    [IsAddTorsionFree (C1RawCodomain (F := F) hD hA hR)]
     (hNE : NonemptyOnDomain D F) :
     IsPerfectSkewBalanceRepresentable.{uV, uX, max uV uX} (F := F) := by
+  letI : IsAddTorsionFree (C1RawCodomain (F := F) hD hA hR) :=
+    c1RawCodomain_isAddTorsionFree (F := F) hD hA hR
   rcases c1RawCodomain_orderedAdditive (F := F) hD hA hR with
       ⟨instLin, _instOrd, instCovLe, instCovLt, hExt⟩
   letI : LE (C1RawCodomain (F := F) hD hA hR) := instLin.toLE
@@ -427,19 +442,16 @@ raw C.1 codomain is then inferred via quotient torsion-freeness
 (still in the corrected domain-purity setting). -/
 theorem lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable_of_divisibleKernels
     [DecidableEq X] [DecidableEq V]
-    (hPure : DomainPure D)
     (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
-    (hDiv :
+    (_hDiv :
       ∀ p : X × X,
         IsDivisibleSubgroup
           (pairwiseKernelSubgroup (F := F) hD hA hR p.1 p.2))
     (hNE : NonemptyOnDomain D F) :
     IsPerfectSkewBalanceRepresentable.{uV, uX, max uV uX} (F := F) := by
-  letI : IsAddTorsionFree (C1RawCodomain (F := F) hD hA hR) :=
-    c1RawCodomain_isAddTorsionFree_of_divisibleKernels (F := F) hD hA hR hDiv
   exact
     lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable
-      (F := F) hPure hD hA hR hNE
+      (F := F) hD hA hR hNE
 
 end C1OrderedCodomain
 

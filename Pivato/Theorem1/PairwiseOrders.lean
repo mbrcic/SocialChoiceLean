@@ -1,5 +1,4 @@
 import Pivato.Theorem1.Cones
-import Pivato.Theorem1.DomainPurity
 import Pivato.AppendixB
 import Mathlib.GroupTheory.QuotientGroup.Defs
 import Mathlib.Order.Extension.Linear
@@ -25,12 +24,17 @@ section PairwiseCones
 
 variable {V X : Type*} {D : Domain V}
 
-/-- Pairwise difference cone candidate: `P_{x,y} = C_x - C_y`. -/
-def pairwiseDifferenceCone (F : RuleOn D X) (x y : X) : Set (ZProfile V) :=
+/-- Raw pairwise difference set: `C_x - C_y`. -/
+def pairwiseDifferenceConeRaw (F : RuleOn D X) (x y : X) : Set (ZProfile V) :=
   {z | ∃ cx cy : NProfile V,
       cx ∈ winnerCone F x ∧
       cy ∈ winnerCone F y ∧
       z = toZProfile cx - toZProfile cy}
+
+/-- Saturated (pure/divisible closure) pairwise cone used in the corrected
+Appendix C construction. -/
+def pairwiseDifferenceCone (F : RuleOn D X) (x y : X) : Set (ZProfile V) :=
+  {z | ∃ n : ℕ, n ≠ 0 ∧ n • z ∈ pairwiseDifferenceConeRaw F x y}
 
 /-- Homogeneous relation induced by `P_{x,y}` in conoid form. -/
 def pairwiseRel (F : RuleOn D X) (x y : X) : ZProfile V → ZProfile V → Prop :=
@@ -44,9 +48,31 @@ lemma pairwiseRel_homogeneous (F : RuleOn D X) (x y : X) :
 def pairwiseKernelSet (F : RuleOn D X) (x y : X) : Set (ZProfile V) :=
   {z | symmPart (pairwiseRel F x y) z 0}
 
-lemma pairwiseDifferenceCone_add_closed
+lemma nsmul_mem_of_additivelyClosed {G : Type*} [AddCommGroup G] {S : Set G}
+    (hS : AdditivelyClosed S) {a : G} (ha : a ∈ S) :
+    ∀ {n : ℕ}, n ≠ 0 → n • a ∈ S := by
+  intro n hn
+  cases n with
+  | zero =>
+      cases hn rfl
+  | succ k =>
+      induction k with
+      | zero =>
+          simpa using ha
+      | succ k ih =>
+          have hk : (Nat.succ k) ≠ 0 := Nat.succ_ne_zero _
+          have hPrev : (Nat.succ k) • a ∈ S := ih hk
+          simpa [succ_nsmul] using hS hPrev ha
+
+lemma pairwiseDifferenceConeRaw_subset
+    {F : RuleOn D X} {x y : X} {z : ZProfile V}
+    (hz : z ∈ pairwiseDifferenceConeRaw F x y) :
+    z ∈ pairwiseDifferenceCone F x y := by
+  exact ⟨1, by simp, by simpa using hz⟩
+
+lemma pairwiseDifferenceConeRaw_add_closed
     {F : RuleOn D X} (hR : Reinforcement D F) (x y : X) :
-    AdditivelyClosed (pairwiseDifferenceCone F x y) := by
+    AdditivelyClosed (pairwiseDifferenceConeRaw F x y) := by
   intro a b ha hb
   rcases ha with ⟨cx₁, cy₁, hcx₁, hcy₁, rfl⟩
   rcases hb with ⟨cx₂, cy₂, hcx₂, hcy₂, rfl⟩
@@ -55,13 +81,53 @@ lemma pairwiseDifferenceCone_add_closed
   · exact (winnerCone_add_closed_of_reinforcement (F := F) hR y) hcy₁ hcy₂
   · simp [toZProfile_add, sub_eq_add_neg, add_assoc, add_left_comm, add_comm]
 
-lemma pairwiseDifferenceCone_zero_mem
+lemma pairwiseDifferenceConeRaw_zero_mem
     {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F) (x y : X) :
-    (0 : ZProfile V) ∈ pairwiseDifferenceCone F x y := by
+    (0 : ZProfile V) ∈ pairwiseDifferenceConeRaw F x y := by
   refine ⟨0, 0, ?_, ?_, ?_⟩
   · exact winnerCone_zero_of_generalAbstention (F := F) hD hA x
   · exact winnerCone_zero_of_generalAbstention (F := F) hD hA y
   · simp [toZProfile_zero]
+
+lemma pairwiseDifferenceCone_divisible
+    {F : RuleOn D X} (x y : X) :
+    ∀ {z : ZProfile V} {n : ℕ}, n ≠ 0 →
+      n • z ∈ pairwiseDifferenceCone F x y → z ∈ pairwiseDifferenceCone F x y := by
+  intro z n hn hnz
+  rcases hnz with ⟨m, hm0, hm⟩
+  refine ⟨m * n, Nat.mul_ne_zero hm0 hn, ?_⟩
+  simpa [mul_nsmul, mul_comm, mul_left_comm, mul_assoc] using hm
+
+lemma pairwiseDifferenceCone_add_closed
+    {F : RuleOn D X} (hR : Reinforcement D F) (x y : X) :
+    AdditivelyClosed (pairwiseDifferenceCone F x y) := by
+  intro a b ha hb
+  rcases ha with ⟨n, hn, hna⟩
+  rcases hb with ⟨m, hm, hmb⟩
+  have hraw :=
+    pairwiseDifferenceConeRaw_add_closed (F := F) hR x y
+  have hna' : (n * m) • a ∈ pairwiseDifferenceConeRaw F x y := by
+    have hm' : m ≠ 0 := hm
+    have hmna : m • (n • a) ∈ pairwiseDifferenceConeRaw F x y :=
+      nsmul_mem_of_additivelyClosed hraw hna hm'
+    rw [mul_nsmul]
+    exact hmna
+  have hmb' : (n * m) • b ∈ pairwiseDifferenceConeRaw F x y := by
+    have hn' : n ≠ 0 := hn
+    have hnm : n • (m • b) ∈ pairwiseDifferenceConeRaw F x y :=
+      nsmul_mem_of_additivelyClosed hraw hmb hn'
+    rw [Nat.mul_comm n m, mul_nsmul]
+    exact hnm
+  refine ⟨n * m, Nat.mul_ne_zero hn hm, ?_⟩
+  have hsum : (n * m) • a + (n * m) • b ∈ pairwiseDifferenceConeRaw F x y :=
+    hraw hna' hmb'
+  simpa [nsmul_add] using hsum
+
+lemma pairwiseDifferenceCone_zero_mem
+    {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F) (x y : X) :
+    (0 : ZProfile V) ∈ pairwiseDifferenceCone F x y := by
+  exact ⟨1, by simp, by simpa using
+    (pairwiseDifferenceConeRaw_zero_mem (F := F) hD hA x y)⟩
 
 lemma pairwiseDifferenceCone_isPreorderConoid
     {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
@@ -134,9 +200,9 @@ lemma mem_pairwiseKernelSet_iff
   simpa [pairwiseKernelSet] using
     (mem_pairwiseKernelSubgroup_iff (F := F) hD hA hR (x := x) (y := y) (z := z)).symm
 
-lemma mem_pairwiseDifferenceCone_swap_iff
+lemma mem_pairwiseDifferenceConeRaw_swap_iff
     {F : RuleOn D X} {x y : X} {z : ZProfile V} :
-    z ∈ pairwiseDifferenceCone F y x ↔ -z ∈ pairwiseDifferenceCone F x y := by
+    z ∈ pairwiseDifferenceConeRaw F y x ↔ -z ∈ pairwiseDifferenceConeRaw F x y := by
   constructor
   · intro hz
     rcases hz with ⟨cy, cx, hcy, hcx, hzEq⟩
@@ -152,53 +218,108 @@ lemma mem_pairwiseDifferenceCone_swap_iff
       simpa using congrArg Neg.neg hzEq
     simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hneg
 
+lemma mem_pairwiseDifferenceCone_swap_iff
+    {F : RuleOn D X} {x y : X} {z : ZProfile V} :
+    z ∈ pairwiseDifferenceCone F y x ↔ -z ∈ pairwiseDifferenceCone F x y := by
+  constructor
+  · intro hz
+    rcases hz with ⟨n, hn, hnz⟩
+    refine ⟨n, hn, ?_⟩
+    have hswap :
+        -(n • z) ∈ pairwiseDifferenceConeRaw F x y :=
+      (mem_pairwiseDifferenceConeRaw_swap_iff (F := F) (x := x) (y := y)
+        (z := n • z)).1 hnz
+    simpa [nsmul_neg] using hswap
+  · intro hz
+    rcases hz with ⟨n, hn, hnz⟩
+    refine ⟨n, hn, ?_⟩
+    have hswap :
+        -(n • (-z)) ∈ pairwiseDifferenceConeRaw F y x :=
+      (mem_pairwiseDifferenceConeRaw_swap_iff (F := F) (x := y) (y := x)
+        (z := n • (-z))).1 hnz
+    simpa [nsmul_neg, neg_neg] using hswap
+
 lemma toZProfile_mem_pairwiseDifferenceCone_of_winner
     {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
     {x y : X} {d : NProfile V}
     (hxd : d ∈ winnerCone F x) :
     toZProfile d ∈ pairwiseDifferenceCone F x y := by
+  refine pairwiseDifferenceConeRaw_subset ?_
   refine ⟨d, 0, hxd, winnerCone_zero_of_generalAbstention (F := F) hD hA y, ?_⟩
   simp [toZProfile_zero, sub_eq_add_neg]
 
-lemma toZProfile_mem_pairwiseDifferenceCone_of_nsmul_winner
-    {F : RuleOn D X} (hPure : DomainPure D)
-    (hD : IsDomain D) (hA : GeneralAbstention D F)
-    (hR : Reinforcement D F) (hNE : NonemptyOnDomain D F)
-    {x y : X} {d : NProfile V} {n : ℕ} (hn : n ≠ 0)
-    (hxn : n • d ∈ winnerCone F x) :
-    toZProfile d ∈ pairwiseDifferenceCone F x y := by
-  have hxd : d ∈ winnerCone F x :=
-    winnerCone_divisible_of_domainDivisible (F := F) hPure hR hNE x hn hxn
-  exact toZProfile_mem_pairwiseDifferenceCone_of_winner (F := F) hD hA hxd
+lemma toZProfile_nsmul (n : ℕ) (d : NProfile V) :
+    toZProfile (n • d) = n • toZProfile d := by
+  ext v
+  simp [toZProfile]
 
-lemma toZProfile_mem_pairwiseKernelSubgroup_of_nsmul_winner_winner
-    {F : RuleOn D X} (hPure : DomainPure D)
-    (hD : IsDomain D) (hA : GeneralAbstention D F)
-    (hR : Reinforcement D F) (hNE : NonemptyOnDomain D F)
-    {x y : X} {d : NProfile V} {n : ℕ} (hn : n ≠ 0)
-    (hxn : n • d ∈ winnerCone F x)
-    (hyn : n • d ∈ winnerCone F y) :
-    toZProfile d ∈ pairwiseKernelSubgroup (F := F) hD hA hR x y := by
-  have hxd : d ∈ winnerCone F x :=
-    winnerCone_divisible_of_domainDivisible (F := F) hPure hR hNE x hn hxn
-  have hyd : d ∈ winnerCone F y :=
-    winnerCone_divisible_of_domainDivisible (F := F) hPure hR hNE y hn hyn
-  have hxyMem : toZProfile d ∈ pairwiseDifferenceCone F x y :=
-    toZProfile_mem_pairwiseDifferenceCone_of_winner (F := F) hD hA hxd
-  have hyxMem : toZProfile d ∈ pairwiseDifferenceCone F y x :=
-    toZProfile_mem_pairwiseDifferenceCone_of_winner (F := F) hD hA hyd
-  have hnegMem : -toZProfile d ∈ pairwiseDifferenceCone F x y :=
-    (mem_pairwiseDifferenceCone_swap_iff (F := F) (x := x) (y := y)
-      (z := toZProfile d)).1 hyxMem
-  exact ⟨hxyMem, hnegMem⟩
+lemma winner_loser_nsmul_of_reinforcement
+    {F : RuleOn D X} (hR : Reinforcement D F)
+    {x y : X} {d : NProfile V} {hd : d ∈ D}
+    (hxd : x ∈ F ⟨d, hd⟩)
+    (hynotd : y ∉ F ⟨d, hd⟩) :
+    ∀ {n : ℕ}, n ≠ 0 →
+      ∃ hnd : n • d ∈ D,
+        x ∈ F ⟨n • d, hnd⟩ ∧ y ∉ F ⟨n • d, hnd⟩ := by
+  let haux :
+      ∀ k : ℕ,
+        ∃ hk : (k + 1) • d ∈ D,
+          x ∈ F ⟨(k + 1) • d, hk⟩ ∧ y ∉ F ⟨(k + 1) • d, hk⟩ := by
+    intro k
+    induction k with
+    | zero =>
+        have h1D : (0 + 1) • d ∈ D := by
+          simpa using hd
+        have hsub : (⟨(0 + 1) • d, h1D⟩ : {d : NProfile V // d ∈ D}) = ⟨d, hd⟩ := by
+          apply Subtype.ext
+          simp
+        refine ⟨h1D, ?_, ?_⟩
+        · simpa [hsub] using hxd
+        · intro hy
+          exact hynotd (by simpa [hsub] using hy)
+    | succ k ih =>
+        rcases ih with ⟨hkD, hxk, hynotk⟩
+        have hinter :
+            (F ⟨d, hd⟩ ∩ F ⟨(k + 1) • d, hkD⟩).Nonempty := ⟨x, hxd, hxk⟩
+        have hsumD : d + (k + 1) • d ∈ D := hR.1 hd hkD hinter
+        have hEq :
+            F ⟨d + (k + 1) • d, hsumD⟩ = F ⟨d, hd⟩ ∩ F ⟨(k + 1) • d, hkD⟩ :=
+          hR.2 hd hkD hsumD hinter
+        have hxsum : x ∈ F ⟨d + (k + 1) • d, hsumD⟩ := by
+          simpa [hEq] using (show x ∈ F ⟨d, hd⟩ ∩ F ⟨(k + 1) • d, hkD⟩ from ⟨hxd, hxk⟩)
+        have hynotsum : y ∉ F ⟨d + (k + 1) • d, hsumD⟩ := by
+          intro hy
+          have hyInt : y ∈ F ⟨d, hd⟩ ∩ F ⟨(k + 1) • d, hkD⟩ := by
+            simpa [hEq] using hy
+          exact hynotd hyInt.1
+        have hsmul : d + (k + 1) • d = (k + 2) • d := by
+          simpa [Nat.succ_eq_add_one, add_assoc, add_left_comm, add_comm] using
+            (succ_nsmul' d (k + 1)).symm
+        have hnextD : (k + 2) • d ∈ D := by
+          simpa [hsmul] using hsumD
+        have hsub :
+            (⟨(k + 2) • d, hnextD⟩ : {d : NProfile V // d ∈ D}) =
+              ⟨d + (k + 1) • d, hsumD⟩ := by
+          apply Subtype.ext
+          simp [hsmul]
+        refine ⟨hnextD, ?_, ?_⟩
+        · simpa [hsub] using hxsum
+        · intro hy
+          exact hynotsum (by simpa [hsub] using hy)
+  intro n hn
+  cases n with
+  | zero =>
+      cases hn rfl
+  | succ k =>
+      simpa [Nat.succ_eq_add_one] using haux k
 
-lemma neg_toZProfile_not_mem_pairwiseDifferenceCone_of_winner_loser
+lemma neg_toZProfile_not_mem_pairwiseDifferenceConeRaw_of_winner_loser
     {F : RuleOn D X}
     (hR : Reinforcement D F)
     {x y : X} {d : NProfile V} {hd : d ∈ D}
     (hxd : x ∈ F ⟨d, hd⟩)
     (hynotd : y ∉ F ⟨d, hd⟩) :
-    -toZProfile d ∉ pairwiseDifferenceCone F x y := by
+    -toZProfile d ∉ pairwiseDifferenceConeRaw F x y := by
   intro hnegMem
   rcases hnegMem with ⟨cx, cy, hcx, hcy, hEq⟩
   rcases hcx with ⟨hcxD, hxcx⟩
@@ -233,6 +354,24 @@ lemma neg_toZProfile_not_mem_pairwiseDifferenceCone_of_winner_loser
     exact hynotCy' ((wins_proof_irrel (F := F) (x := y) (d := cy)
       (hd₁ := hcyEq ▸ hsum) (hd₂ := hcyD)).2 hy)
   exact hynotCy hycy
+
+lemma neg_toZProfile_not_mem_pairwiseDifferenceCone_of_winner_loser
+    {F : RuleOn D X}
+    (hR : Reinforcement D F)
+    {x y : X} {d : NProfile V} {hd : d ∈ D}
+    (hxd : x ∈ F ⟨d, hd⟩)
+    (hynotd : y ∉ F ⟨d, hd⟩) :
+    -toZProfile d ∉ pairwiseDifferenceCone F x y := by
+  intro hnegMem
+  rcases hnegMem with ⟨n, hn, hnneg⟩
+  rcases winner_loser_nsmul_of_reinforcement (F := F) hR
+      (d := d) (hd := hd) hxd hynotd hn with ⟨hnd, hxnd, hynotnd⟩
+  have hnegRaw :
+      -toZProfile (n • d) ∈ pairwiseDifferenceConeRaw F x y := by
+    simpa [toZProfile_nsmul, nsmul_neg] using hnneg
+  exact
+    (neg_toZProfile_not_mem_pairwiseDifferenceConeRaw_of_winner_loser
+      (F := F) hR (d := n • d) (hd := hnd) hxnd hynotnd) hnegRaw
 
 lemma pairwiseRel_zero_toZProfile_of_winner
     {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
@@ -595,31 +734,62 @@ lemma pairwiseLinearMap_pos_of_winner_loser
   intro hEq
   exact hneq hEq.symm
 
-/-- If the pairwise kernel subgroup is divisible (in the Appendix-B sense),
-the corresponding pairwise quotient is torsion-free. -/
-theorem pairwiseQuotient_isAddTorsionFree_of_divisibleKernel
+/-- The saturated pairwise-kernel subgroup is divisible by construction. -/
+theorem pairwiseKernelSubgroup_isDivisibleSubgroup
     {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
-    (hR : Reinforcement D F) (x y : X)
-    (hDiv :
-      IsDivisibleSubgroup
-        (pairwiseKernelSubgroup (F := F) hD hA hR x y)) :
+    (hR : Reinforcement D F) (x y : X) :
+    IsDivisibleSubgroup
+      (pairwiseKernelSubgroup (F := F) hD hA hR x y) := by
+  intro z n hn hnz
+  refine ⟨?_, ?_⟩
+  · exact pairwiseDifferenceCone_divisible (F := F) x y hn hnz.1
+  · have hneg :
+      n • (-z) ∈ pairwiseDifferenceCone F x y := by
+      simpa [nsmul_neg] using hnz.2
+    exact pairwiseDifferenceCone_divisible (F := F) x y hn hneg
+
+/-- The pairwise quotient is torsion-free (from saturated kernel divisibility). -/
+theorem pairwiseQuotient_isAddTorsionFree
+    {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
+    (hR : Reinforcement D F) (x y : X) :
     IsAddTorsionFree (PairwiseQuotient (F := F) hD hA hR x y) := by
+  have hDiv :
+      IsDivisibleSubgroup
+        (pairwiseKernelSubgroup (F := F) hD hA hR x y) :=
+    pairwiseKernelSubgroup_isDivisibleSubgroup (F := F) hD hA hR x y
   simpa [PairwiseQuotient] using
     quotient_isAddTorsionFree_of_divisibleSubgroup
       (G := ZProfile V)
       (B := pairwiseKernelSubgroup (F := F) hD hA hR x y) hDiv
 
 /-- Alias for the linearized pairwise quotient codomain. -/
+theorem pairwiseLinearQuotient_isAddTorsionFree
+    {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
+    (hR : Reinforcement D F) (x y : X) :
+    IsAddTorsionFree (PairwiseLinearQuotient (F := F) hD hA hR x y) := by
+  simpa [PairwiseLinearQuotient] using
+    pairwiseQuotient_isAddTorsionFree (F := F) hD hA hR x y
+
+/-- Backward-compatible alias: the extra divisibility argument is now redundant. -/
+theorem pairwiseQuotient_isAddTorsionFree_of_divisibleKernel
+    {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
+    (hR : Reinforcement D F) (x y : X)
+    (_hDiv :
+      IsDivisibleSubgroup
+        (pairwiseKernelSubgroup (F := F) hD hA hR x y)) :
+    IsAddTorsionFree (PairwiseQuotient (F := F) hD hA hR x y) := by
+  simpa using pairwiseQuotient_isAddTorsionFree (F := F) hD hA hR x y
+
+/-- Backward-compatible alias: the extra divisibility argument is now redundant. -/
 theorem pairwiseLinearQuotient_isAddTorsionFree_of_divisibleKernel
     {F : RuleOn D X} (hD : IsDomain D) (hA : GeneralAbstention D F)
     (hR : Reinforcement D F) (x y : X)
-    (hDiv :
+    (_hDiv :
       IsDivisibleSubgroup
         (pairwiseKernelSubgroup (F := F) hD hA hR x y)) :
     IsAddTorsionFree (PairwiseLinearQuotient (F := F) hD hA hR x y) := by
   simpa [PairwiseLinearQuotient] using
-    pairwiseQuotient_isAddTorsionFree_of_divisibleKernel
-      (F := F) hD hA hR x y hDiv
+    pairwiseQuotient_isAddTorsionFree (F := F) hD hA hR x y
 
 end PairwiseCones
 

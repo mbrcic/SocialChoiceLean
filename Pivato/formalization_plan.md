@@ -176,14 +176,11 @@ In this phase, we provide a reusable scaffold for pairwise quotient data and map
     `theorem1_corrected`,
     `theorem1_corrected_converse`,
     `theorem1_corrected_converse_paper`.
-  - corrected paper-faithful assumption threading:
-    these wrappers now carry explicit domain purity (`DomainPure D`) in the
-    theorem statements.
 - Implemented in `Theorem1/LemmaC1.lean`:
   - full Lemma C.1 construction over an explicit codomain witness
     (`C1Codomain`) via pairwise quotient/linear-extension assembly;
   - theorem `lemmaC1`:
-    `DomainPure D -> Reinforcement D F -> NonemptyOnDomain D F ->`
+    `Reinforcement D F -> NonemptyOnDomain D F ->`
     `∃ B : BalanceSystem (C1Codomain ...) X V,`
     `PerfectOn B ∧ F = balanceRule B`.
   - paper-facing wrapper theorem
@@ -191,8 +188,6 @@ In this phase, we provide a reusable scaffold for pairwise quotient data and map
   - bridge packaging theorem `lemmaC1_representationBundle`:
     packages the same result as an explicit existential bundle over
     `(R, AddCommGroup R, LinearOrder R, B)`.
-  - corrected paper-faithful assumption threading:
-    Lemma C.1 wrappers now carry explicit domain purity (`DomainPure D`).
 - Implemented in `Theorem1/OrderedAdditiveExtension.lean`:
   - `orderedAdditiveLinearOrder_of_cone`;
   - `homogeneous_szpilrajn_orderedAdditive` (homogeneous extension packaged
@@ -201,14 +196,17 @@ In this phase, we provide a reusable scaffold for pairwise quotient data and map
   - C.1 raw-codomain ordered machinery:
     `c1RawRel`, `c1RawRel_homogeneous`,
     `c1RawCodomain_orderedAdditive`;
-  - torsion/divisibility helpers:
-    `c1PairCoord_isAddTorsionFree_of_divisibleKernel`,
-    `c1RawCodomain_isAddTorsionFree_of_pairwise`,
-    `c1RawCodomain_isAddTorsionFree_of_divisibleKernels`;
+  - saturation-based torsion/divisibility layer:
+    pairwise cones are formalized via pure closure in
+    `Theorem1/PairwiseOrders.lean`, yielding unconditional
+    `pairwiseLinearQuotient_isAddTorsionFree`, then
+    `c1PairCoord_isAddTorsionFree` and
+    `c1RawCodomain_isAddTorsionFree`;
   - ordered-codomain bridge theorem:
     `lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable`
-    (caller-facing skew bridge without explicit covariant-argument inputs;
-    assumes `IsAddTorsionFree` on the C.1 raw codomain).
+    (caller-facing skew bridge without explicit covariant-argument inputs,
+    and now without extra divisibility/torsion assumptions in the theorem
+    statement).
 
 ### Stage E (in progress): neutrality machinery
 - Implemented:
@@ -264,7 +262,7 @@ In this phase, we provide a reusable scaffold for pairwise quotient data and map
 - Theorem 1, forward:
   proved as `isBalanceRepresentable_of_reinforcement`
   (`Theorem1/Packaging.lean`), i.e.
-  `DomainPure D -> Reinforcement D F -> IsBalanceRepresentable F`.
+  `Reinforcement D F -> IsBalanceRepresentable F`.
 - Theorem 1, converse:
   proved as `reinforcement_of_perfectBalanceRepresentation`
   (`Theorem1/Packaging.lean`) under explicit assumptions
@@ -277,7 +275,7 @@ In this phase, we provide a reusable scaffold for pairwise quotient data and map
     `lemmaC1_forward`,
     `lemmaC1_claimC11a_pairwiseRel`, `lemmaC1_claimC11b_pairwiseRel`);
   - full constructive theorem `lemmaC1`:
-    from domain purity plus reinforcement and explicit nonemptiness,
+    from reinforcement and explicit nonemptiness,
     constructs an explicit linearly ordered-codomain balance system with
     perfectness and exact rule equality.
   - paper-facing representability wrapper
@@ -286,8 +284,8 @@ In this phase, we provide a reusable scaffold for pairwise quotient data and map
     re-expresses this witness in explicit existential-bundle form.
   - ordered-codomain Stage-D skew bridge theorem (in
     `Theorem1/C1OrderedCodomain.lean`):
-    `lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable`,
-    assuming `IsAddTorsionFree (C1RawCodomain ...)`.
+    `lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable`
+    with no extra torsion-freeness assumption in its statement.
 - Lemma C.2:
   fully formalized as `lemmaC2a_evalNat_permuteWeight` and
   `lemmaC2b_permuteWeight_comp` (`Neutrality/LemmaC2.lean`).
@@ -308,15 +306,13 @@ In this phase, we provide a reusable scaffold for pairwise quotient data and map
   `IsPerfectBalanceRuleRepresentable`
   (`proposition2_of_perfectSkewRepresentation` remains as a compatibility alias).
   Current bridge status:
-  - ordered-codomain bridge is proven under
-    `IsAddTorsionFree (C1RawCodomain ...)`;
-  - not yet proven unconditionally: deriving the required C.1 raw-codomain
-    torsion-freeness (equivalently, sufficient pairwise-kernel divisibility
-    assumptions) from the corrected base C.1 hypotheses alone.
-  - new intermediate purity-to-pairwise lemmas (implemented in
-    `Theorem1/PairwiseOrders.lean`) currently available for this bridge:
-    `toZProfile_mem_pairwiseDifferenceCone_of_nsmul_winner` and
-    `toZProfile_mem_pairwiseKernelSubgroup_of_nsmul_winner_winner`.
+  - resolved by saturation: pairwise kernels are replaced internally by their
+    pure/divisible closure, giving unconditional pairwise quotient
+    torsion-freeness and hence unconditional C.1 raw-codomain
+    torsion-freeness for the ordered-codomain bridge.
+  - note on correspondence: this is a faithful strengthening of the internal
+    construction (same external theorem statements), with the quotient step
+    routed through the saturated kernel.
 
 ### Stage F: Theorem 2
 - C.4 equivalence (balance cocycle <-> scoring).

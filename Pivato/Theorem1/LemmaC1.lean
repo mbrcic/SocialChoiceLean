@@ -23,21 +23,19 @@ section LemmaC1
 variable {V : Type uV} {X : Type uX} {D : Domain V} (F : RuleOn D X)
 
 /-- Forward fragment of Lemma C.1:
-`domain purity + reinforcement -> isBalanceRepresentable`. -/
+`reinforcement -> isBalanceRepresentable`. -/
 theorem lemmaC1_reinforcement_to_isBalanceRepresentable
     [DecidableEq X] [DecidableEq V]
-    (hPure : DomainPure D)
     (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F) :
     IsBalanceRepresentable (F := F) :=
-  isBalanceRepresentable_of_reinforcement (F := F) hPure hD hA hR
+  isBalanceRepresentable_of_reinforcement (F := F) hD hA hR
 
 /-- Descriptive alias for the forward representability statement. -/
 theorem lemmaC1_forward
     [DecidableEq X] [DecidableEq V]
-    (hPure : DomainPure D)
     (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F) :
     IsBalanceRepresentable (F := F) :=
-  lemmaC1_reinforcement_to_isBalanceRepresentable (F := F) hPure hD hA hR
+  lemmaC1_reinforcement_to_isBalanceRepresentable (F := F) hD hA hR
 
 /-- Paper Claim C.1.1(a), in pairwise-relation form:
 if `x` wins at `d`, then `0 ≼ b^{x,y}(d)`. -/
@@ -347,7 +345,6 @@ lemma c1_balanceAt_eq_zero_of_winner_winner [DecidableEq X] [DecidableEq V]
 /-- Full Lemma C.1 constructive theorem. -/
 theorem lemmaC1
     [DecidableEq X] [DecidableEq V]
-    (_hPure : DomainPure D)
     (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
     (hNE : NonemptyOnDomain D F) :
     ∃ B : BalanceSystem (C1Codomain (F := F) hD hA hR) X V,
@@ -428,7 +425,6 @@ theorem lemmaC1
 an explicit existential representation bundle suitable for downstream APIs. -/
 theorem lemmaC1_representationBundle
     [DecidableEq X] [DecidableEq V]
-    (hPure : DomainPure D)
     (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
     (hNE : NonemptyOnDomain D F) :
     ∃ (R : Type (max uV uX)),
@@ -439,20 +435,18 @@ theorem lemmaC1_representationBundle
         letI : LinearOrder R := instLin
         PerfectOn (D := D) (B := B) ∧
           F = balanceRule (D := D) B := by
-  rcases lemmaC1 (F := F) hPure hD hA hR hNE with ⟨B, hPerfect, hEqRule⟩
+  rcases lemmaC1 (F := F) hD hA hR hNE with ⟨B, hPerfect, hEqRule⟩
   refine ⟨C1Codomain (F := F) hD hA hR, inferInstance, inferInstance, B, ?_⟩
   exact ⟨hPerfect, hEqRule⟩
 
 /-- Paper-facing Lemma C.1 wrapper:
-domain purity plus reinforcement/nonemptiness yields a perfect balance
-representation. -/
+reinforcement plus nonemptiness yields a perfect balance representation. -/
 theorem lemmaC1_reinforcement_to_isPerfectBalanceRepresentable
     [DecidableEq X] [DecidableEq V]
-    (hPure : DomainPure D)
     (hD : IsDomain D) (hA : GeneralAbstention D F) (hR : Reinforcement D F)
     (hNE : NonemptyOnDomain D F) :
     IsPerfectBalanceRepresentable (F := F) := by
-  rcases lemmaC1_representationBundle (F := F) hPure hD hA hR hNE with
+  rcases lemmaC1_representationBundle (F := F) hD hA hR hNE with
       ⟨R, instAdd, instLin, B, hPerfect, hEqRule⟩
   exact ⟨R, instAdd, instLin, B, hPerfect, hEqRule⟩
 
