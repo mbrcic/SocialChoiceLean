@@ -293,6 +293,52 @@ theorem exists_scoreNeutral_of_ruleNeutral_scoringRule
   exact exists_scoreNeutral_of_ruleNeutral_scoringRule_with_nonempty
     (mu := mu) (nu := nu) (D := D) (F := F) hN ⟨S, hFS⟩ hNE
 
+/-- Proposition 1 packaged `iff` (core form): under explicit domain invariance,
+representation as a scoring rule, and explicit nonemptiness on the represented
+rule, rule-neutrality is equivalent to existence of a neutral score-system
+representation. -/
+theorem proposition1_of_scoringRepresentation_with_nonempty
+    {D : Domain V} {F : RuleOn D X}
+    (hInv : DomainInvariant nu D)
+    (hScore : ∃ S : ScoreSystem R X V, F = scoringRule (D := D) S)
+    (hNE : NonemptyOnDomain D F) :
+    (RuleNeutral mu nu D F ↔
+      ∃ Sbar : ScoreSystem R X V,
+        ScoreNeutral mu nu Sbar ∧ F = scoringRule (D := D) Sbar) := by
+  constructor
+  · intro hN
+    exact
+      exists_scoreNeutral_of_ruleNeutral_scoringRule_with_nonempty
+        (mu := mu) (nu := nu) (D := D) (F := F) hN hScore hNE
+  · intro hRep
+    rcases hRep with ⟨Sbar, hSbarN, hFSbar⟩
+    have hNbar : RuleNeutral mu nu D (scoringRule (D := D) Sbar) :=
+      scoringRule_ruleNeutral_of_scoreNeutral
+        (mu := mu) (nu := nu) (S := Sbar) hInv hSbarN
+    simpa [hFSbar] using hNbar
+
+/-- Proposition 1 packaged `iff` with automatic nonemptiness from finite,
+nonempty alternatives. -/
+theorem proposition1_of_scoringRepresentation
+    [Finite X] [Nonempty X]
+    {D : Domain V} {F : RuleOn D X}
+    (hInv : DomainInvariant nu D)
+    (hScore : ∃ S : ScoreSystem R X V, F = scoringRule (D := D) S) :
+    (RuleNeutral mu nu D F ↔
+      ∃ Sbar : ScoreSystem R X V,
+        ScoreNeutral mu nu Sbar ∧ F = scoringRule (D := D) Sbar) := by
+  constructor
+  · intro hN
+    exact
+      exists_scoreNeutral_of_ruleNeutral_scoringRule
+        (mu := mu) (nu := nu) (D := D) (F := F) hN hScore
+  · intro hRep
+    rcases hRep with ⟨Sbar, hSbarN, hFSbar⟩
+    have hNbar : RuleNeutral mu nu D (scoringRule (D := D) Sbar) :=
+      scoringRule_ruleNeutral_of_scoreNeutral
+        (mu := mu) (nu := nu) (S := Sbar) hInv hSbarN
+    simpa [hFSbar] using hNbar
+
 end Proposition1Converse
 
 section Proposition1ConverseFiniteGroup
