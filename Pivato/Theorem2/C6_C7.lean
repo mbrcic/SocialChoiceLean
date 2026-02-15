@@ -1,10 +1,10 @@
 import Pivato.Theorem2.C4_C5
 
 /-!
-# Stage F skeleton: Lemmas C.6 and C.7
+# Appendix C.6 and C.7 cone/hull lemmas
 
-This file records theorem-level interfaces for Appendix C.6 and C.7 as tracked
-`sorry` goals.
+This file contains the set-level cone and divisible-hull machinery used by the
+C.8 branch argument, including the finite-family hull-selection step (C.7).
 -/
 
 namespace Pivato

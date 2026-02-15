@@ -3,11 +3,12 @@ import Pivato.Balance
 import Mathlib.Algebra.Order.Group.Unbundled.Basic
 
 /-!
-# Stage F skeleton: Lemmas C.4 and C.5
+# Appendix C.4 and C.5 core lemmas
 
-This file records the intended theorem-level interfaces for Appendix C.4 and
-C.5. Proofs are intentionally left as `sorry` so Lean tracks the remaining
-work items.
+This file formalizes the balance/scoring cocycle bridge used downstream in the
+Lemma C.8 pipeline:
+- C.4-style equivalence between scoring and cocycle-balanced representations;
+- C.5-style divisible-hull propagation for additive homomorphisms.
 -/
 
 namespace Pivato

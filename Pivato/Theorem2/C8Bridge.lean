@@ -114,8 +114,42 @@ theorem c8Bridge_step2_threeCycleBranch_of_case0
     (hCardGtTwo : 2 < Fintype.card X)
     (hCase0 : Fintype.card X % 3 = 0) :
     C8ThreeCycleBranchHypothesis (D := D) (B := B) := by
-  -- TODO: formalize Claim C.8.1 + C.8.2 + C.8.3 assembly in case 0.
-  sorry
+  classical
+  obtain ⟨φ, hPow, hNoFix⟩ :
+      ∃ φ : Equiv.Perm X, φ ^ 3 = 1 ∧ ∀ x : X, φ x ≠ x :=
+    c8ExistsPerm_pow_three_no_fixed_of_card_mod_three_eq_zero
+      (X := X) hCase0
+  let orbitMap : NProfile V → NProfile V := orbitProfileSum (nu φ) 2
+  have horbit : ∀ {d : NProfile V}, d ∈ D → orbitMap d ∈ D := by
+    intro d hd
+    exact orbitProfileSum_mem_of_domainInvariant
+      (D := D) hCone nu hInv φ hd 2
+  obtain ⟨K, hHullD⟩ :
+      ∃ K : AddSubgroup (ZProfile V), IsDivisibleHull (domainImageZ D) K :=
+    exists_divisibleHull (A := ZProfile V) (S := domainImageZ D)
+  choose Kx hHullBlocks using
+    (fun x : X =>
+      exists_divisibleHull
+        (A := ZProfile V)
+        (S :=
+          domainImageZ
+            (orbitBlockDomain D (balanceRule (D := D) B)
+              orbitMap horbit (orbitSet φ x))))
+  have hNE : NonemptyOnDomain D (balanceRule (D := D) B) := by
+    -- TODO: derive winner nonemptiness for `balanceRule` from paper-side assumptions.
+    sorry
+  rcases exists_orbitSet_hull_eq_of_neutral_balance
+      (D := D) (R := R) hCone B hR nu hInv hNeutralB hNE
+      φ 2 (by simpa using hPow)
+      K Kx hHullD hHullBlocks with
+      ⟨x0, hHullEq⟩
+  let c3 : C8Cycle3OrbitData X :=
+    c8Cycle3OrbitData_of_powThree_noFixed
+      (X := X) φ hPow hNoFix x0
+  exact cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
+    (D := D) (B := B) hSkew nu hNeutralB φ horbit
+    c3.hxy c3.hyz c3.hzx c3.hφx c3.hφy c3.hφz
+    K (Kx x0) hHullD (hHullBlocks x0) hHullEq
 
 /-- Step 3 (C.8 bridge, cases 1/2):
 build branch-split hypothesis in the `card % 3 = 1` or `2` regimes via
