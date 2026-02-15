@@ -31,7 +31,6 @@ Implemented and compiling:
   - `Neutrality/Main.lean`
 
 Not started yet:
-- `Theorem2/*` files
 - `Bridge/*` files into `SocialChoice`
 
 ## Objective Paper-Correspondence Status
@@ -49,7 +48,7 @@ Theorem-level status:
 - Proposition 2: formalized in packaged form under explicit representation assumptions.
 
 Still missing for full paper coverage:
-- Theorem 2 chain (Claims/Lemmas C.4--C.8 and final assembly).
+- Final C.8 branch-packaging theorem removing explicit `hBranch` from the paper-facing Theorem 2 wrapper.
 - Bridge from abstract Pivato layer to concrete `SocialChoice` rules.
 
 ## Modeling Decisions (Current)
@@ -103,22 +102,57 @@ Exit criterion: satisfied.
 
 ### Stage F (Theorem 2): main technical milestone
 
-Status: in progress.
+Status: in progress (core wrappers proved; one C.8 bridge gap remains).
 
-Current scaffolding (tracked by `sorry` TODOs):
-- `Theorem2/C4_C5.lean`
-- `Theorem2/C6_C7.lean`
-- `Theorem2/C8Orbit.lean`
-- `Theorem2/Main.lean`
+Implemented and compiling:
+- Generic Theorem-2 assembly wrappers in `Theorem2/Main.lean`:
+  - `theorem2_forward`
+  - `theorem2_backward`
+  - `theorem2`
+- Paper-facing wrappers (`mu = id` on `Perm X`) in `Theorem2/Main.lean`:
+  - `theorem2_forward_paper`
+  - `theorem2_paper`
+  - explicit `hSeed`/`hTransport` removed from paper-facing signatures.
+- C.8 packaging interface cleanup:
+  - `C8CycleSumHypothesis` introduced in `Theorem2/C8Seed.lean`
+  - branch split represented as an internal disjunction over `C8CycleSumHypothesis`
+  - paper-facing wrappers now consume cycle-sum packaging directly.
+- New groundwork file:
+  - `Theorem2/C8Branch.lean` (orbit/transport helper lemmas for C.8 branch derivation).
+  - includes a proved hull-selection bridge:
+    `exists_orbitSet_hull_eq_of_neutral_balance`
+    (Claim C.8.1 + Claim C.8.2 + Lemma C.7 assembly).
+  - includes a proved three-cycle branch theorem:
+    `cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq`.
+- New orbit-layer wrapper:
+  - `lemmaC8_of_neutral_perfect_balance_threeCycleHullEq` in
+    `Theorem2/C8Orbit.lean` (derives Eq. (C.21) from the three-cycle hull branch, then applies paper-facing C.8 wrapper).
+
+Current remaining gap:
+- `theorem2_paper` still requires explicit cycle-sum packaging input
+  `hCycle : ... → C8CycleSumHypothesis ...` in full generality.
+- What is now covered:
+  - the C.8.1/C.8.2/Lemma-C.7 hull-selection step is formalized.
+  - the C.8.3-style three-cycle branch is formalized as a reusable theorem.
+- What is still missing for full paper packaging:
+  - case-level assembly guaranteeing that one of the required branches applies
+    from only the paper assumptions (not yet reduced to a single wrapper theorem);
+  - C.8.4 four/five-cycle fallback packaging as an internal theorem feeding
+    `C8CycleSumHypothesis`;
+  - final elimination of explicit `hCycle` from `theorem2_forward_paper` / `theorem2_paper`.
 
 Tasks:
-1. Formalize the C.4 equivalence layer (balance/scoring transfer piece used by Theorem 2).
-2. Formalize C.5--C.7 algebraic transfer lemmas needed for the theorem pipeline.
-3. Formalize C.8 orbit/partition combinatorics.
-4. Assemble and prove Theorem 2 with a theorem statement matching the paper-level target (modulo explicit Lean assumptions already agreed).
+1. Prove the missing C.8 branch-packaging theorem:
+   from cone + neutrality + perfect representation assumptions, derive
+   `C8CycleSumHypothesis` (equivalently, `C8BranchSplitHypothesis`).
+2. Use (1) to produce an exact paper-facing Theorem 2 wrapper with explicit
+   `hInv` but without explicit C.8 cycle/branch/seed/transport assumptions.
+3. Keep generic theorem wrappers as infrastructure for future reuse.
 
 Exit criterion:
-- A theorem in `Theorem2/Main.lean` that states and proves the Theorem 2 result intended in the paper development path.
+- A paper-facing theorem in `Theorem2/Main.lean` matching Theorem 2 with no
+  explicit C.8 cycle/branch/seed/transport assumptions (while keeping explicit `hInv`
+  per current interface decision).
 
 ### Stage G (bridge to `SocialChoice`)
 

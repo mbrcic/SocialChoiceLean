@@ -1,4 +1,5 @@
 import Pivato.Core
+import Mathlib.Data.Fintype.Perm
 
 /-!
 # Profile-level helpers
@@ -54,9 +55,29 @@ def permuteZProfile (π : Equiv.Perm V) : ZProfile V ≃+ ZProfile V :=
     permuteNProfile π d v = d (π.symm v) := by
   simp [permuteNProfile, Finsupp.domCongr_apply]
 
+@[simp] lemma permuteNProfile_one (d : NProfile V) :
+    permuteNProfile (1 : Equiv.Perm V) d = d := by
+  ext v
+  simp [permuteNProfile_apply]
+
+@[simp] lemma permuteNProfile_mul (π ρ : Equiv.Perm V) (d : NProfile V) :
+    permuteNProfile (π * ρ) d = permuteNProfile π (permuteNProfile ρ d) := by
+  ext v
+  simp [permuteNProfile_apply, Equiv.Perm.mul_def, Equiv.symm_trans_apply]
+
 @[simp] lemma permuteZProfile_apply (π : Equiv.Perm V) (d : ZProfile V) (v : V) :
     permuteZProfile π d v = d (π.symm v) := by
   simp [permuteZProfile, Finsupp.domCongr_apply]
+
+@[simp] lemma permuteZProfile_one (d : ZProfile V) :
+    permuteZProfile (1 : Equiv.Perm V) d = d := by
+  ext v
+  simp [permuteZProfile_apply]
+
+@[simp] lemma permuteZProfile_mul (π ρ : Equiv.Perm V) (d : ZProfile V) :
+    permuteZProfile (π * ρ) d = permuteZProfile π (permuteZProfile ρ d) := by
+  ext v
+  simp [permuteZProfile_apply, Equiv.Perm.mul_def, Equiv.symm_trans_apply]
 
 end Permutations
 

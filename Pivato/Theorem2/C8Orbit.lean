@@ -1,4 +1,4 @@
-import Pivato.Theorem2.C8Seed
+import Pivato.Theorem2.C8Branch
 import Pivato.Theorem2.C8Transport
 import Pivato.Neutrality.Main
 import Mathlib.Data.Fintype.Perm
@@ -157,7 +157,7 @@ theorem lemmaC8_cocycle_of_neutral_perfect_balance_paper
     (hPerfect : PerfectOn (D := D) (B := B))
     (hInv : DomainInvariant nu D)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
-    (hBranch : C8BranchSplitHypothesis (D := D) (B := B)) :
+    (hCycle : C8CycleSumHypothesis (D := D) (B := B)) :
     BalanceCocycleOn D B := by
   classical
   letI : DecidableEq X := Classical.decEq X
@@ -167,7 +167,8 @@ theorem lemmaC8_cocycle_of_neutral_perfect_balance_paper
       ∃ x y z : X,
         x ≠ y ∧ y ≠ z ∧ z ≠ x ∧
           BalanceCocycleAtTriple D B x y z :=
-    seedTriple_of_branchSplit (D := D) (B := B) hSkew hBranch
+    seedTriple_of_branchSplit (D := D) (B := B) hSkew
+      (branchSplit_of_cycleSumHypothesis (D := D) (B := B) hCycle)
   have hTransport :
       ∀ x y z : X, x ≠ y → y ≠ z → z ≠ x →
         TripleTransportTo (mu := MonoidHom.id (Equiv.Perm X)) x y z := by
@@ -192,7 +193,7 @@ theorem lemmaC8_of_neutral_perfect_balance_paper
     (hPerfect : PerfectOn (D := D) (B := B))
     (hInv : DomainInvariant nu D)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
-    (hBranch : C8BranchSplitHypothesis (D := D) (B := B)) :
+    (hCycle : C8CycleSumHypothesis (D := D) (B := B)) :
     HasNeutralScoringSystem
       (R := R)
       (mu := MonoidHom.id (Equiv.Perm X))
@@ -207,7 +208,8 @@ theorem lemmaC8_of_neutral_perfect_balance_paper
       ∃ x y z : X,
         x ≠ y ∧ y ≠ z ∧ z ≠ x ∧
           BalanceCocycleAtTriple D B x y z :=
-    seedTriple_of_branchSplit (D := D) (B := B) hSkew hBranch
+    seedTriple_of_branchSplit (D := D) (B := B) hSkew
+      (branchSplit_of_cycleSumHypothesis (D := D) (B := B) hCycle)
   have hTransport :
       ∀ x y z : X, x ≠ y → y ≠ z → z ≠ x →
         TripleTransportTo (mu := MonoidHom.id (Equiv.Perm X)) x y z := by
@@ -219,12 +221,63 @@ theorem lemmaC8_of_neutral_perfect_balance_paper
     (hInv := hInv) (hNeutralB := hNeutralB) (hSeed := hSeed)
     (hTransport := hTransport)
 
+/-- Three-cycle branch wrapper:
+if a three-cycle orbit block has divisible hull equal to the whole-domain hull,
+then Eq. (C.21) follows (via `cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq`)
+and we obtain the paper-facing Lemma C.8 conclusion. -/
+theorem lemmaC8_of_neutral_perfect_balance_threeCycleHullEq
+    [Finite X] [Nonempty X] [DecidableEq V]
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    {D : Domain V}
+    (hCone : IsCone D)
+    (B : BalanceSystem R X V)
+    (hSkew : BalanceSkew (B := B))
+    (hPerfect : PerfectOn (D := D) (B := B))
+    (hInv : DomainInvariant nu D)
+    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
+    (φ : Equiv.Perm X)
+    {x y z : X}
+    (hxy : x ≠ y) (hyz : y ≠ z) (hzx : z ≠ x)
+    (hφx : φ x = z) (hφy : φ y = x) (hφz : φ z = y)
+    (K Kblock : AddSubgroup (ZProfile V))
+    (hHullD : IsDivisibleHull (domainImageZ D) K)
+    (hHullBlock :
+      IsDivisibleHull
+        (domainImageZ
+          (orbitBlockDomain D (balanceRule (D := D) B)
+            (orbitProfileSum (nu φ) 2)
+            (by
+              intro d hd
+              exact orbitProfileSum_mem_of_domainInvariant
+                (D := D) hCone nu hInv φ hd 2)
+            (orbitSet φ x)))
+        Kblock)
+    (hHullEq : K = Kblock) :
+    HasNeutralScoringSystem
+      (R := R)
+      (mu := MonoidHom.id (Equiv.Perm X))
+      (nu := nu)
+      (D := D)
+      (F := balanceRule (D := D) B) := by
+  have hCycle : C8CycleSumHypothesis (D := D) (B := B) := by
+    have horbit : ∀ {d : NProfile V}, d ∈ D → orbitProfileSum (nu φ) 2 d ∈ D := by
+      intro d hd
+      exact orbitProfileSum_mem_of_domainInvariant
+        (D := D) hCone nu hInv φ hd 2
+    exact cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
+      (D := D) (B := B) hSkew nu hNeutralB φ horbit
+      hxy hyz hzx hφx hφy hφz
+      K Kblock hHullD hHullBlock hHullEq
+  exact lemmaC8_of_neutral_perfect_balance_paper
+    (nu := nu) (R := R) (D := D)
+    hCone B hSkew hPerfect hInv hNeutralB hCycle
+
 /-- Paper-facing represented-rule wrapper for Lemma C.8 in the full
 permutation-action setting (`mu = id`).
 
-This discharges the C.8.5 transport assumption internally and asks for branch
-packaging only in the form needed to produce Eq. (C.21) for neutral perfect
-balance representations. -/
+This discharges the C.8.5 transport assumption internally and asks for direct
+Eq. (C.21)-style cycle-sum packaging for neutral perfect balance
+representations. -/
 theorem lemmaC8_of_representation_paper
     [Finite X] [Nonempty X]
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
@@ -236,12 +289,12 @@ theorem lemmaC8_of_representation_paper
           F = balanceRule (D := D) B)
     (hNeutral : RuleNeutral (MonoidHom.id (Equiv.Perm X)) nu D F)
     (hNE : NonemptyOnDomain D F)
-    (hBranch :
+    (hCycle :
       ∀ B : BalanceSystem R X V,
         BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B →
         BalanceSkew (B := B) →
         PerfectOn (D := D) (B := B) →
-        C8BranchSplitHypothesis (D := D) (B := B)) :
+        C8CycleSumHypothesis (D := D) (B := B)) :
     HasNeutralScoringSystem
       (R := R)
       (mu := MonoidHom.id (Equiv.Perm X))
@@ -262,7 +315,8 @@ theorem lemmaC8_of_representation_paper
             BalanceCocycleAtTriple D B x y z := by
     intro B hNeutralB hSkewB hPerfectB
     exact seedTriple_of_branchSplit (D := D) (B := B) hSkewB
-      (hBranch B hNeutralB hSkewB hPerfectB)
+      (branchSplit_of_cycleSumHypothesis (D := D) (B := B)
+        (hCycle B hNeutralB hSkewB hPerfectB))
   have hTransport :
       ∀ x y z : X, x ≠ y → y ≠ z → z ≠ x →
         TripleTransportTo (mu := MonoidHom.id (Equiv.Perm X)) x y z := by
