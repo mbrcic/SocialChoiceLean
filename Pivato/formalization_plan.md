@@ -1,6 +1,6 @@
 # Pivato Formalization Plan
 
-Last updated: February 14, 2026.
+Last updated: February 15, 2026.
 
 ## Purpose
 
@@ -48,7 +48,10 @@ Theorem-level status:
 - Proposition 2: formalized in packaged form under explicit representation assumptions.
 
 Still missing for full paper coverage:
-- Final C.8 branch-packaging theorem removing explicit `hBranch` from the paper-facing Theorem 2 wrapper.
+- Internal no-placeholder completion of the C.8 bridge core:
+  - case `% 3 = 0` assembly (C.8.1/C.8.2/C.8.3 path),
+  - case `% 3 = 1,2` fallback packaging/conversion (C.8.4 path),
+  - final elimination of remaining `sorry` in C.8 bridge internals.
 - Bridge from abstract Pivato layer to concrete `SocialChoice` rules.
 
 ## Modeling Decisions (Current)
@@ -102,7 +105,7 @@ Exit criterion: satisfied.
 
 ### Stage F (Theorem 2): main technical milestone
 
-Status: in progress (core wrappers proved; one C.8 bridge gap remains).
+Status: in progress (paper-facing interfaces are now exact-paper shape; remaining work is internal C.8 bridge proof completion).
 
 Implemented and compiling:
 - Generic Theorem-2 assembly wrappers in `Theorem2/Main.lean`:
@@ -112,11 +115,10 @@ Implemented and compiling:
 - Paper-facing wrappers (`mu = id` on `Perm X`) in `Theorem2/Main.lean`:
   - `theorem2_forward_paper`
   - `theorem2_paper`
-  - explicit `hSeed`/`hTransport` removed from paper-facing signatures.
+  - explicit C.8 cycle packaging assumptions removed from signatures.
 - C.8 packaging interface cleanup:
   - `C8CycleSumHypothesis` introduced in `Theorem2/C8Seed.lean`
-  - branch split represented as an internal disjunction over `C8CycleSumHypothesis`
-  - paper-facing wrappers now consume cycle-sum packaging directly.
+  - branch split represented through named C.8.3 / C.8.4 branch predicates.
 - New groundwork file:
   - `Theorem2/C8Branch.lean` (orbit/transport helper lemmas for C.8 branch derivation).
   - includes a proved hull-selection bridge:
@@ -127,32 +129,49 @@ Implemented and compiling:
 - New orbit-layer wrapper:
   - `lemmaC8_of_neutral_perfect_balance_threeCycleHullEq` in
     `Theorem2/C8Orbit.lean` (derives Eq. (C.21) from the three-cycle hull branch, then applies paper-facing C.8 wrapper).
+- New bridge assembly file:
+  - `Theorem2/C8Bridge.lean` introduces
+    `c8CycleSumHypothesis_of_neutral_perfect_balance_paper`.
+  - `Theorem2/C8Orbit.lean` and `Theorem2/Main.lean` now route paper-facing wrappers through this bridge so no explicit `hCycle` argument remains.
+- New fallback staging file:
+  - `Theorem2/C8Fallback.lean` holds the C.8.4 path in decomposed form.
+  - Step-3 bridge cases in `Theorem2/C8Bridge.lean` now call this module, so fallback work is isolated and reviewable.
+
+Current C.8 bridge decomposition (implemented):
+1. `C8Bridge`:
+   - small-card cocycle (`|X| ≤ 2`) helper;
+   - reinforcement derivation from cone + skew + perfectness;
+   - `% 3` dispatcher and paper-facing bridge wrapper.
+2. `C8Fallback`:
+   - C.8.4 equation-pack layer;
+   - conversion from equation-pack to four/five-cycle branch hypothesis;
+   - case-1 and case-2 packaging entry points.
+3. `C8Orbit` / `Main`:
+   - paper-facing Lemma C.8 and Theorem 2 wrappers consume bridge output directly;
+   - explicit cycle hypothesis removed from paper-facing signatures.
 
 Current remaining gap:
-- `theorem2_paper` still requires explicit cycle-sum packaging input
-  `hCycle : ... → C8CycleSumHypothesis ...` in full generality.
-- What is now covered:
-  - the C.8.1/C.8.2/Lemma-C.7 hull-selection step is formalized.
-  - the C.8.3-style three-cycle branch is formalized as a reusable theorem.
-- What is still missing for full paper packaging:
-  - case-level assembly guaranteeing that one of the required branches applies
-    from only the paper assumptions (not yet reduced to a single wrapper theorem);
-  - C.8.4 four/five-cycle fallback packaging as an internal theorem feeding
-    `C8CycleSumHypothesis`;
-  - final elimination of explicit `hCycle` from `theorem2_forward_paper` / `theorem2_paper`.
+- Internal placeholders remain in the bridge pipeline:
+  - `Theorem2/C8Bridge.lean`:
+    - `c8Bridge_step2_threeCycleBranch_of_case0`
+  - `Theorem2/C8Fallback.lean`:
+    - generation of fallback equation packs in `% 3 = 1` and `% 3 = 2`.
+- This is the technical blocker for closing Stage F with no placeholders.
 
 Tasks:
-1. Prove the missing C.8 branch-packaging theorem:
-   from cone + neutrality + perfect representation assumptions, derive
-   `C8CycleSumHypothesis` (equivalently, `C8BranchSplitHypothesis`).
-2. Use (1) to produce an exact paper-facing Theorem 2 wrapper with explicit
-   `hInv` but without explicit C.8 cycle/branch/seed/transport assumptions.
-3. Keep generic theorem wrappers as infrastructure for future reuse.
+1. Complete `% 3 = 0` bridge path:
+   - prove `c8Bridge_step2_threeCycleBranch_of_case0`.
+2. Complete C.8.4 case generation:
+   - prove `% 3 = 1` and `% 3 = 2` equation-pack generation lemmas in `C8Fallback`.
+3. Remove all remaining `sorry` in `Theorem2/C8Bridge.lean` and `Theorem2/C8Fallback.lean` while preserving current public theorem signatures.
+4. Keep generic theorem wrappers as reusable infrastructure.
 
 Exit criterion:
-- A paper-facing theorem in `Theorem2/Main.lean` matching Theorem 2 with no
-  explicit C.8 cycle/branch/seed/transport assumptions (while keeping explicit `hInv`
-  per current interface decision).
+- Paper-facing Theorem 2 wrapper in `Theorem2/Main.lean` remains free of
+  explicit C.8 cycle/branch/seed/transport assumptions, and the bridge theorem
+  pipeline (`Theorem2/C8Bridge.lean` + `Theorem2/C8Fallback.lean`) is fully
+  proved (no placeholders), while keeping explicit `hInv` per current interface
+  decision.
 
 ### Stage G (bridge to `SocialChoice`)
 

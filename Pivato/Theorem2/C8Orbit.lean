@@ -1,4 +1,4 @@
-import Pivato.Theorem2.C8Branch
+import Pivato.Theorem2.C8Bridge
 import Pivato.Theorem2.C8Transport
 import Pivato.Neutrality.Main
 import Mathlib.Data.Fintype.Perm
@@ -147,7 +147,7 @@ variable (nu : Equiv.Perm X →* Equiv.Perm V)
 /-- Paper-facing cocycle wrapper for Lemma C.8 in the full permutation-action
 setting (`mu = id`): Claim C.8.5 transport and Eq. (C.21) seed generation are
 discharged internally. -/
-theorem lemmaC8_cocycle_of_neutral_perfect_balance_paper
+theorem lemmaC8_cocycle_of_neutral_perfect_balance_paper_of_cycle
     [Finite X] [Nonempty X]
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
     {D : Domain V}
@@ -180,10 +180,39 @@ theorem lemmaC8_cocycle_of_neutral_perfect_balance_paper
     (hInv := hInv) (hNeutralB := hNeutralB) (hSeed := hSeed)
     (hTransport := hTransport)
 
+/-- Paper-facing cocycle wrapper for Lemma C.8 in the full permutation-action
+setting (`mu = id`): no explicit C.8 cycle-sum argument is required. -/
+theorem lemmaC8_cocycle_of_neutral_perfect_balance_paper
+    [Finite X] [Nonempty X]
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    {D : Domain V}
+    (hCone : IsCone D)
+    (B : BalanceSystem R X V)
+    (hSkew : BalanceSkew (B := B))
+    (hPerfect : PerfectOn (D := D) (B := B))
+    (hInv : DomainInvariant nu D)
+    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B) :
+    BalanceCocycleOn D B := by
+  classical
+  letI : DecidableEq X := Classical.decEq X
+  letI : DecidableEq V := Classical.decEq V
+  letI : Fintype X := Fintype.ofFinite X
+  by_cases hCard : Fintype.card X ≤ 2
+  · exact balanceCocycleOn_of_skew_card_le_two
+      (X := X) (D := D) (B := B) hSkew hCard
+  · have hCardGt : 2 < Fintype.card X := Nat.lt_of_not_ge hCard
+    have hCycle : C8CycleSumHypothesis (D := D) (B := B) :=
+      c8CycleSumHypothesis_of_neutral_perfect_balance_paper
+        (nu := nu) (R := R) (D := D)
+        hCone B hSkew hPerfect hInv hNeutralB hCardGt
+    exact lemmaC8_cocycle_of_neutral_perfect_balance_paper_of_cycle
+      (nu := nu) (R := R) (D := D)
+      hCone B hSkew hPerfect hInv hNeutralB hCycle
+
 /-- Paper-facing scoring wrapper for Lemma C.8 in the full permutation-action
 setting (`mu = id`): this removes explicit `hSeed`/`hTransport` arguments by
 using the C.8.3/C.8.4 branch split plus full permutation transport. -/
-theorem lemmaC8_of_neutral_perfect_balance_paper
+theorem lemmaC8_of_neutral_perfect_balance_paper_of_cycle
     [Finite X] [Nonempty X]
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
     {D : Domain V}
@@ -220,6 +249,54 @@ theorem lemmaC8_of_neutral_perfect_balance_paper
     (_hCone := hCone) (B := B) (hSkew := hSkew) (_hPerfect := hPerfect)
     (hInv := hInv) (hNeutralB := hNeutralB) (hSeed := hSeed)
     (hTransport := hTransport)
+
+/-- Paper-facing scoring wrapper for Lemma C.8 in the full permutation-action
+setting (`mu = id`): no explicit C.8 cycle-sum argument is required. -/
+theorem lemmaC8_of_neutral_perfect_balance_paper
+    [Finite X] [Nonempty X]
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    {D : Domain V}
+    (hCone : IsCone D)
+    (B : BalanceSystem R X V)
+    (hSkew : BalanceSkew (B := B))
+    (hPerfect : PerfectOn (D := D) (B := B))
+    (hInv : DomainInvariant nu D)
+    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B) :
+    HasNeutralScoringSystem
+      (R := R)
+      (mu := MonoidHom.id (Equiv.Perm X))
+      (nu := nu)
+      (D := D)
+      (F := balanceRule (D := D) B) := by
+  classical
+  letI : DecidableEq X := Classical.decEq X
+  letI : DecidableEq V := Classical.decEq V
+  letI : Fintype X := Fintype.ofFinite X
+  by_cases hCard : Fintype.card X ≤ 2
+  · have hCocycle : BalanceCocycleOn D B :=
+      balanceCocycleOn_of_skew_card_le_two
+        (X := X) (D := D) (B := B) hSkew hCard
+    rcases lemmaC4_backward (D := D) B hCocycle with ⟨S, hBS⟩
+    have hRuleNeutral :
+        RuleNeutral (MonoidHom.id (Equiv.Perm X)) nu D (balanceRule (D := D) B) :=
+      balanceRule_ruleNeutral_of_balanceNeutral
+        (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (B := B) hInv hNeutralB
+    have hScoringRep :
+        ∃ S0 : ScoreSystem R X V,
+          balanceRule (D := D) B = scoringRule (D := D) S0 := ⟨S, hBS⟩
+    rcases (proposition1_of_scoringRepresentation
+        (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D)
+        (F := balanceRule (D := D) B)
+        hInv hScoringRep).1 hRuleNeutral with ⟨Sbar, hSbarNeutral, hEq⟩
+    exact ⟨Sbar, hSbarNeutral, hEq⟩
+  · have hCardGt : 2 < Fintype.card X := Nat.lt_of_not_ge hCard
+    have hCycle : C8CycleSumHypothesis (D := D) (B := B) :=
+      c8CycleSumHypothesis_of_neutral_perfect_balance_paper
+        (nu := nu) (R := R) (D := D)
+        hCone B hSkew hPerfect hInv hNeutralB hCardGt
+    exact lemmaC8_of_neutral_perfect_balance_paper_of_cycle
+      (nu := nu) (R := R) (D := D)
+      hCone B hSkew hPerfect hInv hNeutralB hCycle
 
 /-- Three-cycle branch wrapper:
 if a three-cycle orbit block has divisible hull equal to the whole-domain hull,
@@ -268,16 +345,14 @@ theorem lemmaC8_of_neutral_perfect_balance_threeCycleHullEq
       (D := D) (B := B) hSkew nu hNeutralB φ horbit
       hxy hyz hzx hφx hφy hφz
       K Kblock hHullD hHullBlock hHullEq
-  exact lemmaC8_of_neutral_perfect_balance_paper
+  exact lemmaC8_of_neutral_perfect_balance_paper_of_cycle
     (nu := nu) (R := R) (D := D)
     hCone B hSkew hPerfect hInv hNeutralB hCycle
 
 /-- Paper-facing represented-rule wrapper for Lemma C.8 in the full
 permutation-action setting (`mu = id`).
 
-This discharges the C.8.5 transport assumption internally and asks for direct
-Eq. (C.21)-style cycle-sum packaging for neutral perfect balance
-representations. -/
+This discharges C.8 transport and cycle packaging assumptions internally. -/
 theorem lemmaC8_of_representation_paper
     [Finite X] [Nonempty X]
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
@@ -288,13 +363,7 @@ theorem lemmaC8_of_representation_paper
         BalanceSkew (B := B) ∧ PerfectOn (D := D) (B := B) ∧
           F = balanceRule (D := D) B)
     (hNeutral : RuleNeutral (MonoidHom.id (Equiv.Perm X)) nu D F)
-    (hNE : NonemptyOnDomain D F)
-    (hCycle :
-      ∀ B : BalanceSystem R X V,
-        BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B →
-        BalanceSkew (B := B) →
-        PerfectOn (D := D) (B := B) →
-        C8CycleSumHypothesis (D := D) (B := B)) :
+    (hNE : NonemptyOnDomain D F) :
     HasNeutralScoringSystem
       (R := R)
       (mu := MonoidHom.id (Equiv.Perm X))
@@ -305,26 +374,18 @@ theorem lemmaC8_of_representation_paper
   letI : DecidableEq X := Classical.decEq X
   letI : Fintype X := Fintype.ofFinite X
   letI : Fintype (Equiv.Perm X) := inferInstance
-  have hSeed :
-      ∀ B : BalanceSystem R X V,
-        BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B →
-        BalanceSkew (B := B) →
-        PerfectOn (D := D) (B := B) →
-        ∃ x y z : X,
-          x ≠ y ∧ y ≠ z ∧ z ≠ x ∧
-            BalanceCocycleAtTriple D B x y z := by
-    intro B hNeutralB hSkewB hPerfectB
-    exact seedTriple_of_branchSplit (D := D) (B := B) hSkewB
-      (branchSplit_of_cycleSumHypothesis (D := D) (B := B)
-        (hCycle B hNeutralB hSkewB hPerfectB))
-  have hTransport :
-      ∀ x y z : X, x ≠ y → y ≠ z → z ≠ x →
-        TripleTransportTo (mu := MonoidHom.id (Equiv.Perm X)) x y z := by
-    intro x y z hxy hyz hzx
-    exact tripleTransportTo_id_perm (x := x) (y := y) (z := z) hxy hyz hzx
-  exact lemmaC8_of_representation
-    (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (F := F)
-    hCone hRep hNeutral hNE hSeed hTransport
+  rcases exists_balanceNeutralPerfectSkew_of_ruleNeutral_representation_with_nonempty
+      (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (F := F)
+      hNeutral hRep hNE with
+      ⟨Bbar, hNeutralBar, hSkewBar, hPerfectBar, hFBbar⟩
+  rcases lemmaC8_of_neutral_perfect_balance_paper
+      (nu := nu) (R := R) (D := D)
+      hCone Bbar hSkewBar hPerfectBar hNeutral.domainInvariant hNeutralBar with
+      ⟨S, hSNeutral, hEqBar⟩
+  refine ⟨S, hSNeutral, ?_⟩
+  calc
+    F = balanceRule (D := D) Bbar := hFBbar
+    _ = scoringRule (D := D) S := hEqBar
 
 end C8OrbitPaper
 

@@ -27,11 +27,21 @@ def C8CycleSumHypothesis
 
 /-- Branch split hypothesis used in Appendix C.8 before Claim C.8.5:
 either the C.8.3 branch or the C.8.4 branch yields a triple-cycle sum law. -/
+def C8ThreeCycleBranchHypothesis
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    (D : Domain V) (B : BalanceSystem R X V) : Prop :=
+  C8CycleSumHypothesis (D := D) (B := B)
+
+def C8FourFiveCycleBranchHypothesis
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    (D : Domain V) (B : BalanceSystem R X V) : Prop :=
+  C8CycleSumHypothesis (D := D) (B := B)
+
 def C8BranchSplitHypothesis
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
     (D : Domain V) (B : BalanceSystem R X V) : Prop :=
-  C8CycleSumHypothesis (D := D) (B := B) ∨
-    C8CycleSumHypothesis (D := D) (B := B)
+  C8ThreeCycleBranchHypothesis (D := D) (B := B) ∨
+    C8FourFiveCycleBranchHypothesis (D := D) (B := B)
 
 theorem branchSplit_of_cycleSumHypothesis
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
@@ -69,16 +79,11 @@ theorem seedTriple_of_branchSplit
     ∃ x y z : X,
       x ≠ y ∧ y ≠ z ∧ z ≠ x ∧
         BalanceCocycleAtTriple D B x y z := by
-  rcases cycleSumHypothesis_of_branchSplit (D := D) (B := B) hBranch with
-    ⟨x, y, z, hxy, hyz, hzx, hsum⟩
-  have hC83 :
-      ∃ x y z : X,
-        x ≠ y ∧ y ≠ z ∧ z ≠ x ∧
-          (∀ ⦃d : NProfile V⦄, d ∈ D →
-            balanceAt B x y d + balanceAt B y z d + balanceAt B z x d = 0) :=
-    ⟨x, y, z, hxy, hyz, hzx, hsum⟩
-  exact claimC83_seedTriple_of_threeCycleBranch
+  rcases hBranch with hC83 | hC84
+  · exact claimC83_seedTriple_of_threeCycleBranch
       (D := D) (B := B) hSkew hC83
+  · exact claimC84_seedTriple_of_fourFiveCycleBranch
+      (D := D) (B := B) hSkew hC84
 
 end C8Seed
 

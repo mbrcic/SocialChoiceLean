@@ -228,7 +228,7 @@ variable {V : Type uV} {X : Type uX}
 variable (nu : Equiv.Perm X →* Equiv.Perm V)
 variable {D : Domain V} (F : RuleOn D X)
 
-private lemma no_three_distinct_of_card_le_two
+private lemma no_three_distinct_of_card_le_two_main
     [Fintype X]
     (hCard : Fintype.card X ≤ 2) :
     ¬ ∃ x y z : X, x ≠ y ∧ x ≠ z ∧ y ≠ z := by
@@ -236,7 +236,7 @@ private lemma no_three_distinct_of_card_le_two
   have hgt : 2 < Fintype.card X := (Fintype.two_lt_card_iff).2 hThree
   exact not_lt_of_ge hCard hgt
 
-private lemma balanceAt_diag_eq_zero_of_skew
+private lemma balanceAt_diag_eq_zero_of_skew_main
     {R : Type*}
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
     (B : BalanceSystem R X V)
@@ -259,7 +259,7 @@ private lemma balanceAt_diag_eq_zero_of_skew
     (nsmul_right_injective (M := R) (by decide : (2 : ℕ) ≠ 0)) htwo
   simpa [t] using ht0
 
-private lemma balanceCocycleOn_of_skew_card_le_two
+private lemma balanceCocycleOn_of_skew_card_le_two_main
     {R : Type*}
     [Fintype X]
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
@@ -269,14 +269,14 @@ private lemma balanceCocycleOn_of_skew_card_le_two
     (hCard : Fintype.card X ≤ 2) :
     BalanceCocycleOn D B := by
   have hNoThree : ¬ ∃ x y z : X, x ≠ y ∧ x ≠ z ∧ y ≠ z :=
-    no_three_distinct_of_card_le_two (X := X) hCard
+    no_three_distinct_of_card_le_two_main (X := X) hCard
   intro d hd x y z
   by_cases hxy : x = y
   · subst y
-    simp [balanceAt_diag_eq_zero_of_skew (B := B) hSkew x d]
+    simp [balanceAt_diag_eq_zero_of_skew_main (B := B) hSkew x d]
   · by_cases hyz : y = z
     · subst z
-      simp [balanceAt_diag_eq_zero_of_skew (B := B) hSkew y d]
+      simp [balanceAt_diag_eq_zero_of_skew_main (B := B) hSkew y d]
     · by_cases hzx : z = x
       · subst z
         calc
@@ -285,7 +285,7 @@ private lemma balanceCocycleOn_of_skew_card_le_two
                   simp [hSkew y x d]
           _ = 0 := by simp
           _ = balanceAt B x x d := by
-              simp [balanceAt_diag_eq_zero_of_skew (B := B) hSkew x d]
+              simp [balanceAt_diag_eq_zero_of_skew_main (B := B) hSkew x d]
       · exfalso
         apply hNoThree
         refine ⟨x, y, z, hxy, ?_, hyz⟩
@@ -327,7 +327,7 @@ theorem theorem2_forward_paper_card_le_two
       hNeutral hRep hNE with
       ⟨Bbar, hNeutralBar, hSkewBar, hPerfectBar, hFBbar⟩
   have hCocycle : BalanceCocycleOn D Bbar :=
-    balanceCocycleOn_of_skew_card_le_two (X := X) (B := Bbar) hSkewBar hCard
+    balanceCocycleOn_of_skew_card_le_two_main (X := X) (B := Bbar) hSkewBar hCard
   rcases lemmaC4_backward (D := D) Bbar hCocycle with ⟨S0, hBbarS0⟩
   have hScoreRep :
       ∃ S : ScoreSystem R X V, F = scoringRule (D := D) S := by
@@ -369,19 +369,11 @@ neutrality + reinforcement imply neutral scoring representability.
 
 Compared to the fully generic theorem, this removes explicit `hSeed` and
 `hTransport` assumptions by using the C.8 paper wrapper, which discharges
-transport and seed extraction internally from cycle-sum packaging. -/
+transport and C.8 cycle extraction internally. -/
 theorem theorem2_forward_paper
     [Finite X] [Nonempty X] [DecidableEq X] [DecidableEq V]
     (hD : IsDomain D) (hCone : IsCone D) (hA : GeneralAbstention D F)
     (hNE : NonemptyOnDomain D F)
-    (hCycle :
-      ∀ {R : Type (max uV uX)}
-        [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R],
-        ∀ B : BalanceSystem R X V,
-          BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B →
-          BalanceSkew (B := B) →
-          PerfectOn (D := D) (B := B) →
-          C8CycleSumHypothesis D B)
     (hNeutral : RuleNeutral (MonoidHom.id (Equiv.Perm X)) nu D F)
     (hR : Reinforcement D F) :
     IsNeutralScoringRepresentable
@@ -406,37 +398,26 @@ theorem theorem2_forward_paper
     ⟨B, hSkew, hPerfect, hFB⟩
   rcases lemmaC8_of_representation_paper
       (nu := nu) (R := R) (D := D) (F := F)
-      hCone hRep hNeutral hNE
-      (by
-        intro B0 hNeutral0 hSkew0 hPerfect0
-        exact hCycle (R := R) B0 hNeutral0 hSkew0 hPerfect0) with
+      hCone hRep hNeutral hNE with
       ⟨S, hSNeutral, hFS⟩
   exact ⟨R, instAdd, instLin, instOrdCancel, S, hSNeutral, hFS⟩
 
 /-- Paper-facing Theorem 2 wrapper (`mu = id` on `Perm X`).
 
-This keeps domain-invariance explicit (via `hInv`) and uses cycle-sum
-packaging for C.8 instead of explicit seed/transport assumptions. -/
+This keeps domain-invariance explicit (via `hInv`) and uses internal C.8
+packaging instead of explicit seed/transport/cycle assumptions. -/
 theorem theorem2_paper
     [Finite X] [Nonempty X] [DecidableEq X] [DecidableEq V]
     (hD : IsDomain D) (hCone : IsCone D) (hA : GeneralAbstention D F)
     (hInv : DomainInvariant nu D)
-    (hNE : NonemptyOnDomain D F)
-    (hCycle :
-      ∀ {R : Type (max uV uX)}
-        [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R],
-        ∀ B : BalanceSystem R X V,
-          BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B →
-          BalanceSkew (B := B) →
-          PerfectOn (D := D) (B := B) →
-          C8CycleSumHypothesis D B) :
+    (hNE : NonemptyOnDomain D F) :
     (RuleNeutral (MonoidHom.id (Equiv.Perm X)) nu D F ∧ Reinforcement D F) ↔
       IsNeutralScoringRepresentable
         (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (F := F) := by
   constructor
   · intro h
     exact theorem2_forward_paper (nu := nu) (F := F)
-      hD hCone hA hNE hCycle h.1 h.2
+      hD hCone hA hNE h.1 h.2
   · intro hScore
     exact theorem2_backward
       (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (F := F)
