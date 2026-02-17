@@ -473,6 +473,117 @@ lemma c8PowFifteen_transport
     simpa using congrArg (fun q : Equiv.Perm B => q (e a)) hPow
   exact hConjPowAt.trans hPowAt
 
+lemma c8Conj_pow_apply
+    {A B : Type*} (e : A ≃ B) (ψ : Equiv.Perm B) :
+    ∀ k : ℕ, ∀ a : A,
+      e ((((e.trans ψ).trans e.symm) ^ k) a) = (ψ ^ k) (e a) := by
+  intro k
+  induction k with
+  | zero =>
+      intro a
+      simp
+  | succ k ih =>
+      intro a
+      calc
+        e ((((e.trans ψ).trans e.symm) ^ (k + 1)) a)
+            = e (((e.trans ψ).trans e.symm) ((((e.trans ψ).trans e.symm) ^ k) a)) := by
+                simp [pow_succ']
+        _ = ψ (e ((((e.trans ψ).trans e.symm) ^ k) a)) := by simp
+        _ = ψ ((ψ ^ k) (e a)) := by simp [ih]
+        _ = (ψ ^ (k + 1)) (e a) := by simp [pow_succ']
+
+lemma c8ThreeOrbit_of_sumCongr_inl
+    {A α β : Type*}
+    (e : A ≃ α ⊕ β)
+    (τ : Equiv.Perm α)
+    (σ : Equiv.Perm β)
+    (hτ3 : τ ^ 3 = 1)
+    {t : A} {a : α} (ha : e t = Sum.inl a) :
+    (((e.trans (Equiv.Perm.sumCongr τ σ)).trans e.symm) ^ 3) t = t := by
+  apply e.injective
+  have hpow3 :
+      ((Equiv.Perm.sumCongr τ σ) ^ 3) =
+        Equiv.Perm.sumCongr (τ ^ 3) (σ ^ 3) := by
+    simpa using
+      (MonoidHom.map_pow
+        (Equiv.Perm.sumCongrHom α β)
+        (τ, σ) 3).symm
+  calc
+    e ((((e.trans (Equiv.Perm.sumCongr τ σ)).trans e.symm) ^ 3) t)
+        = ((Equiv.Perm.sumCongr τ σ) ^ 3) (e t) := by
+            simpa using c8Conj_pow_apply e (Equiv.Perm.sumCongr τ σ) 3 t
+    _ = ((Equiv.Perm.sumCongr τ σ) ^ 3) (Sum.inl a) := by simpa [ha]
+    _ = (Equiv.Perm.sumCongr (τ ^ 3) (σ ^ 3)) (Sum.inl a) := by simpa [hpow3]
+    _ = Sum.inl ((τ ^ 3) a) := by simp
+    _ = Sum.inl a := by simpa [hτ3]
+    _ = e t := by simpa [ha]
+
+lemma c8BigOrbit_of_sumCongr_inr_fin4
+    {A α : Type*}
+    (e : A ≃ α ⊕ C8Fin4)
+    (τ : Equiv.Perm α)
+    {t : A} {b : C8Fin4} (hb : e t = Sum.inr b) :
+    t ∈ orbitSet
+      ((e.trans (Equiv.Perm.sumCongr τ c8Fin4Cycle)).trans e.symm)
+      (e.symm (Sum.inr 0)) := by
+  refine ⟨b.1, ?_⟩
+  apply e.injective
+  have hpow :
+      ((Equiv.Perm.sumCongr τ c8Fin4Cycle) ^ b.1) =
+        Equiv.Perm.sumCongr (τ ^ b.1) (c8Fin4Cycle ^ b.1) := by
+    simpa using
+      (MonoidHom.map_pow
+        (Equiv.Perm.sumCongrHom α C8Fin4)
+        (τ, c8Fin4Cycle) b.1).symm
+  calc
+    e ((((e.trans (Equiv.Perm.sumCongr τ c8Fin4Cycle)).trans e.symm) ^ b.1)
+        (e.symm (Sum.inr 0)))
+        = ((Equiv.Perm.sumCongr τ c8Fin4Cycle) ^ b.1) (e (e.symm (Sum.inr 0))) := by
+            simpa using
+              c8Conj_pow_apply e (Equiv.Perm.sumCongr τ c8Fin4Cycle) b.1 (e.symm (Sum.inr 0))
+    _ = ((Equiv.Perm.sumCongr τ c8Fin4Cycle) ^ b.1) (Sum.inr 0) := by simp
+    _ = (Equiv.Perm.sumCongr (τ ^ b.1) (c8Fin4Cycle ^ b.1)) (Sum.inr 0) := by
+          simpa [hpow]
+    _ = Sum.inr ((c8Fin4Cycle ^ b.1) 0) := by simp
+    _ = Sum.inr b := by
+          have hbpow : (c8Fin4Cycle ^ b.1) 0 = b := by
+            fin_cases b <;> decide
+          simpa [hbpow]
+    _ = e t := by simpa [hb]
+
+lemma c8BigOrbit_of_sumCongr_inr_fin5
+    {A α : Type*}
+    (e : A ≃ α ⊕ C8Fin5)
+    (τ : Equiv.Perm α)
+    {t : A} {b : C8Fin5} (hb : e t = Sum.inr b) :
+    t ∈ orbitSet
+      ((e.trans (Equiv.Perm.sumCongr τ c8Fin5Cycle)).trans e.symm)
+      (e.symm (Sum.inr 0)) := by
+  refine ⟨b.1, ?_⟩
+  apply e.injective
+  have hpow :
+      ((Equiv.Perm.sumCongr τ c8Fin5Cycle) ^ b.1) =
+        Equiv.Perm.sumCongr (τ ^ b.1) (c8Fin5Cycle ^ b.1) := by
+    simpa using
+      (MonoidHom.map_pow
+        (Equiv.Perm.sumCongrHom α C8Fin5)
+        (τ, c8Fin5Cycle) b.1).symm
+  calc
+    e ((((e.trans (Equiv.Perm.sumCongr τ c8Fin5Cycle)).trans e.symm) ^ b.1)
+        (e.symm (Sum.inr 0)))
+        = ((Equiv.Perm.sumCongr τ c8Fin5Cycle) ^ b.1) (e (e.symm (Sum.inr 0))) := by
+            simpa using
+              c8Conj_pow_apply e (Equiv.Perm.sumCongr τ c8Fin5Cycle) b.1 (e.symm (Sum.inr 0))
+    _ = ((Equiv.Perm.sumCongr τ c8Fin5Cycle) ^ b.1) (Sum.inr 0) := by simp
+    _ = (Equiv.Perm.sumCongr (τ ^ b.1) (c8Fin5Cycle ^ b.1)) (Sum.inr 0) := by
+          simpa [hpow]
+    _ = Sum.inr ((c8Fin5Cycle ^ b.1) 0) := by simp
+    _ = Sum.inr b := by
+          have hbpow : (c8Fin5Cycle ^ b.1) 0 = b := by
+            fin_cases b <;> decide
+          simpa [hbpow]
+    _ = e t := by simpa [hb]
+
 /-- Paper-faithful Case-1 orbit-partition data:
 `φ` has one 4-cycle (the designated big block) and all remaining orbits are
 3-cycles; hence `period = 4` when no 3-block tail exists and `period = 12`
@@ -496,6 +607,7 @@ structure C8Case1OrbitPartitionData (X : Type uX) where
   hφy : φ y = z
   hφz : φ z = w
   hφw : φ w = x
+  hClassify : ∀ t : X, (φ ^ 3) t = t ∨ t ∈ orbitSet φ x
 
 /-- Paper-faithful Case-2 orbit-partition data:
 `φ` has one 5-cycle (the designated big block) and all remaining orbits are
@@ -523,6 +635,7 @@ structure C8Case2OrbitPartitionData (X : Type uX) where
   hφz : φ z = u
   hφu : φ u = v
   hφv : φ v = x
+  hClassify : ∀ t : X, (φ ^ 3) t = t ∨ t ∈ orbitSet φ x
 
 theorem c8Card_eq_mul_three_add_four_of_case1
     [Fintype X]
@@ -609,11 +722,12 @@ noncomputable def c8Case1OrbitPartitionData_of_card_eq_mul_three_add_four
             simp [hTailPow4, c8Fin4Cycle_pow_four]
       _ = 1 := by simp
   by_cases hq : q = 0
-  · refine
+  · subst hq
+    refine
       { φ := (eAll.trans ψ).trans eAll.symm
         period := 4
         hPeriod := Or.inl rfl
-        hPow := c8PowFour_transport eAll ψ (hψPow4_of_qzero hq)
+        hPow := c8PowFour_transport eAll ψ (hψPow4_of_qzero rfl)
         hNoFix := c8NoFixed_transport eAll ψ hψNoFix
         x := eAll.symm (Sum.inr 0)
         y := eAll.symm (Sum.inr 1)
@@ -627,7 +741,8 @@ noncomputable def c8Case1OrbitPartitionData_of_card_eq_mul_three_add_four
         hφx := ?_
         hφy := ?_
         hφz := ?_
-        hφw := ?_ }
+        hφw := ?_
+        hClassify := ?_ }
     · intro h
       have hs : (Sum.inr (0 : C8Fin4) : (Fin 0 × C8Fin3) ⊕ C8Fin4) = Sum.inr (1 : C8Fin4) := by
         simpa using congrArg eAll h
@@ -656,6 +771,13 @@ noncomputable def c8Case1OrbitPartitionData_of_card_eq_mul_three_add_four
       simp [ψ, c8Fin4Cycle_apply2]
     · apply eAll.injective
       simp [ψ, c8Fin4Cycle_apply3]
+    · intro t
+      rcases h : eAll t with ⟨a, b⟩ | b
+      · exact False.elim (Fin.elim0 a)
+      · right
+        simpa [ψ] using
+          (c8BigOrbit_of_sumCongr_inr_fin4
+            (e := eAll) (τ := c8ProdThreePerm 0) (hb := h))
   · refine
       { φ := (eAll.trans ψ).trans eAll.symm
         period := 12
@@ -674,7 +796,8 @@ noncomputable def c8Case1OrbitPartitionData_of_card_eq_mul_three_add_four
         hφx := ?_
         hφy := ?_
         hφz := ?_
-        hφw := ?_ }
+        hφw := ?_
+        hClassify := ?_ }
     · intro h
       have hs : (Sum.inr (0 : C8Fin4) : (Fin q × C8Fin3) ⊕ C8Fin4) = Sum.inr (1 : C8Fin4) := by
         simpa using congrArg eAll h
@@ -703,6 +826,17 @@ noncomputable def c8Case1OrbitPartitionData_of_card_eq_mul_three_add_four
       simp [ψ, c8Fin4Cycle_apply2]
     · apply eAll.injective
       simp [ψ, c8Fin4Cycle_apply3]
+    · intro t
+      rcases h : eAll t with a | b
+      · left
+        simpa [ψ] using
+          (c8ThreeOrbit_of_sumCongr_inl
+            (e := eAll) (τ := c8ProdThreePerm q) (σ := c8Fin4Cycle)
+            (hτ3 := c8ProdThreePerm_pow_three q) (ha := h))
+      · right
+        simpa [ψ] using
+          (c8BigOrbit_of_sumCongr_inr_fin4
+            (e := eAll) (τ := c8ProdThreePerm q) (hb := h))
 
 noncomputable def c8Case2OrbitPartitionData_of_card_eq_mul_three_add_five
     [Fintype X]
@@ -750,11 +884,12 @@ noncomputable def c8Case2OrbitPartitionData_of_card_eq_mul_three_add_five
             simp [hTailPow5, c8Fin5Cycle_pow_five]
       _ = 1 := by simp
   by_cases hq : q = 0
-  · refine
+  · subst hq
+    refine
       { φ := (eAll.trans ψ).trans eAll.symm
         period := 5
         hPeriod := Or.inl rfl
-        hPow := c8PowFive_transport eAll ψ (hψPow5_of_qzero hq)
+        hPow := c8PowFive_transport eAll ψ (hψPow5_of_qzero rfl)
         hNoFix := c8NoFixed_transport eAll ψ hψNoFix
         x := eAll.symm (Sum.inr 0)
         y := eAll.symm (Sum.inr 1)
@@ -771,7 +906,8 @@ noncomputable def c8Case2OrbitPartitionData_of_card_eq_mul_three_add_five
         hφy := ?_
         hφz := ?_
         hφu := ?_
-        hφv := ?_ }
+        hφv := ?_
+        hClassify := ?_ }
     · intro h
       have hs : (Sum.inr (0 : C8Fin5) : (Fin 0 × C8Fin3) ⊕ C8Fin5) = Sum.inr (1 : C8Fin5) := by
         simpa using congrArg eAll h
@@ -806,6 +942,13 @@ noncomputable def c8Case2OrbitPartitionData_of_card_eq_mul_three_add_five
       simp [ψ, c8Fin5Cycle_apply3]
     · apply eAll.injective
       simp [ψ, c8Fin5Cycle_apply4]
+    · intro t
+      rcases h : eAll t with ⟨a, b⟩ | b
+      · exact False.elim (Fin.elim0 a)
+      · right
+        simpa [ψ] using
+          (c8BigOrbit_of_sumCongr_inr_fin5
+            (e := eAll) (τ := c8ProdThreePerm 0) (hb := h))
   · refine
       { φ := (eAll.trans ψ).trans eAll.symm
         period := 15
@@ -827,7 +970,8 @@ noncomputable def c8Case2OrbitPartitionData_of_card_eq_mul_three_add_five
         hφy := ?_
         hφz := ?_
         hφu := ?_
-        hφv := ?_ }
+        hφv := ?_
+        hClassify := ?_ }
     · intro h
       have hs : (Sum.inr (0 : C8Fin5) : (Fin q × C8Fin3) ⊕ C8Fin5) = Sum.inr (1 : C8Fin5) := by
         simpa using congrArg eAll h
@@ -862,6 +1006,17 @@ noncomputable def c8Case2OrbitPartitionData_of_card_eq_mul_three_add_five
       simp [ψ, c8Fin5Cycle_apply3]
     · apply eAll.injective
       simp [ψ, c8Fin5Cycle_apply4]
+    · intro t
+      rcases h : eAll t with a | b
+      · left
+        simpa [ψ] using
+          (c8ThreeOrbit_of_sumCongr_inl
+            (e := eAll) (τ := c8ProdThreePerm q) (σ := c8Fin5Cycle)
+            (hτ3 := c8ProdThreePerm_pow_three q) (ha := h))
+      · right
+        simpa [ψ] using
+          (c8BigOrbit_of_sumCongr_inr_fin5
+            (e := eAll) (τ := c8ProdThreePerm q) (hb := h))
 
 theorem c8Case1OrbitPartitionData_of_case1
     [Fintype X]

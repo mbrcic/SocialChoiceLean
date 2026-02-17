@@ -390,6 +390,353 @@ theorem claimC82_cover_by_orbitSets_of_neutral_balance
       (hd := horbit hd) (hFix := hFix) with ⟨x, hx⟩
   exact ⟨x, by simpa [orbitMap] using hx⟩
 
+lemma c8Branch_evalIntHom_toZProfile_eq3
+    [DecidableEq V]
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    (B : BalanceSystem R X V)
+    (x y z : X) (d : NProfile V) :
+    evalIntHom (fun v => B.bal x y v + B.bal y z v + B.bal z x v) (toZProfile d) =
+      balanceAt B x y d + balanceAt B y z d + balanceAt B z x d := by
+  calc
+    evalIntHom (fun v => B.bal x y v + B.bal y z v + B.bal z x v) (toZProfile d)
+        = evalNat (fun v => B.bal x y v + B.bal y z v + B.bal z x v) d := by
+            simpa using
+              (evalIntHom_toZProfile
+                (w := fun v => B.bal x y v + B.bal y z v + B.bal z x v) d)
+    _ = evalNat (B.bal x y) d + evalNat (B.bal y z) d + evalNat (B.bal z x) d := by
+          unfold evalNat
+          simp [Finsupp.sum, Finset.sum_add_distrib, add_assoc]
+    _ = balanceAt B x y d + balanceAt B y z d + balanceAt B z x d := by
+          rfl
+
+lemma c8Branch_threeDiv_exists_blockCount
+    {M : ℕ}
+    (hThreeDiv : 3 ∣ M + 1) :
+    ∃ q : ℕ, M + 1 = 3 * q := by
+  exact hThreeDiv
+
+lemma c8Branch_permute_pow_comm
+    (π : Equiv.Perm V) (n m : ℕ) (d : NProfile V) :
+    permuteNProfile (π ^ n) (permuteNProfile (π ^ m) d) =
+      permuteNProfile (π ^ m) (permuteNProfile (π ^ n) d) := by
+  calc
+    permuteNProfile (π ^ n) (permuteNProfile (π ^ m) d)
+        = permuteNProfile ((π ^ n) * (π ^ m)) d := by
+            simp [permuteNProfile_mul]
+    _ = permuteNProfile (π ^ (n + m)) d := by
+          simp [pow_add]
+    _ = permuteNProfile (π ^ (m + n)) d := by
+          simp [Nat.add_comm]
+    _ = permuteNProfile ((π ^ m) * (π ^ n)) d := by
+          simp [pow_add]
+    _ = permuteNProfile (π ^ m) (permuteNProfile (π ^ n) d) := by
+          simp [permuteNProfile_mul]
+
+lemma c8Branch_orbitProfileSum_split_threeBlocks
+    (π : Equiv.Perm V)
+    {M q : ℕ}
+    (hM : M + 1 = 3 * q)
+    (d : NProfile V) :
+    orbitProfileSum π M d =
+      Finset.sum (Finset.range q)
+        (fun i => orbitProfileSum π 2 (permuteNProfile (π ^ (3 * i)) d)) := by
+  have hblocks :
+      Finset.sum (Finset.range (3 * q)) (fun k => permuteNProfile (π ^ k) d) =
+        Finset.sum (Finset.range q)
+          (fun i => orbitProfileSum π 2 (permuteNProfile (π ^ (3 * i)) d)) := by
+    have hblocksAux :
+        ∀ q : ℕ,
+          Finset.sum (Finset.range (3 * q)) (fun k => permuteNProfile (π ^ k) d) =
+            Finset.sum (Finset.range q)
+              (fun i => orbitProfileSum π 2 (permuteNProfile (π ^ (3 * i)) d)) := by
+      intro q
+      induction q with
+      | zero =>
+          simp [orbitProfileSum]
+      | succ q ih =>
+          have htail :
+              Finset.sum (Finset.range 3) (fun k => permuteNProfile (π ^ (3 * q + k)) d) =
+                orbitProfileSum π 2 (permuteNProfile (π ^ (3 * q)) d) := by
+            unfold orbitProfileSum
+            apply Finset.sum_congr rfl
+            intro k hk
+            calc
+              permuteNProfile (π ^ (3 * q + k)) d
+                  = permuteNProfile (π ^ (3 * q)) (permuteNProfile (π ^ k) d) := by
+                      simp [pow_add, permuteNProfile_mul]
+              _ = permuteNProfile (π ^ k) (permuteNProfile (π ^ (3 * q)) d) :=
+                    c8Branch_permute_pow_comm (π := π) (n := 3 * q) (m := k) d
+          calc
+            Finset.sum (Finset.range (3 * Nat.succ q)) (fun k => permuteNProfile (π ^ k) d)
+                = Finset.sum (Finset.range (3 * q + 3)) (fun k => permuteNProfile (π ^ k) d) := by
+                    simp [Nat.mul_succ, Nat.add_comm]
+            _ = Finset.sum (Finset.range (3 * q)) (fun k => permuteNProfile (π ^ k) d) +
+                  Finset.sum (Finset.range 3) (fun k => permuteNProfile (π ^ (3 * q + k)) d) := by
+                    simpa [Nat.add_assoc] using
+                      (Finset.sum_range_add (fun k => permuteNProfile (π ^ k) d) (3 * q) 3)
+            _ = Finset.sum (Finset.range q)
+                  (fun i => orbitProfileSum π 2 (permuteNProfile (π ^ (3 * i)) d)) +
+                  Finset.sum (Finset.range 3) (fun k => permuteNProfile (π ^ (3 * q + k)) d) := by
+                    rw [ih]
+            _ = Finset.sum (Finset.range q)
+                  (fun i => orbitProfileSum π 2 (permuteNProfile (π ^ (3 * i)) d)) +
+                  orbitProfileSum π 2 (permuteNProfile (π ^ (3 * q)) d) := by
+                    simp [htail]
+            _ = Finset.sum (Finset.range (q + 1))
+                  (fun i => orbitProfileSum π 2 (permuteNProfile (π ^ (3 * i)) d)) := by
+                    simp [Finset.sum_range_succ]
+    exact hblocksAux q
+  calc
+    orbitProfileSum π M d
+        = Finset.sum (Finset.range (3 * q)) (fun k => permuteNProfile (π ^ k) d) := by
+            unfold orbitProfileSum
+            simpa [hM]
+    _ = Finset.sum (Finset.range q)
+          (fun i => orbitProfileSum π 2 (permuteNProfile (π ^ (3 * i)) d)) := hblocks
+
+lemma c8Branch_cycle3_pair_average
+    [DecidableEq V]
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    (B : BalanceSystem R X V)
+    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
+    (φ : Equiv.Perm X)
+    (x y z : X)
+    (hφx : φ x = z) (hφy : φ y = x) (hφz : φ z = y)
+    (d : NProfile V) :
+    balanceAt B x y (orbitProfileSum (nu φ) 2 d) =
+      balanceAt B x y d + balanceAt B y z d + balanceAt B z x d := by
+  have h1raw :=
+    balanceAt_permute_of_balanceNeutral
+      (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (B := B)
+      hNeutralB φ y z d
+  have h1 :
+      balanceAt B x y (permuteNProfile (nu φ) d) = balanceAt B y z d := by
+    simpa [hφy, hφz] using h1raw
+  have hpow2z : (φ ^ 2) z = x := by
+    simp [pow_succ', hφz, hφy]
+  have hpow2x : (φ ^ 2) x = y := by
+    simp [pow_succ', hφx, hφz]
+  have h2raw :=
+    balanceAt_permute_of_balanceNeutral
+      (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (B := B)
+      hNeutralB (φ ^ 2) z x d
+  have h2 :
+      balanceAt B x y (permuteNProfile ((nu φ) ^ 2) d) = balanceAt B z x d := by
+    simpa [hpow2z, hpow2x, MonoidHom.map_pow] using h2raw
+  unfold orbitProfileSum
+  simp [Finset.sum_range_succ, balanceAt_add, h1, h2, add_assoc, add_comm, add_left_comm]
+
+lemma c8Branch_cycle3_shift_block_contribution
+    [DecidableEq V]
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    (B : BalanceSystem R X V)
+    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
+    (φ : Equiv.Perm X)
+    (x y z : X)
+    (hφx : φ x = z) (hφy : φ y = x) (hφz : φ z = y)
+    (d : NProfile V) (i : ℕ) :
+    balanceAt B x y (orbitProfileSum (nu φ) 2 (permuteNProfile ((nu φ) ^ (3 * i)) d)) =
+      balanceAt B x y d + balanceAt B y z d + balanceAt B z x d := by
+  have hpow3x : (φ ^ 3) x = x := by
+    simp [pow_succ', hφx, hφz, hφy]
+  have hpow3y : (φ ^ 3) y = y := by
+    simp [pow_succ', hφy, hφx, hφz]
+  have hpow3z : (φ ^ 3) z = z := by
+    simp [pow_succ', hφz, hφy, hφx]
+  have hpow3_mul_fix :
+      ∀ {t : X}, (φ ^ 3) t = t → (φ ^ (3 * i)) t = t := by
+    intro t h3
+    have hpowMul : (φ ^ (3 * i)) t = ((φ ^ 3) ^ i) t := by
+      simpa [pow_mul] using congrArg (fun p : Equiv.Perm X => p t) (pow_mul φ 3 i).symm
+    have hfix : ∀ n : ℕ, ((φ ^ 3) ^ n) t = t := by
+      intro n
+      induction n with
+      | zero =>
+          simp
+      | succ n ihn =>
+          calc
+            ((φ ^ 3) ^ (n + 1)) t = (φ ^ 3) (((φ ^ 3) ^ n) t) := by simp [pow_succ']
+            _ = (φ ^ 3) t := by simp [ihn]
+            _ = t := h3
+    exact hpowMul.trans (hfix i)
+  have hpow3ix : (φ ^ (3 * i)) x = x := hpow3_mul_fix hpow3x
+  have hpow3iy : (φ ^ (3 * i)) y = y := hpow3_mul_fix hpow3y
+  have hpow3iz : (φ ^ (3 * i)) z = z := hpow3_mul_fix hpow3z
+  have hfixxy :
+      balanceAt B x y (permuteNProfile ((nu φ) ^ (3 * i)) d) = balanceAt B x y d := by
+    simpa [MonoidHom.map_pow, hpow3ix, hpow3iy] using
+      (balanceAt_permute_of_balanceNeutral
+        (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (B := B)
+        hNeutralB (φ ^ (3 * i)) x y d)
+  have hfixyz :
+      balanceAt B y z (permuteNProfile ((nu φ) ^ (3 * i)) d) = balanceAt B y z d := by
+    simpa [MonoidHom.map_pow, hpow3iy, hpow3iz] using
+      (balanceAt_permute_of_balanceNeutral
+        (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (B := B)
+        hNeutralB (φ ^ (3 * i)) y z d)
+  have hfixzx :
+      balanceAt B z x (permuteNProfile ((nu φ) ^ (3 * i)) d) = balanceAt B z x d := by
+    simpa [MonoidHom.map_pow, hpow3iz, hpow3ix] using
+      (balanceAt_permute_of_balanceNeutral
+        (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (B := B)
+        hNeutralB (φ ^ (3 * i)) z x d)
+  have havgShift :
+      balanceAt B x y (orbitProfileSum (nu φ) 2 (permuteNProfile ((nu φ) ^ (3 * i)) d)) =
+        balanceAt B x y (permuteNProfile ((nu φ) ^ (3 * i)) d) +
+          balanceAt B y z (permuteNProfile ((nu φ) ^ (3 * i)) d) +
+            balanceAt B z x (permuteNProfile ((nu φ) ^ (3 * i)) d) := by
+    simpa using
+      (c8Branch_cycle3_pair_average
+        (nu := nu) (B := B) hNeutralB φ x y z hφx hφy hφz
+        (permuteNProfile ((nu φ) ^ (3 * i)) d))
+  calc
+    balanceAt B x y (orbitProfileSum (nu φ) 2 (permuteNProfile ((nu φ) ^ (3 * i)) d))
+        = balanceAt B x y (permuteNProfile ((nu φ) ^ (3 * i)) d) +
+            balanceAt B y z (permuteNProfile ((nu φ) ^ (3 * i)) d) +
+              balanceAt B z x (permuteNProfile ((nu φ) ^ (3 * i)) d) := havgShift
+    _ = balanceAt B x y d + balanceAt B y z d + balanceAt B z x d := by
+          simp [hfixxy, hfixyz, hfixzx]
+
+lemma c8Branch_nsmul_eq_zero_of_pos
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    {a : R} {n : ℕ}
+    (hn : 0 < n)
+    (h : n • a = 0) :
+    a = 0 := by
+  exact (nsmul_eq_zero_iff_right (a := a) (n := n) (Nat.ne_of_gt hn)).1 h
+
+lemma c8Branch_eqC21_zero_on_block_domainImageZ
+    [DecidableEq V]
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    {D : Domain V}
+    (B : BalanceSystem R X V)
+    (hSkew : BalanceSkew (B := B))
+    (nu : Equiv.Perm X →* Equiv.Perm V)
+    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
+    (φ : Equiv.Perm X)
+    (M : ℕ)
+    (hThreeDiv : 3 ∣ M + 1)
+    (horbit : ∀ {d : NProfile V}, d ∈ D → orbitProfileSum (nu φ) M d ∈ D)
+    {x y z : X}
+    (_hxy : x ≠ y) (_hyz : y ≠ z) (_hzx : z ≠ x)
+    (hφx : φ x = z) (hφy : φ y = x) (hφz : φ z = y) :
+    ∀ z0,
+      z0 ∈ domainImageZ
+        (orbitBlockDomain D (balanceRule (D := D) B)
+          (orbitProfileSum (nu φ) M) horbit (orbitSet φ x)) →
+      evalIntHom (fun v => B.bal x y v + B.bal y z v + B.bal z x v) z0 = 0 := by
+  intro z0 hz0
+  rcases hz0 with ⟨d0, hd0, rfl⟩
+  rcases hd0 with ⟨hd0D, hblock⟩
+  let orbitMap : NProfile V → NProfile V := orbitProfileSum (nu φ) M
+  have hd0Orbit : orbitMap d0 ∈ D := horbit hd0D
+  have hzOrbit : z ∈ orbitSet φ x := by
+    refine ⟨1, ?_⟩
+    simpa [pow_succ', hφx]
+  have hyOrbit : y ∈ orbitSet φ x := by
+    refine ⟨2, ?_⟩
+    simp [pow_succ', hφx, hφz]
+  have hxWin :
+      x ∈ balanceRule (D := D) B ⟨orbitMap d0, hd0Orbit⟩ :=
+    hblock (self_mem_orbitSet φ x)
+  have hyWin :
+      y ∈ balanceRule (D := D) B ⟨orbitMap d0, hd0Orbit⟩ :=
+    hblock hyOrbit
+  have hxy0 :
+      balanceAt B x y (orbitMap d0) = 0 :=
+    balanceAt_eq_zero_of_two_winners
+      (D := D) (B := B) hSkew hd0Orbit hxWin hyWin
+  obtain ⟨q, hMq⟩ : ∃ q : ℕ, M + 1 = 3 * q :=
+    c8Branch_threeDiv_exists_blockCount hThreeDiv
+  have hq0 : q ≠ 0 := by
+    intro hq
+    have hM0 : M + 1 = 0 := by simpa [hMq, hq]
+    exact Nat.succ_ne_zero M hM0
+  have hqpos : 0 < q := Nat.pos_of_ne_zero hq0
+  have hsplit :
+      orbitProfileSum (nu φ) M d0 =
+        Finset.sum (Finset.range q)
+          (fun i => orbitProfileSum (nu φ) 2 (permuteNProfile ((nu φ) ^ (3 * i)) d0)) := by
+    simpa using c8Branch_orbitProfileSum_split_threeBlocks (π := nu φ) (hM := hMq) d0
+  let S : R := balanceAt B x y d0 + balanceAt B y z d0 + balanceAt B z x d0
+  have hbalSum :
+      ∀ n : ℕ,
+        balanceAt B x y (Finset.sum (Finset.range n)
+          (fun i => orbitProfileSum (nu φ) 2 (permuteNProfile ((nu φ) ^ (3 * i)) d0))) =
+        Finset.sum (Finset.range n)
+          (fun i =>
+            balanceAt B x y (orbitProfileSum (nu φ) 2
+              (permuteNProfile ((nu φ) ^ (3 * i)) d0))) := by
+    intro n
+    induction n with
+    | zero =>
+        simp [balanceAt]
+    | succ n ih =>
+        simp [Finset.sum_range_succ, balanceAt_add, ih]
+  have hsumS : balanceAt B x y (orbitMap d0) = q • S := by
+    calc
+      balanceAt B x y (orbitMap d0)
+          = balanceAt B x y (orbitProfileSum (nu φ) M d0) := rfl
+      _ = balanceAt B x y
+            (Finset.sum (Finset.range q)
+              (fun i => orbitProfileSum (nu φ) 2 (permuteNProfile ((nu φ) ^ (3 * i)) d0))) := by
+              simpa [orbitMap] using congrArg (fun t => balanceAt B x y t) hsplit
+      _ = Finset.sum (Finset.range q)
+            (fun i =>
+              balanceAt B x y
+                (orbitProfileSum (nu φ) 2 (permuteNProfile ((nu φ) ^ (3 * i)) d0))) := by
+              simpa using hbalSum q
+      _ = Finset.sum (Finset.range q) (fun _ => S) := by
+            apply Finset.sum_congr rfl
+            intro i hi
+            simpa [S] using
+              (c8Branch_cycle3_shift_block_contribution
+                (nu := nu) (B := B) hNeutralB φ x y z hφx hφy hφz d0 i)
+      _ = q • S := by simp [Finset.sum_const]
+  have hqS0 : q • S = 0 := by
+    calc
+      q • S = balanceAt B x y (orbitMap d0) := hsumS.symm
+      _ = 0 := hxy0
+  have hS0 : S = 0 := c8Branch_nsmul_eq_zero_of_pos (n := q) hqpos hqS0
+  have hψ :
+      evalIntHom (fun v => B.bal x y v + B.bal y z v + B.bal z x v) (toZProfile d0) = S := by
+    simpa [S] using c8Branch_evalIntHom_toZProfile_eq3 (B := B) x y z d0
+  simpa [hψ, hS0]
+
+lemma c8Branch_transport_zero_from_block_to_domain
+    [DecidableEq V]
+    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
+    {D : Domain V}
+    (B : BalanceSystem R X V)
+    (nu : Equiv.Perm X →* Equiv.Perm V)
+    (φ : Equiv.Perm X)
+    (M : ℕ)
+    (horbit : ∀ {d : NProfile V}, d ∈ D → orbitProfileSum (nu φ) M d ∈ D)
+    {x : X}
+    (ψ : ZProfile V →+ R)
+    (K Kblock : AddSubgroup (ZProfile V))
+    (hHullD : IsDivisibleHull (domainImageZ D) K)
+    (hHullBlock :
+      IsDivisibleHull
+        (domainImageZ
+          (orbitBlockDomain D (balanceRule (D := D) B)
+            (orbitProfileSum (nu φ) M) horbit (orbitSet φ x)))
+        Kblock)
+    (hHullEq : K = Kblock)
+    (hZeroOnBlock :
+      ∀ z0,
+        z0 ∈ domainImageZ
+          (orbitBlockDomain D (balanceRule (D := D) B)
+            (orbitProfileSum (nu φ) M) horbit (orbitSet φ x)) →
+        ψ z0 = 0) :
+    ∀ z0, z0 ∈ domainImageZ D → ψ z0 = 0 := by
+  exact zero_on_domainImageZ_of_hullEq
+    (D := D)
+    (Dblock := orbitBlockDomain D (balanceRule (D := D) B)
+      (orbitProfileSum (nu φ) M) horbit (orbitSet φ x))
+    (ψ := ψ) (K := K) (Kblock := Kblock)
+    hHullD hHullBlock hHullEq hZeroOnBlock
+
 theorem cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
     [DecidableEq V]
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
@@ -415,12 +762,31 @@ theorem cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
         Kblock)
     (hHullEq : K = Kblock) :
     C8CycleSumHypothesis (D := D) (B := B) := by
-  /- TODO (paper C.8.3 period-`M+1` averaging):
-     evaluate `b^{x,y}` on `d + φ̃(d) + ··· + φ̃^M(d)`, rewrite via neutrality as
-     repeated terms from the 3-cycle `(x,y,z)`, use `hThreeDiv` to factor by
-     `(M+1)/3`, then transport zero from the selected orbit-block hull to `D`
-     via `hHullEq`. -/
-  sorry
+  let ψ : ZProfile V →+ R :=
+    evalIntHom (fun v => B.bal x y v + B.bal y z v + B.bal z x v)
+  have hZeroOnBlock :
+      ∀ z0,
+        z0 ∈ domainImageZ
+          (orbitBlockDomain D (balanceRule (D := D) B)
+            (orbitProfileSum (nu φ) M) horbit (orbitSet φ x)) →
+        ψ z0 = 0 := by
+    simpa [ψ] using
+      (c8Branch_eqC21_zero_on_block_domainImageZ
+        (B := B) (hSkew := hSkew) (nu := nu) hNeutralB φ M hThreeDiv horbit
+        hxy hyz hzx hφx hφy hφz)
+  have hZeroOnD :
+      ∀ z0, z0 ∈ domainImageZ D → ψ z0 = 0 := by
+    exact c8Branch_transport_zero_from_block_to_domain
+      (B := B) (nu := nu) (φ := φ) (M := M) (horbit := horbit)
+      (x := x) (ψ := ψ) K Kblock hHullD hHullBlock hHullEq hZeroOnBlock
+  refine ⟨x, y, z, hxy, hyz, hzx, ?_⟩
+  intro d hd
+  have hψ0 : ψ (toZProfile d) = 0 := hZeroOnD (toZProfile d) ⟨d, hd, rfl⟩
+  have hψEval :
+      ψ (toZProfile d) =
+        balanceAt B x y d + balanceAt B y z d + balanceAt B z x d := by
+    simpa [ψ] using c8Branch_evalIntHom_toZProfile_eq3 (B := B) x y z d
+  simpa [hψEval] using hψ0
 
 theorem exists_orbitSet_hull_eq_of_neutral_balance
     [Finite X] [Nonempty X] [DecidableEq X]
