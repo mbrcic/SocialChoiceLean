@@ -142,6 +142,90 @@ Current blocker analysis:
      - case 2: `C16`, `C15`
    - Everything else in the fallback equation-pack assembly is largely in place.
 
+Infrastructure-first breakdown for fallback atomic equations (`C10`, `C16`, `C15`):
+1. Isolate the reusable hull-lift core from
+   `cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq` into a generic helper:
+   given a homomorphism `ψ`, zero-on-block-domain, and hull equality
+   (`K = Kblock`), conclude zero-on-`domainImageZ D`.
+2. Add fallback-specific "zero on block-domain" lemmas for cycle data:
+   - 4-cycle block lemma for the `C10` linear form.
+   - 5-cycle block lemmas for `C16` and `C15` linear forms.
+   These should package the neutrality transport + orbit-sum expansion
+   calculations currently embedded in the 3-cycle proof.
+3. Resolve designated-block selection:
+   the current C.7-style API returns `∃ x, K = Kx x` (existential witness),
+   while fallback proofs currently use fixed combinatorial witnesses (`d4`, `d5`).
+   We need one of:
+   - a lemma that upgrades existential hull equality to the designated block, or
+   - a refactor of fallback constructors to build the equation pack from the
+     existential witness directly (preferred if upgrade is hard).
+4. Settle `NonemptyOnDomain` flow consistently across Stage F:
+   if nonemptiness is not derivable from current assumptions, thread it as an
+   explicit hypothesis where needed (this also unblocks `C8Bridge` step 2).
+5. After 1-4, fill the atomic holes in order:
+   - `hC10` in `C8Fallback` case 1,
+   - `hC16` in `C8Fallback` case 2,
+   - `hC15` in `C8Fallback` case 2 (then derive `C20` via existing helper).
+6. Cleanup/refactor pass:
+   collapse duplicated orbit-transport algebra and remove temporary wrappers
+   once all three holes are closed.
+
+Refactor update (implemented):
+- Step 1 is complete:
+  - generic hull-lift helper added in `C8Branch` (`zero_on_domainImageZ_of_hullEq`).
+- Step 2 has been refactored into two layers in `C8Fallback`:
+  1. paper-style cycle equations from a *single fixed* cycle witness
+     (generic 4-cycle / 5-cycle block-domain sum lemmas),
+  2. reduced 3-term targets (`C10`, `C16`) as downstream lemmas.
+- We now have reusable generic cycle lemmas:
+  - `c8Fallback_cycle4_sum_on_blockDomain`
+  - `c8Fallback_cycle5_sum_on_blockDomain`
+  and a specialized proved fallback equation:
+  - `c8Fallback_eqC9_on_cycle4_blockDomain`
+  - `c8Fallback_eqC12_on_cycle4_blockDomain` (proof-of-concept for one of the six Case-1 equations)
+  - `c8Fallback_eqC15_on_cycle5_blockDomain`
+- Case-1 assembly is now paper-ordered:
+  - first stage: paper-style equations (C.9)--(C.14),
+  - second stage: reduced target `C10` derived by cancellation via
+    `c8Fallback_eqC10_of_case1_sixEquations`,
+  - then existing rotation helpers build `C11`--`C14` in reduced form.
+- Hard-first refactor (new):
+  - introduced `c8Fallback_eqC9_on_D_of_designatedHullData` as the explicit
+    hard core for Case 1 (designated block hull-lift of (C.9) to all `D`).
+  - Case-1 assembly now has a single local hard TODO (`hHullData4`) producing
+    designated hull data; all paper equations downstream are derived from it:
+    - `C10` (paper form) from `C9` by neutral relabeling (`swap z w`) via
+      `c8Fallback_eqC10p_of_eqC9_swap`.
+    - `C11` (paper form) from `C10` by cycle-rotation via
+      `c8Fallback_eqC11p_of_eqC10p_rotate`.
+
+Hard-step decomposition update (implemented):
+- Added proved infrastructure lemma
+  `c8Fallback_exists_hullEq_some_cycle4_orbitBlock`, which extracts the
+  guaranteed C.7-style existential witness:
+  `∃ x0, ⟨D_n^φ(x0)⟩ = ⟨D⟩` in Lean hull form.
+- Refactored `hHullData4` into two explicit sub-TODOs:
+  1. provide `NonemptyOnDomain D (balanceRule B)` in Stage F assumptions flow;
+  2. upgrade existential witness `x0` to the designated Case-1 block
+     (`x0 = d4.x`), i.e. formalize the missing Claim-C.8.4 selection step.
+- This confirms the fundamental blocker is not local algebra/Lean plumbing in
+  C9–C14, but missing paper-level branch-selection infrastructure.
+
+Current technical conclusion:
+- The reduced `C10`/`C16` lemmas are intentionally deferred:
+  with current assumptions they should be derived only *after* assembling
+  enough paper-style equations coming from additional permutation witnesses,
+  then combining/canceling (as in the paper text), not from one fixed cycle
+  witness alone.
+
+Current TODO declarations (after refactor):
+- `C8Fallback`: reduced block-domain targets
+  - `c8Fallback_eqC10_on_cycle4_blockDomain`
+  - `c8Fallback_eqC16_on_cycle5_blockDomain`
+- `C8Fallback`: case assembly holes
+  - `c8Fallback_equationPack45_of_case1`
+  - `c8Fallback_equationPack45_of_case2`
+
 Known source of confusion (to clean up after proofs close):
 - In `C8Seed.lean`, `C8ThreeCycleBranchHypothesis` and
   `C8FourFiveCycleBranchHypothesis` are currently aliases of the same

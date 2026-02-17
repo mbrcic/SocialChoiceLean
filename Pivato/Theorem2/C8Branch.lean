@@ -118,6 +118,27 @@ lemma evalIntHom_toZProfile
   · intro a
     simp
 
+lemma zero_on_domainImageZ_of_hullEq
+    {R' : Type*}
+    [AddCommGroup R'] [IsAddTorsionFree R']
+    {D Dblock : Domain V}
+    (ψ : ZProfile V →+ R')
+    {K Kblock : AddSubgroup (ZProfile V)}
+    (hHullD : IsDivisibleHull (domainImageZ D) K)
+    (hHullBlock : IsDivisibleHull (domainImageZ Dblock) Kblock)
+    (hHullEq : K = Kblock)
+    (hZeroOnBlock : ∀ s, s ∈ domainImageZ Dblock → ψ s = 0) :
+    ∀ z, z ∈ domainImageZ D → ψ z = 0 := by
+  have hZeroOnKblock :
+      ∀ a, a ∈ Kblock → ψ a = 0 :=
+    lemmaC5 (φ := ψ) (S := domainImageZ Dblock) (K := Kblock)
+      hHullBlock hZeroOnBlock
+  intro z hzD
+  have hzK : z ∈ K := hHullD.2.1 hzD
+  have hzKblock : z ∈ Kblock := by
+    simpa [hHullEq] using hzK
+  exact hZeroOnKblock z hzKblock
+
 lemma domainImageZ_iUnion_eq_of_orbitBlockCover
     {D : Domain V} {F : RuleOn D X}
     (orbitMap : NProfile V → NProfile V)
@@ -501,17 +522,16 @@ theorem cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
       unfold cycleWeight
       simp [balanceAt, evalNat, add_assoc]
     simpa [hPsiD] using hCycleD
-  have hZeroOnKblock :
-      ∀ a, a ∈ Kblock → ψ a = 0 :=
-    lemmaC5 (φ := ψ) (S := domainImageZ Dblock) (K := Kblock)
-      hHullBlock' hZeroOnBlock
+  have hZeroOnD :
+      ∀ s, s ∈ domainImageZ D → ψ s = 0 :=
+    zero_on_domainImageZ_of_hullEq
+      (V := V) (ψ := ψ) (D := D) (Dblock := Dblock)
+      (K := K) (Kblock := Kblock)
+      hHullD hHullBlock' hHullEq hZeroOnBlock
   refine ⟨x, y, z, hxy, hyz, hzx, ?_⟩
   intro d hdD
   have hzD : toZProfile d ∈ domainImageZ D := ⟨d, hdD, rfl⟩
-  have hzK : toZProfile d ∈ K := hHullD.2.1 hzD
-  have hzKblock : toZProfile d ∈ Kblock := by
-    simpa [hHullEq] using hzK
-  have hPsi0 : ψ (toZProfile d) = 0 := hZeroOnKblock (toZProfile d) hzKblock
+  have hPsi0 : ψ (toZProfile d) = 0 := hZeroOnD (toZProfile d) hzD
   have hPsiD :
       ψ (toZProfile d) =
         balanceAt B x y d + balanceAt B y z d + balanceAt B z x d := by
