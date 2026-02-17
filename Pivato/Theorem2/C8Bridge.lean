@@ -107,11 +107,12 @@ theorem c8Bridge_step2_threeCycleBranch_of_case0
     (hCone : IsCone D)
     (B : BalanceSystem R X V)
     (hSkew : BalanceSkew (B := B))
-    (hPerfect : PerfectOn (D := D) (B := B))
+    (_hPerfect : PerfectOn (D := D) (B := B))
     (hInv : DomainInvariant nu D)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
     (hR : Reinforcement D (balanceRule (D := D) B))
-    (hCardGtTwo : 2 < Fintype.card X)
+    (hNE : NonemptyOnDomain D (balanceRule (D := D) B))
+    (_hCardGtTwo : 2 < Fintype.card X)
     (hCase0 : Fintype.card X % 3 = 0) :
     C8ThreeCycleBranchHypothesis (D := D) (B := B) := by
   classical
@@ -135,9 +136,6 @@ theorem c8Bridge_step2_threeCycleBranch_of_case0
           domainImageZ
             (orbitBlockDomain D (balanceRule (D := D) B)
               orbitMap horbit (orbitSet φ x))))
-  have hNE : NonemptyOnDomain D (balanceRule (D := D) B) := by
-    -- TODO: derive winner nonemptiness for `balanceRule` from paper-side assumptions.
-    sorry
   rcases exists_orbitSet_hull_eq_of_neutral_balance
       (D := D) (R := R) hCone B hR nu hInv hNeutralB hNE
       φ 2 (by simpa using hPow)
@@ -146,10 +144,13 @@ theorem c8Bridge_step2_threeCycleBranch_of_case0
   let c3 : C8Cycle3OrbitData X :=
     c8Cycle3OrbitData_of_powThree_noFixed
       (X := X) φ hPow hNoFix x0
-  exact cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
-    (D := D) (B := B) hSkew nu hNeutralB φ horbit
-    c3.hxy c3.hyz c3.hzx c3.hφx c3.hφy c3.hφz
-    K (Kx x0) hHullD (hHullBlocks x0) hHullEq
+  rcases cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
+      (D := D) (B := B) hSkew nu hNeutralB φ
+      (M := 2) (hThreeDiv := by decide) horbit
+      c3.hxy c3.hyz c3.hzx c3.hφx c3.hφy c3.hφz
+      K (Kx x0) hHullD (hHullBlocks x0) hHullEq with
+      ⟨x, y, z, hxy, hyz, hzx, hsum⟩
+  exact ⟨x, y, z, hxy, hyz, hzx, hsum⟩
 
 /-- Step 3 (C.8 bridge, cases 1/2):
 build branch-split hypothesis in the `card % 3 = 1` or `2` regimes via
@@ -165,12 +166,13 @@ theorem c8Bridge_step3_case1_branchSplit
     (hInv : DomainInvariant nu D)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
     (hR : Reinforcement D (balanceRule (D := D) B))
+    (hNE : NonemptyOnDomain D (balanceRule (D := D) B))
     (hCardGtTwo : 2 < Fintype.card X)
     (hCase1 : Fintype.card X % 3 = 1) :
     C8BranchSplitHypothesis (D := D) (B := B) := by
   exact c8Fallback_branchSplit_of_case1
     (nu := nu) (R := R) (D := D)
-    hCone B hSkew hPerfect hInv hNeutralB hR hCardGtTwo hCase1
+    hCone B hSkew hPerfect hInv hNeutralB hR hNE hCardGtTwo hCase1
 
 theorem c8Bridge_step3_case2_branchSplit
     [Finite X] [Fintype X] [Nonempty X] [DecidableEq X] [DecidableEq V]
@@ -183,12 +185,13 @@ theorem c8Bridge_step3_case2_branchSplit
     (hInv : DomainInvariant nu D)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
     (hR : Reinforcement D (balanceRule (D := D) B))
+    (hNE : NonemptyOnDomain D (balanceRule (D := D) B))
     (hCardGtTwo : 2 < Fintype.card X)
     (hCase2 : Fintype.card X % 3 = 2) :
     C8BranchSplitHypothesis (D := D) (B := B) := by
   exact c8Fallback_branchSplit_of_case2
     (nu := nu) (R := R) (D := D)
-    hCone B hSkew hPerfect hInv hNeutralB hR hCardGtTwo hCase2
+    hCone B hSkew hPerfect hInv hNeutralB hR hNE hCardGtTwo hCase2
 
 theorem c8Bridge_step3_branchSplit_of_cases12
     [Finite X] [Fintype X] [Nonempty X] [DecidableEq X] [DecidableEq V]
@@ -201,16 +204,17 @@ theorem c8Bridge_step3_branchSplit_of_cases12
     (hInv : DomainInvariant nu D)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
     (hR : Reinforcement D (balanceRule (D := D) B))
+    (hNE : NonemptyOnDomain D (balanceRule (D := D) B))
     (hCardGtTwo : 2 < Fintype.card X)
     (hCase12 : Fintype.card X % 3 = 1 ∨ Fintype.card X % 3 = 2) :
     C8BranchSplitHypothesis (D := D) (B := B) := by
   rcases hCase12 with hCase1 | hCase2
   · exact c8Bridge_step3_case1_branchSplit
       (nu := nu) (R := R) (D := D)
-      hCone B hSkew hPerfect hInv hNeutralB hR hCardGtTwo hCase1
+      hCone B hSkew hPerfect hInv hNeutralB hR hNE hCardGtTwo hCase1
   · exact c8Bridge_step3_case2_branchSplit
       (nu := nu) (R := R) (D := D)
-      hCone B hSkew hPerfect hInv hNeutralB hR hCardGtTwo hCase2
+      hCone B hSkew hPerfect hInv hNeutralB hR hNE hCardGtTwo hCase2
 
 /-- Step 4 (C.8 bridge):
 assemble the global branch split from the cardinal-case partition and steps 2/3. -/
@@ -224,6 +228,7 @@ theorem c8Bridge_step4_branchSplit_of_neutral_perfect_balance_paper
     (hPerfect : PerfectOn (D := D) (B := B))
     (hInv : DomainInvariant nu D)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
+    (hNE : NonemptyOnDomain D (balanceRule (D := D) B))
     (hCardGtTwo : 2 < Fintype.card X) :
     C8BranchSplitHypothesis (D := D) (B := B) := by
   have hR : Reinforcement D (balanceRule (D := D) B) :=
@@ -238,10 +243,10 @@ theorem c8Bridge_step4_branchSplit_of_neutral_perfect_balance_paper
   · exact Or.inl
       (c8Bridge_step2_threeCycleBranch_of_case0
         (nu := nu) (R := R) (D := D)
-        hCone B hSkew hPerfect hInv hNeutralB hR hCardGtTwo hCase0)
+        hCone B hSkew hPerfect hInv hNeutralB hR hNE hCardGtTwo hCase0)
   · exact c8Bridge_step3_branchSplit_of_cases12
       (nu := nu) (R := R) (D := D)
-      hCone B hSkew hPerfect hInv hNeutralB hR hCardGtTwo hCase12
+      hCone B hSkew hPerfect hInv hNeutralB hR hNE hCardGtTwo hCase12
 
 /-- Core paper-facing C.8 bridge target in the large-card regime `|X| > 2`. -/
 theorem c8CycleSumHypothesis_of_neutral_perfect_balance_paper
@@ -254,12 +259,13 @@ theorem c8CycleSumHypothesis_of_neutral_perfect_balance_paper
     (hPerfect : PerfectOn (D := D) (B := B))
     (hInv : DomainInvariant nu D)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
+    (hNE : NonemptyOnDomain D (balanceRule (D := D) B))
     (hCardGtTwo : 2 < Fintype.card X) :
     C8CycleSumHypothesis (D := D) (B := B) := by
   exact cycleSumHypothesis_of_branchSplit (D := D) (B := B)
     (c8Bridge_step4_branchSplit_of_neutral_perfect_balance_paper
       (nu := nu) (R := R) (D := D)
-      hCone B hSkew hPerfect hInv hNeutralB hCardGtTwo)
+      hCone B hSkew hPerfect hInv hNeutralB hNE hCardGtTwo)
 
 end C8Bridge
 

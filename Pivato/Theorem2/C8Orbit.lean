@@ -4,7 +4,7 @@ import Pivato.Neutrality.Main
 import Mathlib.Data.Fintype.Perm
 
 /-!
-# Stage F skeleton: Lemma C.8 orbit argument
+# Lemma C.8 orbit argument
 
 This file tracks the main Appendix C.8 bridge from neutral perfect balance
 representations to neutral scoring representations.
@@ -191,7 +191,8 @@ theorem lemmaC8_cocycle_of_neutral_perfect_balance_paper
     (hSkew : BalanceSkew (B := B))
     (hPerfect : PerfectOn (D := D) (B := B))
     (hInv : DomainInvariant nu D)
-    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B) :
+    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
+    (hNE : NonemptyOnDomain D (balanceRule (D := D) B)) :
     BalanceCocycleOn D B := by
   classical
   letI : DecidableEq X := Classical.decEq X
@@ -204,7 +205,7 @@ theorem lemmaC8_cocycle_of_neutral_perfect_balance_paper
     have hCycle : C8CycleSumHypothesis (D := D) (B := B) :=
       c8CycleSumHypothesis_of_neutral_perfect_balance_paper
         (nu := nu) (R := R) (D := D)
-        hCone B hSkew hPerfect hInv hNeutralB hCardGt
+        hCone B hSkew hPerfect hInv hNeutralB hNE hCardGt
     exact lemmaC8_cocycle_of_neutral_perfect_balance_paper_of_cycle
       (nu := nu) (R := R) (D := D)
       hCone B hSkew hPerfect hInv hNeutralB hCycle
@@ -261,7 +262,8 @@ theorem lemmaC8_of_neutral_perfect_balance_paper
     (hSkew : BalanceSkew (B := B))
     (hPerfect : PerfectOn (D := D) (B := B))
     (hInv : DomainInvariant nu D)
-    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B) :
+    (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
+    (hNE : NonemptyOnDomain D (balanceRule (D := D) B)) :
     HasNeutralScoringSystem
       (R := R)
       (mu := MonoidHom.id (Equiv.Perm X))
@@ -293,15 +295,14 @@ theorem lemmaC8_of_neutral_perfect_balance_paper
     have hCycle : C8CycleSumHypothesis (D := D) (B := B) :=
       c8CycleSumHypothesis_of_neutral_perfect_balance_paper
         (nu := nu) (R := R) (D := D)
-        hCone B hSkew hPerfect hInv hNeutralB hCardGt
+        hCone B hSkew hPerfect hInv hNeutralB hNE hCardGt
     exact lemmaC8_of_neutral_perfect_balance_paper_of_cycle
       (nu := nu) (R := R) (D := D)
       hCone B hSkew hPerfect hInv hNeutralB hCycle
 
 /-- Three-cycle branch wrapper:
-if a three-cycle orbit block has divisible hull equal to the whole-domain hull,
-then Eq. (C.21) follows (via `cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq`)
-and we obtain the paper-facing Lemma C.8 conclusion. -/
+if a three-cycle orbit block (built from period `M + 1`) has divisible hull equal
+to the whole-domain hull, then Eq. (C.21) follows and we obtain Lemma C.8. -/
 theorem lemmaC8_of_neutral_perfect_balance_threeCycleHullEq
     [Finite X] [Nonempty X] [DecidableEq V]
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
@@ -313,6 +314,8 @@ theorem lemmaC8_of_neutral_perfect_balance_threeCycleHullEq
     (hInv : DomainInvariant nu D)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
     (φ : Equiv.Perm X)
+    (M : ℕ)
+    (hThreeDiv : 3 ∣ M + 1)
     {x y z : X}
     (hxy : x ≠ y) (hyz : y ≠ z) (hzx : z ≠ x)
     (hφx : φ x = z) (hφy : φ y = x) (hφz : φ z = y)
@@ -322,11 +325,11 @@ theorem lemmaC8_of_neutral_perfect_balance_threeCycleHullEq
       IsDivisibleHull
         (domainImageZ
           (orbitBlockDomain D (balanceRule (D := D) B)
-            (orbitProfileSum (nu φ) 2)
+            (orbitProfileSum (nu φ) M)
             (by
               intro d hd
               exact orbitProfileSum_mem_of_domainInvariant
-                (D := D) hCone nu hInv φ hd 2)
+                (D := D) hCone nu hInv φ hd M)
             (orbitSet φ x)))
         Kblock)
     (hHullEq : K = Kblock) :
@@ -337,12 +340,12 @@ theorem lemmaC8_of_neutral_perfect_balance_threeCycleHullEq
       (D := D)
       (F := balanceRule (D := D) B) := by
   have hCycle : C8CycleSumHypothesis (D := D) (B := B) := by
-    have horbit : ∀ {d : NProfile V}, d ∈ D → orbitProfileSum (nu φ) 2 d ∈ D := by
+    have horbit : ∀ {d : NProfile V}, d ∈ D → orbitProfileSum (nu φ) M d ∈ D := by
       intro d hd
       exact orbitProfileSum_mem_of_domainInvariant
-        (D := D) hCone nu hInv φ hd 2
+        (D := D) hCone nu hInv φ hd M
     exact cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
-      (D := D) (B := B) hSkew nu hNeutralB φ horbit
+      (D := D) (B := B) hSkew nu hNeutralB φ M hThreeDiv horbit
       hxy hyz hzx hφx hφy hφz
       K Kblock hHullD hHullBlock hHullEq
   exact lemmaC8_of_neutral_perfect_balance_paper_of_cycle
@@ -378,9 +381,11 @@ theorem lemmaC8_of_representation_paper
       (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (F := F)
       hNeutral hRep hNE with
       ⟨Bbar, hNeutralBar, hSkewBar, hPerfectBar, hFBbar⟩
+  have hNEBar : NonemptyOnDomain D (balanceRule (D := D) Bbar) := by
+    simpa [hFBbar] using hNE
   rcases lemmaC8_of_neutral_perfect_balance_paper
       (nu := nu) (R := R) (D := D)
-      hCone Bbar hSkewBar hPerfectBar hNeutral.domainInvariant hNeutralBar with
+      hCone Bbar hSkewBar hPerfectBar hNeutral.domainInvariant hNeutralBar hNEBar with
       ⟨S, hSNeutral, hEqBar⟩
   refine ⟨S, hSNeutral, ?_⟩
   calc

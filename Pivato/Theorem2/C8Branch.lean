@@ -399,7 +399,9 @@ theorem cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
     (nu : Equiv.Perm X →* Equiv.Perm V)
     (hNeutralB : BalanceNeutral (MonoidHom.id (Equiv.Perm X)) nu B)
     (φ : Equiv.Perm X)
-    (horbit : ∀ {d : NProfile V}, d ∈ D → orbitProfileSum (nu φ) 2 d ∈ D)
+    (M : ℕ)
+    (hThreeDiv : 3 ∣ M + 1)
+    (horbit : ∀ {d : NProfile V}, d ∈ D → orbitProfileSum (nu φ) M d ∈ D)
     {x y z : X}
     (hxy : x ≠ y) (hyz : y ≠ z) (hzx : z ≠ x)
     (hφx : φ x = z) (hφy : φ y = x) (hφz : φ z = y)
@@ -409,137 +411,16 @@ theorem cycleSumHypothesis_of_threeCycle_orbitBlock_hullEq
       IsDivisibleHull
         (domainImageZ
           (orbitBlockDomain D (balanceRule (D := D) B)
-            (orbitProfileSum (nu φ) 2) horbit (orbitSet φ x)))
+            (orbitProfileSum (nu φ) M) horbit (orbitSet φ x)))
         Kblock)
     (hHullEq : K = Kblock) :
     C8CycleSumHypothesis (D := D) (B := B) := by
-  let orbitMap : NProfile V → NProfile V := orbitProfileSum (nu φ) 2
-  have horbit' : ∀ {d : NProfile V}, d ∈ D → orbitMap d ∈ D := by
-    intro d hd
-    simpa [orbitMap] using (horbit hd)
-  let Dblock : Domain V :=
-    orbitBlockDomain D (balanceRule (D := D) B) orbitMap horbit' (orbitSet φ x)
-  have hHullBlock' : IsDivisibleHull (domainImageZ Dblock) Kblock := by
-    simpa [Dblock, orbitMap] using hHullBlock
-  let cycleWeight : V → R := fun v =>
-    B.bal x y v + B.bal y z v + B.bal z x v
-  let ψ : ZProfile V →+ R := evalIntHom cycleWeight
-  have hZeroOnBlock : ∀ s, s ∈ domainImageZ Dblock → ψ s = 0 := by
-    intro s hs
-    rcases hs with ⟨d, hdBlock, rfl⟩
-    rcases hdBlock with ⟨hdD, hBlock⟩
-    have hxOrbit : x ∈ orbitSet φ x := self_mem_orbitSet φ x
-    have hyOrbit : y ∈ orbitSet φ x := by
-      refine ⟨2, ?_⟩
-      calc
-        (φ ^ 2) x = φ (φ x) := by simp [pow_succ']
-        _ = φ z := by simp [hφx]
-        _ = y := hφz
-    have hxWin :
-        x ∈ balanceRule (D := D) B ⟨orbitMap d, horbit' hdD⟩ :=
-      hBlock hxOrbit
-    have hyWin :
-        y ∈ balanceRule (D := D) B ⟨orbitMap d, horbit' hdD⟩ :=
-      hBlock hyOrbit
-    have hxyZero :
-        balanceAt B x y (orbitMap d) = 0 :=
-      balanceAt_eq_zero_of_two_winners
-        (D := D) B hSkew (hd := horbit' hdD) hxWin hyWin
-    have hTerm1 :
-        balanceAt B x y (permuteNProfile (nu φ) d) =
-          balanceAt B y z d := by
-      have hBase :=
-        balanceAt_permute_of_balanceNeutral
-          (mu := MonoidHom.id (Equiv.Perm X))
-          (nu := nu) (B := B) hNeutralB φ y z d
-      simpa [hφy, hφz] using hBase
-    have hφ2z : (φ ^ 2) z = x := by
-      calc
-        (φ ^ 2) z = φ (φ z) := by simp [pow_succ']
-        _ = φ y := by simp [hφz]
-        _ = x := hφy
-    have hφ2x : (φ ^ 2) x = y := by
-      calc
-        (φ ^ 2) x = φ (φ x) := by simp [pow_succ']
-        _ = φ z := by simp [hφx]
-        _ = y := hφz
-    have hTerm2 :
-        balanceAt B x y (permuteNProfile ((nu φ) ^ 2) d) =
-          balanceAt B z x d := by
-      have hBase :=
-        balanceAt_permute_of_balanceNeutral
-          (mu := MonoidHom.id (Equiv.Perm X))
-          (nu := nu) (B := B) hNeutralB (φ ^ 2) z x d
-      simpa [MonoidHom.map_pow, hφ2z, hφ2x] using hBase
-    have hExpand :
-        balanceAt B x y (orbitMap d) =
-          balanceAt B x y d +
-            balanceAt B x y (permuteNProfile (nu φ) d) +
-              balanceAt B x y (permuteNProfile ((nu φ) ^ 2) d) := by
-      have hOrbit :
-          orbitMap d =
-            d + (permuteNProfile (nu φ) d +
-              permuteNProfile ((nu φ) ^ 2) d) := by
-        unfold orbitMap orbitProfileSum
-        simp [Finset.sum_range_succ, add_assoc]
-      calc
-        balanceAt B x y (orbitMap d)
-            = balanceAt B x y
-                (d + permuteNProfile (nu φ) d + permuteNProfile ((nu φ) ^ 2) d) := by
-                  simpa [add_assoc] using congrArg (balanceAt B x y) hOrbit
-        _ = balanceAt B x y (d + permuteNProfile (nu φ) d) +
-              balanceAt B x y (permuteNProfile ((nu φ) ^ 2) d) := by
-                simpa [add_assoc] using
-                  (balanceAt_add (B := B) (x := x) (y := y)
-                    (d := d + permuteNProfile (nu φ) d)
-                    (e := permuteNProfile ((nu φ) ^ 2) d))
-        _ = (balanceAt B x y d + balanceAt B x y (permuteNProfile (nu φ) d)) +
-              balanceAt B x y (permuteNProfile ((nu φ) ^ 2) d) := by
-                simpa [add_assoc] using
-                  (congrArg (fun t =>
-                    t + balanceAt B x y (permuteNProfile ((nu φ) ^ 2) d))
-                    (balanceAt_add (B := B) (x := x) (y := y)
-                      (d := d) (e := permuteNProfile (nu φ) d)))
-        _ = balanceAt B x y d +
-              balanceAt B x y (permuteNProfile (nu φ) d) +
-                balanceAt B x y (permuteNProfile ((nu φ) ^ 2) d) := by
-                simp [add_assoc]
-    have hCycleD :
-        balanceAt B x y d + balanceAt B y z d + balanceAt B z x d = 0 := by
-      calc
-        balanceAt B x y d + balanceAt B y z d + balanceAt B z x d
-            = balanceAt B x y d +
-                balanceAt B x y (permuteNProfile (nu φ) d) +
-                  balanceAt B x y (permuteNProfile ((nu φ) ^ 2) d) := by
-                    simp [hTerm1, hTerm2, add_assoc]
-        _ = balanceAt B x y (orbitMap d) := hExpand.symm
-        _ = 0 := hxyZero
-    have hPsiD :
-        ψ (toZProfile d) =
-          balanceAt B x y d + balanceAt B y z d + balanceAt B z x d := by
-      change evalIntHom cycleWeight (toZProfile d) = _
-      rw [evalIntHom_toZProfile]
-      unfold cycleWeight
-      simp [balanceAt, evalNat, add_assoc]
-    simpa [hPsiD] using hCycleD
-  have hZeroOnD :
-      ∀ s, s ∈ domainImageZ D → ψ s = 0 :=
-    zero_on_domainImageZ_of_hullEq
-      (V := V) (ψ := ψ) (D := D) (Dblock := Dblock)
-      (K := K) (Kblock := Kblock)
-      hHullD hHullBlock' hHullEq hZeroOnBlock
-  refine ⟨x, y, z, hxy, hyz, hzx, ?_⟩
-  intro d hdD
-  have hzD : toZProfile d ∈ domainImageZ D := ⟨d, hdD, rfl⟩
-  have hPsi0 : ψ (toZProfile d) = 0 := hZeroOnD (toZProfile d) hzD
-  have hPsiD :
-      ψ (toZProfile d) =
-        balanceAt B x y d + balanceAt B y z d + balanceAt B z x d := by
-    change evalIntHom cycleWeight (toZProfile d) = _
-    rw [evalIntHom_toZProfile]
-    unfold cycleWeight
-    simp [balanceAt, evalNat, add_assoc]
-  simpa [hPsiD] using hPsi0
+  /- TODO (paper C.8.3 period-`M+1` averaging):
+     evaluate `b^{x,y}` on `d + φ̃(d) + ··· + φ̃^M(d)`, rewrite via neutrality as
+     repeated terms from the 3-cycle `(x,y,z)`, use `hThreeDiv` to factor by
+     `(M+1)/3`, then transport zero from the selected orbit-block hull to `D`
+     via `hHullEq`. -/
+  sorry
 
 theorem exists_orbitSet_hull_eq_of_neutral_balance
     [Finite X] [Nonempty X] [DecidableEq X]

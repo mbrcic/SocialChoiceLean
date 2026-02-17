@@ -1,5 +1,6 @@
 import Pivato.Theorem2.C8Branch
 import Mathlib.Data.Fintype.EquivFin
+import Mathlib.Data.Nat.ModEq
 import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Tactic.FinCases
 
@@ -8,7 +9,6 @@ import Mathlib.Tactic.FinCases
 
 This file isolates reusable combinatorial/permutation infrastructure for the
 C.8 bridge:
-- point-pattern extraction from `% 3` cardinal regimes;
 - orbit-cycle data records (length 3/4/5);
 - small transport lemmas into `orbitSet`.
 -/
@@ -20,95 +20,6 @@ section C8OrbitCases
 universe uX
 
 variable {X : Type uX}
-
-/-- Combinatorial point-pattern used for 4-cycle fallback packaging. -/
-structure C8FallbackPointPattern4 (X : Type uX) where
-  x : X
-  y : X
-  z : X
-  w : X
-  hxy : x ≠ y
-  hyz : y ≠ z
-  hzx : z ≠ x
-  hzw : z ≠ w
-  hwx : w ≠ x
-
-/-- Combinatorial point-pattern used for 5-cycle fallback packaging. -/
-structure C8FallbackPointPattern5 (X : Type uX) where
-  x : X
-  y : X
-  z : X
-  u : X
-  v : X
-  hxy : x ≠ y
-  hyz : y ≠ z
-  hzx : z ≠ x
-  hzu : z ≠ u
-  huv : u ≠ v
-  hvx : v ≠ x
-
-lemma c8Fallback_pointPattern4_of_case1
-    [Fintype X] [DecidableEq X]
-    (hCardGtTwo : 2 < Fintype.card X)
-    (hCase1 : Fintype.card X % 3 = 1) :
-    Nonempty (C8FallbackPointPattern4 X) := by
-  have hge3 : 3 ≤ Fintype.card X := Nat.succ_le_of_lt hCardGtTwo
-  have hne3 : Fintype.card X ≠ 3 := by
-    intro h3
-    have hCase1' := hCase1
-    simp [h3] at hCase1'
-  have h3ne : 3 ≠ Fintype.card X := by
-    intro h
-    exact hne3 h.symm
-  have hgt3 : 3 < Fintype.card X := lt_of_le_of_ne hge3 h3ne
-  have hUniv : 3 < (Finset.univ : Finset X).card := by
-    simpa using hgt3
-  rcases (Finset.three_lt_card).1 hUniv with
-    ⟨x, _hx, y, _hy, z, _hz, w, _hw, hxy, hxz, hxw, hyz, _hyw, hzw⟩
-  exact ⟨⟨x, y, z, w, hxy, hyz, hxz.symm, hzw, hxw.symm⟩⟩
-
-lemma c8Fallback_pointPattern5_of_case2
-    [Fintype X] [DecidableEq X] [Nonempty X]
-    (hCardGtTwo : 2 < Fintype.card X)
-    (hCase2 : Fintype.card X % 3 = 2) :
-    Nonempty (C8FallbackPointPattern5 X) := by
-  classical
-  have hge3 : 3 ≤ Fintype.card X := Nat.succ_le_of_lt hCardGtTwo
-  have hne3 : Fintype.card X ≠ 3 := by
-    intro h3
-    have hCase2' := hCase2
-    simp [h3] at hCase2'
-  have h3ne : 3 ≠ Fintype.card X := by
-    intro h
-    exact hne3 h.symm
-  have hgt3 : 3 < Fintype.card X := lt_of_le_of_ne hge3 h3ne
-  have hge4 : 4 ≤ Fintype.card X := Nat.succ_le_of_lt hgt3
-  have hne4 : Fintype.card X ≠ 4 := by
-    intro h4
-    have hCase2' := hCase2
-    simp [h4] at hCase2'
-  have h4ne : 4 ≠ Fintype.card X := by
-    intro h
-    exact hne4 h.symm
-  have hgt4 : 4 < Fintype.card X := lt_of_le_of_ne hge4 h4ne
-  obtain ⟨x⟩ := ‹Nonempty X›
-  let s : Finset X := (Finset.univ : Finset X).erase x
-  have hsSucc : s.card + 1 = Fintype.card X := by
-    dsimp [s]
-    simpa using
-      (Finset.card_erase_add_one (s := (Finset.univ : Finset X)) (a := x) (by simp))
-  have hsGtThree : 3 < s.card := by
-    have h4 : 4 < s.card + 1 := by
-      simpa [hsSucc] using hgt4
-    have h4' : Nat.succ 3 < Nat.succ s.card := by
-      simpa [Nat.succ_eq_add_one] using h4
-    exact Nat.lt_of_succ_lt_succ h4'
-  rcases (Finset.three_lt_card).1 hsGtThree with
-    ⟨y, hy, z, hz, u, _hu, v, hv, hyz, _hyu, _hyv, hzu, _hzv, huv⟩
-  have hyx : y ≠ x := (Finset.mem_erase.mp hy).1
-  have hzx : z ≠ x := (Finset.mem_erase.mp hz).1
-  have hvx : v ≠ x := (Finset.mem_erase.mp hv).1
-  exact ⟨⟨x, y, z, u, v, hyx.symm, hyz, hzx, hzu, huv, hvx⟩⟩
 
 /-- Canonical 3-cycle permutation on `(x,y,z)`:
 `x ↦ y`, `y ↦ z`, `z ↦ x`, identity elsewhere. -/
@@ -413,45 +324,6 @@ noncomputable def c8Cycle3OrbitData_of_powThree_noFixed
   hφz := by
     simp [pow_succ']
 
-/-- Orbit-data package for the 4-cycle fallback branch. -/
-structure C8Cycle4OrbitData (X : Type uX) where
-  φ : Equiv.Perm X
-  hPow : φ ^ 4 = 1
-  x : X
-  y : X
-  z : X
-  w : X
-  hxy : x ≠ y
-  hyz : y ≠ z
-  hzx : z ≠ x
-  hzw : z ≠ w
-  hwx : w ≠ x
-  hφx : φ x = y
-  hφy : φ y = z
-  hφz : φ z = w
-  hφw : φ w = x
-
-/-- Orbit-data package for the 5-cycle fallback branch. -/
-structure C8Cycle5OrbitData (X : Type uX) where
-  φ : Equiv.Perm X
-  hPow : φ ^ 5 = 1
-  x : X
-  y : X
-  z : X
-  u : X
-  v : X
-  hxy : x ≠ y
-  hyz : y ≠ z
-  hzx : z ≠ x
-  hzu : z ≠ u
-  huv : u ≠ v
-  hvx : v ≠ x
-  hφx : φ x = y
-  hφy : φ y = z
-  hφz : φ z = u
-  hφu : φ u = v
-  hφv : φ v = x
-
 abbrev C8Fin4 := Fin 4
 abbrev C8Fin5 := Fin 5
 
@@ -490,6 +362,10 @@ lemma c8Fin4Cycle_apply2 :
 lemma c8Fin4Cycle_apply3 :
     c8Fin4Cycle 3 = (0 : C8Fin4) := by decide
 
+lemma c8Fin4Cycle_no_fixed (i : C8Fin4) :
+    c8Fin4Cycle i ≠ i := by
+  fin_cases i <;> decide
+
 lemma c8Fin5Cycle_apply0 :
     c8Fin5Cycle 0 = (1 : C8Fin5) := by decide
 
@@ -504,6 +380,46 @@ lemma c8Fin5Cycle_apply3 :
 
 lemma c8Fin5Cycle_apply4 :
     c8Fin5Cycle 4 = (0 : C8Fin5) := by decide
+
+lemma c8Fin5Cycle_no_fixed (i : C8Fin5) :
+    c8Fin5Cycle i ≠ i := by
+  fin_cases i <;> decide
+
+lemma c8ProdThreePerm_pow_twelve (m : ℕ) :
+    (c8ProdThreePerm m) ^ 12 = 1 := by
+  calc
+    (c8ProdThreePerm m) ^ 12 = ((c8ProdThreePerm m) ^ 3) ^ 4 := by
+      have h12 : (12 : ℕ) = 3 * 4 := by decide
+      simpa [h12] using (pow_mul (c8ProdThreePerm m) 3 4)
+    _ = 1 := by
+      simp [c8ProdThreePerm_pow_three]
+
+lemma c8ProdThreePerm_pow_fifteen (m : ℕ) :
+    (c8ProdThreePerm m) ^ 15 = 1 := by
+  calc
+    (c8ProdThreePerm m) ^ 15 = ((c8ProdThreePerm m) ^ 3) ^ 5 := by
+      have h15 : (15 : ℕ) = 3 * 5 := by decide
+      simpa [h15] using (pow_mul (c8ProdThreePerm m) 3 5)
+    _ = 1 := by
+      simp [c8ProdThreePerm_pow_three]
+
+lemma c8Fin4Cycle_pow_twelve :
+    (c8Fin4Cycle ^ 12) = 1 := by
+  calc
+    c8Fin4Cycle ^ 12 = (c8Fin4Cycle ^ 4) ^ 3 := by
+      have h12 : (12 : ℕ) = 4 * 3 := by decide
+      simpa [h12] using (pow_mul c8Fin4Cycle 4 3)
+    _ = 1 := by
+      simp [c8Fin4Cycle_pow_four]
+
+lemma c8Fin5Cycle_pow_fifteen :
+    (c8Fin5Cycle ^ 15) = 1 := by
+  calc
+    c8Fin5Cycle ^ 15 = (c8Fin5Cycle ^ 5) ^ 3 := by
+      have h15 : (15 : ℕ) = 5 * 3 := by decide
+      simpa [h15] using (pow_mul c8Fin5Cycle 5 3)
+    _ = 1 := by
+      simp [c8Fin5Cycle_pow_five]
 
 lemma c8PowFour_transport
     {A B : Type*} (e : A ≃ B) (φ : Equiv.Perm B)
@@ -531,189 +447,437 @@ lemma c8PowFive_transport
     simpa using congrArg (fun q : Equiv.Perm B => q (e a)) hPow
   exact hConjPowAt.trans hPowAt
 
-noncomputable def c8Cycle4OrbitData_of_card_eq_add_four
-    [Fintype X]
-    (m : ℕ) (hCard : Fintype.card X = m + 4) :
-    C8Cycle4OrbitData X := by
-  let eFin : X ≃ Fin (m + 4) := Fintype.equivFinOfCardEq hCard
-  let eSplit : X ≃ Fin m ⊕ C8Fin4 := eFin.trans finSumFinEquiv.symm
-  let ψ : Equiv.Perm (Fin m ⊕ C8Fin4) :=
-    Equiv.Perm.sumCongr (1 : Equiv.Perm (Fin m)) c8Fin4Cycle
-  have hψPow : ψ ^ 4 = 1 := by
-    apply Equiv.Perm.ext
-    intro s
-    cases s with
-    | inl a =>
-        simp [ψ, pow_succ']
-    | inr b =>
-        have hb : (c8Fin4Cycle ^ 4) b = b := by
-          simpa using congrArg (fun q : Equiv.Perm C8Fin4 => q b) c8Fin4Cycle_pow_four
-        simpa [ψ, pow_succ'] using hb
-  refine
-    { φ := (eSplit.trans ψ).trans eSplit.symm
-      hPow := c8PowFour_transport eSplit ψ hψPow
-      x := eSplit.symm (Sum.inr 0)
-      y := eSplit.symm (Sum.inr 1)
-      z := eSplit.symm (Sum.inr 2)
-      w := eSplit.symm (Sum.inr 3)
-      hxy := ?_
-      hyz := ?_
-      hzx := ?_
-      hzw := ?_
-      hwx := ?_
-      hφx := ?_
-      hφy := ?_
-      hφz := ?_
-      hφw := ?_ }
-  · intro h
-    have hs : (Sum.inr (0 : C8Fin4) : Fin m ⊕ C8Fin4) = Sum.inr (1 : C8Fin4) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · intro h
-    have hs : (Sum.inr (1 : C8Fin4) : Fin m ⊕ C8Fin4) = Sum.inr (2 : C8Fin4) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · intro h
-    have hs : (Sum.inr (2 : C8Fin4) : Fin m ⊕ C8Fin4) = Sum.inr (0 : C8Fin4) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · intro h
-    have hs : (Sum.inr (2 : C8Fin4) : Fin m ⊕ C8Fin4) = Sum.inr (3 : C8Fin4) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · intro h
-    have hs : (Sum.inr (3 : C8Fin4) : Fin m ⊕ C8Fin4) = Sum.inr (0 : C8Fin4) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · apply eSplit.injective
-    simp [ψ, c8Fin4Cycle_apply0]
-  · apply eSplit.injective
-    simp [ψ, c8Fin4Cycle_apply1]
-  · apply eSplit.injective
-    simp [ψ, c8Fin4Cycle_apply2]
-  · apply eSplit.injective
-    simp [ψ, c8Fin4Cycle_apply3]
+lemma c8PowTwelve_transport
+    {A B : Type*} (e : A ≃ B) (φ : Equiv.Perm B)
+    (hPow : φ ^ 12 = 1) :
+    ((e.trans φ).trans e.symm) ^ 12 = 1 := by
+  apply Equiv.Perm.ext
+  intro a
+  apply e.injective
+  have hConjPowAt : e ((((e.trans φ).trans e.symm) ^ 12) a) = (φ ^ 12) (e a) := by
+    simp [pow_succ']
+  have hPowAt : (φ ^ 12) (e a) = e a := by
+    simpa using congrArg (fun q : Equiv.Perm B => q (e a)) hPow
+  exact hConjPowAt.trans hPowAt
 
-noncomputable def c8Cycle5OrbitData_of_card_eq_add_five
-    [Fintype X]
-    (m : ℕ) (hCard : Fintype.card X = m + 5) :
-    C8Cycle5OrbitData X := by
-  let eFin : X ≃ Fin (m + 5) := Fintype.equivFinOfCardEq hCard
-  let eSplit : X ≃ Fin m ⊕ C8Fin5 := eFin.trans finSumFinEquiv.symm
-  let ψ : Equiv.Perm (Fin m ⊕ C8Fin5) :=
-    Equiv.Perm.sumCongr (1 : Equiv.Perm (Fin m)) c8Fin5Cycle
-  have hψPow : ψ ^ 5 = 1 := by
-    apply Equiv.Perm.ext
-    intro s
-    cases s with
-    | inl a =>
-        simp [ψ, pow_succ']
-    | inr b =>
-        have hb : (c8Fin5Cycle ^ 5) b = b := by
-          simpa using congrArg (fun q : Equiv.Perm C8Fin5 => q b) c8Fin5Cycle_pow_five
-        simpa [ψ, pow_succ'] using hb
-  refine
-    { φ := (eSplit.trans ψ).trans eSplit.symm
-      hPow := c8PowFive_transport eSplit ψ hψPow
-      x := eSplit.symm (Sum.inr 0)
-      y := eSplit.symm (Sum.inr 1)
-      z := eSplit.symm (Sum.inr 2)
-      u := eSplit.symm (Sum.inr 3)
-      v := eSplit.symm (Sum.inr 4)
-      hxy := ?_
-      hyz := ?_
-      hzx := ?_
-      hzu := ?_
-      huv := ?_
-      hvx := ?_
-      hφx := ?_
-      hφy := ?_
-      hφz := ?_
-      hφu := ?_
-      hφv := ?_ }
-  · intro h
-    have hs : (Sum.inr (0 : C8Fin5) : Fin m ⊕ C8Fin5) = Sum.inr (1 : C8Fin5) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · intro h
-    have hs : (Sum.inr (1 : C8Fin5) : Fin m ⊕ C8Fin5) = Sum.inr (2 : C8Fin5) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · intro h
-    have hs : (Sum.inr (2 : C8Fin5) : Fin m ⊕ C8Fin5) = Sum.inr (0 : C8Fin5) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · intro h
-    have hs : (Sum.inr (2 : C8Fin5) : Fin m ⊕ C8Fin5) = Sum.inr (3 : C8Fin5) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · intro h
-    have hs : (Sum.inr (3 : C8Fin5) : Fin m ⊕ C8Fin5) = Sum.inr (4 : C8Fin5) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · intro h
-    have hs : (Sum.inr (4 : C8Fin5) : Fin m ⊕ C8Fin5) = Sum.inr (0 : C8Fin5) := by
-      simpa using congrArg eSplit h
-    cases hs
-  · apply eSplit.injective
-    simp [ψ, c8Fin5Cycle_apply0]
-  · apply eSplit.injective
-    simp [ψ, c8Fin5Cycle_apply1]
-  · apply eSplit.injective
-    simp [ψ, c8Fin5Cycle_apply2]
-  · apply eSplit.injective
-    simp [ψ, c8Fin5Cycle_apply3]
-  · apply eSplit.injective
-    simp [ψ, c8Fin5Cycle_apply4]
+lemma c8PowFifteen_transport
+    {A B : Type*} (e : A ≃ B) (φ : Equiv.Perm B)
+    (hPow : φ ^ 15 = 1) :
+    ((e.trans φ).trans e.symm) ^ 15 = 1 := by
+  apply Equiv.Perm.ext
+  intro a
+  apply e.injective
+  have hConjPowAt : e ((((e.trans φ).trans e.symm) ^ 15) a) = (φ ^ 15) (e a) := by
+    simp [pow_succ']
+  have hPowAt : (φ ^ 15) (e a) = e a := by
+    simpa using congrArg (fun q : Equiv.Perm B => q (e a)) hPow
+  exact hConjPowAt.trans hPowAt
 
-theorem c8Cycle4OrbitData_of_case1
+/-- Paper-faithful Case-1 orbit-partition data:
+`φ` has one 4-cycle (the designated big block) and all remaining orbits are
+3-cycles; hence `period = 4` when no 3-block tail exists and `period = 12`
+otherwise. -/
+structure C8Case1OrbitPartitionData (X : Type uX) where
+  φ : Equiv.Perm X
+  period : ℕ
+  hPeriod : period = 4 ∨ period = 12
+  hPow : φ ^ period = 1
+  hNoFix : ∀ t : X, φ t ≠ t
+  x : X
+  y : X
+  z : X
+  w : X
+  hxy : x ≠ y
+  hyz : y ≠ z
+  hzx : z ≠ x
+  hzw : z ≠ w
+  hwx : w ≠ x
+  hφx : φ x = y
+  hφy : φ y = z
+  hφz : φ z = w
+  hφw : φ w = x
+
+/-- Paper-faithful Case-2 orbit-partition data:
+`φ` has one 5-cycle (the designated big block) and all remaining orbits are
+3-cycles; hence `period = 5` when no 3-block tail exists and `period = 15`
+otherwise. -/
+structure C8Case2OrbitPartitionData (X : Type uX) where
+  φ : Equiv.Perm X
+  period : ℕ
+  hPeriod : period = 5 ∨ period = 15
+  hPow : φ ^ period = 1
+  hNoFix : ∀ t : X, φ t ≠ t
+  x : X
+  y : X
+  z : X
+  u : X
+  v : X
+  hxy : x ≠ y
+  hyz : y ≠ z
+  hzx : z ≠ x
+  hzu : z ≠ u
+  huv : u ≠ v
+  hvx : v ≠ x
+  hφx : φ x = y
+  hφy : φ y = z
+  hφz : φ z = u
+  hφu : φ u = v
+  hφv : φ v = x
+
+theorem c8Card_eq_mul_three_add_four_of_case1
     [Fintype X]
     (hCardGtTwo : 2 < Fintype.card X)
     (hCase1 : Fintype.card X % 3 = 1) :
-    Nonempty (C8Cycle4OrbitData X) := by
-  have hge3 : 3 ≤ Fintype.card X := Nat.succ_le_of_lt hCardGtTwo
-  have hne3 : Fintype.card X ≠ 3 := by
-    intro h3
-    have hCase1' := hCase1
-    simp [h3] at hCase1'
-  have h3ne : 3 ≠ Fintype.card X := by
-    intro h
-    exact hne3 h.symm
-  have hgt3 : 3 < Fintype.card X := lt_of_le_of_ne hge3 h3ne
-  have hge4 : 4 ≤ Fintype.card X := Nat.succ_le_of_lt hgt3
-  rcases Nat.exists_eq_add_of_le hge4 with ⟨m, hm⟩
-  let hCard : Fintype.card X = m + 4 := by
-    simpa [Nat.add_comm] using hm
-  exact ⟨c8Cycle4OrbitData_of_card_eq_add_four (X := X) m hCard⟩
+    ∃ q : ℕ, Fintype.card X = q * 3 + 4 := by
+  have hmod : Nat.ModEq 3 1 (Fintype.card X) := by
+    change 1 % 3 = Fintype.card X % 3
+    simp [hCase1]
+  have hPos : 0 < Fintype.card X := lt_trans (by decide : 0 < 2) hCardGtTwo
+  have hOneLe : 1 ≤ Fintype.card X := Nat.succ_le_of_lt hPos
+  rcases (Nat.modEq_iff_exists_eq_add hOneLe).1 hmod with ⟨t, ht⟩
+  cases t with
+  | zero =>
+      exfalso
+      have hCardOne : Fintype.card X = 1 := by simpa using ht
+      omega
+  | succ q =>
+      refine ⟨q, ?_⟩
+      omega
 
-theorem c8Cycle5OrbitData_of_case2
+theorem c8Card_eq_mul_three_add_five_of_case2
     [Fintype X]
     (hCardGtTwo : 2 < Fintype.card X)
     (hCase2 : Fintype.card X % 3 = 2) :
-    Nonempty (C8Cycle5OrbitData X) := by
-  have hge3 : 3 ≤ Fintype.card X := Nat.succ_le_of_lt hCardGtTwo
-  have hne3 : Fintype.card X ≠ 3 := by
-    intro h3
-    have hCase2' := hCase2
-    simp [h3] at hCase2'
-  have h3ne : 3 ≠ Fintype.card X := by
-    intro h
-    exact hne3 h.symm
-  have hgt3 : 3 < Fintype.card X := lt_of_le_of_ne hge3 h3ne
-  have hge4 : 4 ≤ Fintype.card X := Nat.succ_le_of_lt hgt3
-  have hne4 : Fintype.card X ≠ 4 := by
-    intro h4
-    have hCase2' := hCase2
-    simp [h4] at hCase2'
-  have h4ne : 4 ≠ Fintype.card X := by
-    intro h
-    exact hne4 h.symm
-  have hgt4 : 4 < Fintype.card X := lt_of_le_of_ne hge4 h4ne
-  have hge5 : 5 ≤ Fintype.card X := Nat.succ_le_of_lt hgt4
-  rcases Nat.exists_eq_add_of_le hge5 with ⟨m, hm⟩
-  let hCard : Fintype.card X = m + 5 := by
-    simpa [Nat.add_comm] using hm
-  exact ⟨c8Cycle5OrbitData_of_card_eq_add_five (X := X) m hCard⟩
+    ∃ q : ℕ, Fintype.card X = q * 3 + 5 := by
+  have hmod : Nat.ModEq 3 2 (Fintype.card X) := by
+    change 2 % 3 = Fintype.card X % 3
+    simp [hCase2]
+  have hTwoLe : 2 ≤ Fintype.card X := Nat.le_of_lt hCardGtTwo
+  rcases (Nat.modEq_iff_exists_eq_add hTwoLe).1 hmod with ⟨t, ht⟩
+  cases t with
+  | zero =>
+      exfalso
+      have hCardTwo : Fintype.card X = 2 := by simpa using ht
+      omega
+  | succ q =>
+      refine ⟨q, ?_⟩
+      omega
+
+noncomputable def c8Case1OrbitPartitionData_of_card_eq_mul_three_add_four
+    [Fintype X]
+    (q : ℕ) (hCard : Fintype.card X = q * 3 + 4) :
+    C8Case1OrbitPartitionData X := by
+  let eFin : X ≃ Fin (q * 3 + 4) := Fintype.equivFinOfCardEq hCard
+  let eSplit : X ≃ Fin (q * 3) ⊕ C8Fin4 := eFin.trans finSumFinEquiv.symm
+  let eAll : X ≃ (Fin q × C8Fin3) ⊕ C8Fin4 :=
+    eSplit.trans (Equiv.sumCongr finProdFinEquiv.symm (Equiv.refl C8Fin4))
+  let ψ : Equiv.Perm ((Fin q × C8Fin3) ⊕ C8Fin4) :=
+    Equiv.Perm.sumCongr (c8ProdThreePerm q) c8Fin4Cycle
+  have hψNoFix : ∀ s : (Fin q × C8Fin3) ⊕ C8Fin4, ψ s ≠ s := by
+    intro s
+    cases s with
+    | inl a =>
+        simpa [ψ] using c8ProdThreePerm_no_fixed q a
+    | inr b =>
+        simpa [ψ] using c8Fin4Cycle_no_fixed b
+  have hψPow12 : ψ ^ 12 = 1 := by
+    calc
+      ψ ^ 12 =
+          Equiv.Perm.sumCongr ((c8ProdThreePerm q) ^ 12) (c8Fin4Cycle ^ 12) := by
+            simpa [ψ] using
+              (MonoidHom.map_pow
+                (Equiv.Perm.sumCongrHom (Fin q × C8Fin3) C8Fin4)
+                (c8ProdThreePerm q, c8Fin4Cycle) 12).symm
+      _ = Equiv.Perm.sumCongr (1 : Equiv.Perm (Fin q × C8Fin3)) (1 : Equiv.Perm C8Fin4) := by
+            simp [c8ProdThreePerm_pow_twelve, c8Fin4Cycle_pow_twelve]
+      _ = 1 := by simp
+  have hψPow4_of_qzero (hq : q = 0) : ψ ^ 4 = 1 := by
+    subst hq
+    have hTailPow4 : (c8ProdThreePerm 0) ^ 4 = 1 := by
+      apply Equiv.Perm.ext
+      intro p
+      rcases p with ⟨a, b⟩
+      exact False.elim (Fin.elim0 a)
+    calc
+      ψ ^ 4 =
+          Equiv.Perm.sumCongr ((c8ProdThreePerm 0) ^ 4) (c8Fin4Cycle ^ 4) := by
+            simpa [ψ] using
+              (MonoidHom.map_pow
+                (Equiv.Perm.sumCongrHom (Fin 0 × C8Fin3) C8Fin4)
+                (c8ProdThreePerm 0, c8Fin4Cycle) 4).symm
+      _ = Equiv.Perm.sumCongr (1 : Equiv.Perm (Fin 0 × C8Fin3)) (1 : Equiv.Perm C8Fin4) := by
+            simp [hTailPow4, c8Fin4Cycle_pow_four]
+      _ = 1 := by simp
+  by_cases hq : q = 0
+  · refine
+      { φ := (eAll.trans ψ).trans eAll.symm
+        period := 4
+        hPeriod := Or.inl rfl
+        hPow := c8PowFour_transport eAll ψ (hψPow4_of_qzero hq)
+        hNoFix := c8NoFixed_transport eAll ψ hψNoFix
+        x := eAll.symm (Sum.inr 0)
+        y := eAll.symm (Sum.inr 1)
+        z := eAll.symm (Sum.inr 2)
+        w := eAll.symm (Sum.inr 3)
+        hxy := ?_
+        hyz := ?_
+        hzx := ?_
+        hzw := ?_
+        hwx := ?_
+        hφx := ?_
+        hφy := ?_
+        hφz := ?_
+        hφw := ?_ }
+    · intro h
+      have hs : (Sum.inr (0 : C8Fin4) : (Fin 0 × C8Fin3) ⊕ C8Fin4) = Sum.inr (1 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (1 : C8Fin4) : (Fin 0 × C8Fin3) ⊕ C8Fin4) = Sum.inr (2 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (2 : C8Fin4) : (Fin 0 × C8Fin3) ⊕ C8Fin4) = Sum.inr (0 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (2 : C8Fin4) : (Fin 0 × C8Fin3) ⊕ C8Fin4) = Sum.inr (3 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (3 : C8Fin4) : (Fin 0 × C8Fin3) ⊕ C8Fin4) = Sum.inr (0 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · apply eAll.injective
+      simp [ψ, c8Fin4Cycle_apply0]
+    · apply eAll.injective
+      simp [ψ, c8Fin4Cycle_apply1]
+    · apply eAll.injective
+      simp [ψ, c8Fin4Cycle_apply2]
+    · apply eAll.injective
+      simp [ψ, c8Fin4Cycle_apply3]
+  · refine
+      { φ := (eAll.trans ψ).trans eAll.symm
+        period := 12
+        hPeriod := Or.inr rfl
+        hPow := c8PowTwelve_transport eAll ψ hψPow12
+        hNoFix := c8NoFixed_transport eAll ψ hψNoFix
+        x := eAll.symm (Sum.inr 0)
+        y := eAll.symm (Sum.inr 1)
+        z := eAll.symm (Sum.inr 2)
+        w := eAll.symm (Sum.inr 3)
+        hxy := ?_
+        hyz := ?_
+        hzx := ?_
+        hzw := ?_
+        hwx := ?_
+        hφx := ?_
+        hφy := ?_
+        hφz := ?_
+        hφw := ?_ }
+    · intro h
+      have hs : (Sum.inr (0 : C8Fin4) : (Fin q × C8Fin3) ⊕ C8Fin4) = Sum.inr (1 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (1 : C8Fin4) : (Fin q × C8Fin3) ⊕ C8Fin4) = Sum.inr (2 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (2 : C8Fin4) : (Fin q × C8Fin3) ⊕ C8Fin4) = Sum.inr (0 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (2 : C8Fin4) : (Fin q × C8Fin3) ⊕ C8Fin4) = Sum.inr (3 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (3 : C8Fin4) : (Fin q × C8Fin3) ⊕ C8Fin4) = Sum.inr (0 : C8Fin4) := by
+        simpa using congrArg eAll h
+      cases hs
+    · apply eAll.injective
+      simp [ψ, c8Fin4Cycle_apply0]
+    · apply eAll.injective
+      simp [ψ, c8Fin4Cycle_apply1]
+    · apply eAll.injective
+      simp [ψ, c8Fin4Cycle_apply2]
+    · apply eAll.injective
+      simp [ψ, c8Fin4Cycle_apply3]
+
+noncomputable def c8Case2OrbitPartitionData_of_card_eq_mul_three_add_five
+    [Fintype X]
+    (q : ℕ) (hCard : Fintype.card X = q * 3 + 5) :
+    C8Case2OrbitPartitionData X := by
+  let eFin : X ≃ Fin (q * 3 + 5) := Fintype.equivFinOfCardEq hCard
+  let eSplit : X ≃ Fin (q * 3) ⊕ C8Fin5 := eFin.trans finSumFinEquiv.symm
+  let eAll : X ≃ (Fin q × C8Fin3) ⊕ C8Fin5 :=
+    eSplit.trans (Equiv.sumCongr finProdFinEquiv.symm (Equiv.refl C8Fin5))
+  let ψ : Equiv.Perm ((Fin q × C8Fin3) ⊕ C8Fin5) :=
+    Equiv.Perm.sumCongr (c8ProdThreePerm q) c8Fin5Cycle
+  have hψNoFix : ∀ s : (Fin q × C8Fin3) ⊕ C8Fin5, ψ s ≠ s := by
+    intro s
+    cases s with
+    | inl a =>
+        simpa [ψ] using c8ProdThreePerm_no_fixed q a
+    | inr b =>
+        simpa [ψ] using c8Fin5Cycle_no_fixed b
+  have hψPow15 : ψ ^ 15 = 1 := by
+    calc
+      ψ ^ 15 =
+          Equiv.Perm.sumCongr ((c8ProdThreePerm q) ^ 15) (c8Fin5Cycle ^ 15) := by
+            simpa [ψ] using
+              (MonoidHom.map_pow
+                (Equiv.Perm.sumCongrHom (Fin q × C8Fin3) C8Fin5)
+                (c8ProdThreePerm q, c8Fin5Cycle) 15).symm
+      _ = Equiv.Perm.sumCongr (1 : Equiv.Perm (Fin q × C8Fin3)) (1 : Equiv.Perm C8Fin5) := by
+            simp [c8ProdThreePerm_pow_fifteen, c8Fin5Cycle_pow_fifteen]
+      _ = 1 := by simp
+  have hψPow5_of_qzero (hq : q = 0) : ψ ^ 5 = 1 := by
+    subst hq
+    have hTailPow5 : (c8ProdThreePerm 0) ^ 5 = 1 := by
+      apply Equiv.Perm.ext
+      intro p
+      rcases p with ⟨a, b⟩
+      exact False.elim (Fin.elim0 a)
+    calc
+      ψ ^ 5 =
+          Equiv.Perm.sumCongr ((c8ProdThreePerm 0) ^ 5) (c8Fin5Cycle ^ 5) := by
+            simpa [ψ] using
+              (MonoidHom.map_pow
+                (Equiv.Perm.sumCongrHom (Fin 0 × C8Fin3) C8Fin5)
+                (c8ProdThreePerm 0, c8Fin5Cycle) 5).symm
+      _ = Equiv.Perm.sumCongr (1 : Equiv.Perm (Fin 0 × C8Fin3)) (1 : Equiv.Perm C8Fin5) := by
+            simp [hTailPow5, c8Fin5Cycle_pow_five]
+      _ = 1 := by simp
+  by_cases hq : q = 0
+  · refine
+      { φ := (eAll.trans ψ).trans eAll.symm
+        period := 5
+        hPeriod := Or.inl rfl
+        hPow := c8PowFive_transport eAll ψ (hψPow5_of_qzero hq)
+        hNoFix := c8NoFixed_transport eAll ψ hψNoFix
+        x := eAll.symm (Sum.inr 0)
+        y := eAll.symm (Sum.inr 1)
+        z := eAll.symm (Sum.inr 2)
+        u := eAll.symm (Sum.inr 3)
+        v := eAll.symm (Sum.inr 4)
+        hxy := ?_
+        hyz := ?_
+        hzx := ?_
+        hzu := ?_
+        huv := ?_
+        hvx := ?_
+        hφx := ?_
+        hφy := ?_
+        hφz := ?_
+        hφu := ?_
+        hφv := ?_ }
+    · intro h
+      have hs : (Sum.inr (0 : C8Fin5) : (Fin 0 × C8Fin3) ⊕ C8Fin5) = Sum.inr (1 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (1 : C8Fin5) : (Fin 0 × C8Fin3) ⊕ C8Fin5) = Sum.inr (2 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (2 : C8Fin5) : (Fin 0 × C8Fin3) ⊕ C8Fin5) = Sum.inr (0 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (2 : C8Fin5) : (Fin 0 × C8Fin3) ⊕ C8Fin5) = Sum.inr (3 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (3 : C8Fin5) : (Fin 0 × C8Fin3) ⊕ C8Fin5) = Sum.inr (4 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (4 : C8Fin5) : (Fin 0 × C8Fin3) ⊕ C8Fin5) = Sum.inr (0 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply0]
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply1]
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply2]
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply3]
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply4]
+  · refine
+      { φ := (eAll.trans ψ).trans eAll.symm
+        period := 15
+        hPeriod := Or.inr rfl
+        hPow := c8PowFifteen_transport eAll ψ hψPow15
+        hNoFix := c8NoFixed_transport eAll ψ hψNoFix
+        x := eAll.symm (Sum.inr 0)
+        y := eAll.symm (Sum.inr 1)
+        z := eAll.symm (Sum.inr 2)
+        u := eAll.symm (Sum.inr 3)
+        v := eAll.symm (Sum.inr 4)
+        hxy := ?_
+        hyz := ?_
+        hzx := ?_
+        hzu := ?_
+        huv := ?_
+        hvx := ?_
+        hφx := ?_
+        hφy := ?_
+        hφz := ?_
+        hφu := ?_
+        hφv := ?_ }
+    · intro h
+      have hs : (Sum.inr (0 : C8Fin5) : (Fin q × C8Fin3) ⊕ C8Fin5) = Sum.inr (1 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (1 : C8Fin5) : (Fin q × C8Fin3) ⊕ C8Fin5) = Sum.inr (2 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (2 : C8Fin5) : (Fin q × C8Fin3) ⊕ C8Fin5) = Sum.inr (0 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (2 : C8Fin5) : (Fin q × C8Fin3) ⊕ C8Fin5) = Sum.inr (3 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (3 : C8Fin5) : (Fin q × C8Fin3) ⊕ C8Fin5) = Sum.inr (4 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · intro h
+      have hs : (Sum.inr (4 : C8Fin5) : (Fin q × C8Fin3) ⊕ C8Fin5) = Sum.inr (0 : C8Fin5) := by
+        simpa using congrArg eAll h
+      cases hs
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply0]
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply1]
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply2]
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply3]
+    · apply eAll.injective
+      simp [ψ, c8Fin5Cycle_apply4]
+
+theorem c8Case1OrbitPartitionData_of_case1
+    [Fintype X]
+    (hCardGtTwo : 2 < Fintype.card X)
+    (hCase1 : Fintype.card X % 3 = 1) :
+    Nonempty (C8Case1OrbitPartitionData X) := by
+  rcases c8Card_eq_mul_three_add_four_of_case1 (X := X) hCardGtTwo hCase1 with ⟨q, hCard⟩
+  exact ⟨c8Case1OrbitPartitionData_of_card_eq_mul_three_add_four (X := X) q hCard⟩
+
+theorem c8Case2OrbitPartitionData_of_case2
+    [Fintype X]
+    (hCardGtTwo : 2 < Fintype.card X)
+    (hCase2 : Fintype.card X % 3 = 2) :
+    Nonempty (C8Case2OrbitPartitionData X) := by
+  rcases c8Card_eq_mul_three_add_five_of_case2 (X := X) hCardGtTwo hCase2 with ⟨q, hCard⟩
+  exact ⟨c8Case2OrbitPartitionData_of_card_eq_mul_three_add_five (X := X) q hCard⟩
 
 lemma C8Cycle3OrbitData.mem_orbitSet_z (c : C8Cycle3OrbitData X) :
     c.z ∈ orbitSet c.φ c.x := by
@@ -727,111 +891,6 @@ lemma C8Cycle3OrbitData.mem_orbitSet_y (c : C8Cycle3OrbitData X) :
     (c.φ ^ 2) c.x = c.φ (c.φ c.x) := by simp [pow_succ']
     _ = c.φ c.z := by simp [c.hφx]
     _ = c.y := c.hφz
-
-lemma C8Cycle4OrbitData.mem_orbitSet_y (c : C8Cycle4OrbitData X) :
-    c.y ∈ orbitSet c.φ c.x := by
-  refine ⟨1, ?_⟩
-  simpa using c.hφx
-
-lemma C8Cycle4OrbitData.mem_orbitSet_z (c : C8Cycle4OrbitData X) :
-    c.z ∈ orbitSet c.φ c.x := by
-  refine ⟨2, ?_⟩
-  calc
-    (c.φ ^ 2) c.x = c.φ (c.φ c.x) := by simp [pow_succ']
-    _ = c.φ c.y := by simp [c.hφx]
-    _ = c.z := c.hφy
-
-lemma C8Cycle4OrbitData.mem_orbitSet_w (c : C8Cycle4OrbitData X) :
-    c.w ∈ orbitSet c.φ c.x := by
-  refine ⟨3, ?_⟩
-  calc
-    (c.φ ^ 3) c.x = c.φ ((c.φ ^ 2) c.x) := by simp [pow_succ']
-    _ = c.φ c.z := by
-      simp [pow_succ', c.hφx, c.hφy]
-    _ = c.w := c.hφz
-
-lemma C8Cycle5OrbitData.mem_orbitSet_y (c : C8Cycle5OrbitData X) :
-    c.y ∈ orbitSet c.φ c.x := by
-  refine ⟨1, ?_⟩
-  simpa using c.hφx
-
-lemma C8Cycle5OrbitData.mem_orbitSet_z (c : C8Cycle5OrbitData X) :
-    c.z ∈ orbitSet c.φ c.x := by
-  refine ⟨2, ?_⟩
-  calc
-    (c.φ ^ 2) c.x = c.φ (c.φ c.x) := by simp [pow_succ']
-    _ = c.φ c.y := by simp [c.hφx]
-    _ = c.z := c.hφy
-
-lemma C8Cycle5OrbitData.mem_orbitSet_u (c : C8Cycle5OrbitData X) :
-    c.u ∈ orbitSet c.φ c.x := by
-  refine ⟨3, ?_⟩
-  calc
-    (c.φ ^ 3) c.x = c.φ ((c.φ ^ 2) c.x) := by simp [pow_succ']
-    _ = c.φ c.z := by
-      simp [pow_succ', c.hφx, c.hφy]
-    _ = c.u := c.hφz
-
-lemma C8Cycle5OrbitData.mem_orbitSet_v (c : C8Cycle5OrbitData X) :
-    c.v ∈ orbitSet c.φ c.x := by
-  refine ⟨4, ?_⟩
-  calc
-    (c.φ ^ 4) c.x = c.φ ((c.φ ^ 3) c.x) := by simp [pow_succ']
-    _ = c.φ c.u := by
-      simp [pow_succ', c.hφx, c.hφy, c.hφz]
-    _ = c.v := c.hφu
-
-/-- Unified fallback orbit-case data: either a 4-cycle or a 5-cycle witness. -/
-inductive C8FallbackOrbitCase (X : Type uX) where
-  | four : C8Cycle4OrbitData X → C8FallbackOrbitCase X
-  | five : C8Cycle5OrbitData X → C8FallbackOrbitCase X
-
-namespace C8FallbackOrbitCase
-
-def perm (c : C8FallbackOrbitCase X) : Equiv.Perm X :=
-  match c with
-  | .four d => d.φ
-  | .five d => d.φ
-
-def period (c : C8FallbackOrbitCase X) : ℕ :=
-  match c with
-  | .four _ => 4
-  | .five _ => 5
-
-lemma pow_period_eq_one (c : C8FallbackOrbitCase X) :
-    c.perm ^ c.period = 1 := by
-  cases c with
-  | four d =>
-      simpa [perm, period] using d.hPow
-  | five d =>
-      simpa [perm, period] using d.hPow
-
-end C8FallbackOrbitCase
-
-theorem c8FallbackOrbitCase_of_case1
-    [Fintype X]
-    (hCardGtTwo : 2 < Fintype.card X)
-    (hCase1 : Fintype.card X % 3 = 1) :
-    Nonempty (C8FallbackOrbitCase X) := by
-  rcases c8Cycle4OrbitData_of_case1 (X := X) hCardGtTwo hCase1 with ⟨d4⟩
-  exact ⟨C8FallbackOrbitCase.four d4⟩
-
-theorem c8FallbackOrbitCase_of_case2
-    [Fintype X]
-    (hCardGtTwo : 2 < Fintype.card X)
-    (hCase2 : Fintype.card X % 3 = 2) :
-    Nonempty (C8FallbackOrbitCase X) := by
-  rcases c8Cycle5OrbitData_of_case2 (X := X) hCardGtTwo hCase2 with ⟨d5⟩
-  exact ⟨C8FallbackOrbitCase.five d5⟩
-
-theorem c8FallbackOrbitCase_of_cases12
-    [Fintype X]
-    (hCardGtTwo : 2 < Fintype.card X)
-    (hCase12 : Fintype.card X % 3 = 1 ∨ Fintype.card X % 3 = 2) :
-    Nonempty (C8FallbackOrbitCase X) := by
-  rcases hCase12 with hCase1 | hCase2
-  · exact c8FallbackOrbitCase_of_case1 (X := X) hCardGtTwo hCase1
-  · exact c8FallbackOrbitCase_of_case2 (X := X) hCardGtTwo hCase2
 
 end C8OrbitCases
 
