@@ -142,7 +142,7 @@ theorem c8EqC21_designated_of_equationPack4
           balanceAt B hPack4.w hPack4.z d + balanceAt B hPack4.z hPack4.x d) +
         (balanceAt B hPack4.y hPack4.z d + balanceAt B hPack4.z hPack4.x d +
           balanceAt B hPack4.x hPack4.w d + balanceAt B hPack4.w hPack4.y d)
-          = (0 : R) + 0 + 0 := by simpa [h9, h10, h11]
+          = (0 : R) + 0 + 0 := by simp [h9, h10, h11]
       _ = 0 := by simp
   have hdouble : S + S = 0 := by
     unfold S
@@ -165,13 +165,13 @@ theorem c8EqC21_designated_of_equationPack4
     by_contra hnot
     have hpos : 0 < S := lt_of_not_ge hnot
     have hpos2 : 0 < S + S := add_pos hpos hpos
-    have hnotPos : ¬ 0 < S + S := by simpa [hdouble]
+    have hnotPos : ¬ 0 < S + S := by simp [hdouble]
     exact hnotPos hpos2
   have hge : 0 ≤ S := by
     by_contra hnot
     have hneg : S < 0 := lt_of_not_ge hnot
     have hneg2 : S + S < 0 := add_neg hneg hneg
-    have hnotNeg : ¬ S + S < 0 := by simpa [hdouble]
+    have hnotNeg : ¬ S + S < 0 := by simp [hdouble]
     exact hnotNeg hneg2
   have hS0 : S = 0 := le_antisymm hle hge
   simpa [S] using hS0
@@ -250,7 +250,7 @@ theorem c8EqC21_designated_of_equationPack5
           balanceAt B hPack5.y hPack5.v d + balanceAt B hPack5.v hPack5.u d +
           balanceAt B hPack5.u hPack5.z d)
           = (0 : R) + 0 + 0 + 0 + 0 + 0 := by
-              simpa [h15, h16, h17, h18, h19, h20]
+              simp [h15, h16, h17, h18, h19, h20]
       _ = 0 := by simp
   have hquadruple : S + S + S + S = 0 := by
     unfold S
@@ -292,7 +292,7 @@ theorem c8EqC21_designated_of_equationPack5
       have h2 : 0 < S + S := add_pos hpos hpos
       have h4 : 0 < (S + S) + (S + S) := add_pos h2 h2
       simpa [add_assoc] using h4
-    have hnotPos : ¬ 0 < S + S + S + S := by simpa [hquadruple]
+    have hnotPos : ¬ 0 < S + S + S + S := by simp [hquadruple]
     exact hnotPos hpos4
   have hge : 0 ≤ S := by
     by_contra hnot
@@ -301,7 +301,7 @@ theorem c8EqC21_designated_of_equationPack5
       have h2 : S + S < 0 := add_neg hneg hneg
       have h4 : (S + S) + (S + S) < 0 := add_neg h2 h2
       simpa [add_assoc] using h4
-    have hnotNeg : ¬ S + S + S + S < 0 := by simpa [hquadruple]
+    have hnotNeg : ¬ S + S + S + S < 0 := by simp [hquadruple]
     exact hnotNeg hneg4
   have hS0 : S = 0 := le_antisymm hle hge
   simpa [S] using hS0
@@ -517,8 +517,8 @@ theorem c8Fallback_case1_exists_hullWitness
               (nu := nu) (R := R) (D := D) hCone B hInv d1 x0)))
   have hPeriodPos : 0 < d1.period := by
     rcases d1.hPeriod with h4 | h12
-    · simpa [h4]
-    · simpa [h12]
+    · simp [h4]
+    · simp [h12]
   have hPow : d1.φ ^ ((d1.period - 1) + 1) = 1 := by
     simpa [Nat.sub_add_cancel (Nat.succ_le_of_lt hPeriodPos)] using d1.hPow
   have hHullBlocksOrbit :
@@ -571,8 +571,8 @@ theorem c8Fallback_case2_exists_hullWitness
               (nu := nu) (R := R) (D := D) hCone B hInv d2 x0)))
   have hPeriodPos : 0 < d2.period := by
     rcases d2.hPeriod with h5 | h15
-    · simpa [h5]
-    · simpa [h15]
+    · simp [h5]
+    · simp [h15]
   have hPow : d2.φ ^ ((d2.period - 1) + 1) = 1 := by
     simpa [Nat.sub_add_cancel (Nat.succ_le_of_lt hPeriodPos)] using d2.hPow
   have hHullBlocksOrbit :
@@ -672,8 +672,8 @@ theorem c8Fallback_case1_cycleSum_of_threeOrbitWitness
     simpa [x, y, pow_succ'] using hthree
   have hPeriodPos : 0 < d1.period := by
     rcases d1.hPeriod with h4 | h12
-    · simpa [h4]
-    · simpa [h12]
+    · simp [h4]
+    · simp [h12]
   have hThreeDivPeriod : 3 ∣ d1.period := by
     rcases d1.hPeriod with h4 | h12
     · exfalso
@@ -688,7 +688,7 @@ theorem c8Fallback_case1_cycleSum_of_threeOrbitWitness
           d1.φ x = (d1.φ ^ 4) x := by simpa using hpow4_from_three.symm
           _ = x := hpow4x
       exact d1.hNoFix x hfix
-    · simpa [h12] using (show 3 ∣ 12 by decide)
+    · simp [h12]
   have hThreeDiv : 3 ∣ (d1.period - 1) + 1 := by
     simpa [Nat.sub_add_cancel (Nat.succ_le_of_lt hPeriodPos)] using hThreeDivPeriod
   have horbit :
@@ -756,8 +756,8 @@ theorem c8Fallback_case2_cycleSum_of_threeOrbitWitness
     simpa [x, y, pow_succ'] using hthree
   have hPeriodPos : 0 < d2.period := by
     rcases d2.hPeriod with h5 | h15
-    · simpa [h5]
-    · simpa [h15]
+    · simp [h5]
+    · simp [h15]
   have hThreeDivPeriod : 3 ∣ d2.period := by
     rcases d2.hPeriod with h5 | h15
     · exfalso
@@ -779,7 +779,7 @@ theorem c8Fallback_case2_cycleSum_of_threeOrbitWitness
           _ = (d2.φ ^ 3) x := by simp [pow_succ']
           _ = x := by simpa [x] using hthree
       exact d2.hNoFix x hfix
-    · simpa [h15] using (show 3 ∣ 15 by decide)
+    · simp [h15]
   have hThreeDiv : 3 ∣ (d2.period - 1) + 1 := by
     simpa [Nat.sub_add_cancel (Nat.succ_le_of_lt hPeriodPos)] using hThreeDivPeriod
   have horbit :
@@ -810,13 +810,13 @@ lemma c8Fallback_eq_zero_of_triple_sum_eq_zero
     by_contra hnot
     have hpos : 0 < a := lt_of_not_ge hnot
     have hpos3 : 0 < a + a + a := add_pos (add_pos hpos hpos) hpos
-    have hnotPos : ¬ 0 < a + a + a := by simpa [h]
+    have hnotPos : ¬ 0 < a + a + a := by simp [h]
     exact hnotPos hpos3
   have hge : 0 ≤ a := by
     by_contra hnot
     have hneg : a < 0 := lt_of_not_ge hnot
     have hneg3 : a + a + a < 0 := add_neg (add_neg hneg hneg) hneg
-    have hnotNeg : ¬ a + a + a < 0 := by simpa [h]
+    have hnotNeg : ¬ a + a + a < 0 := by simp [h]
     exact hnotNeg hneg3
   exact le_antisymm hle hge
 
@@ -828,10 +828,10 @@ lemma c8Fallback_pow8_fix_of_pow4_fix
   have hpowMul : φ ^ (4 * 2) = (φ ^ 4) ^ 2 := by
     simpa [pow_mul] using (pow_mul φ 4 2).symm
   calc
-    (φ ^ 8) x = (φ ^ (4 * 2)) x := by simpa [h8]
-    _ = ((φ ^ 4) ^ 2) x := by simpa [hpowMul]
+    (φ ^ 8) x = (φ ^ (4 * 2)) x := by simp [h8]
+    _ = ((φ ^ 4) ^ 2) x := by simp [hpowMul]
     _ = (φ ^ 4) ((φ ^ 4) x) := rfl
-    _ = (φ ^ 4) x := by simpa [hpow4]
+    _ = (φ ^ 4) x := by simp [hpow4]
     _ = x := hpow4
 
 lemma c8Fallback_pow10_fix_of_pow5_fix
@@ -842,10 +842,10 @@ lemma c8Fallback_pow10_fix_of_pow5_fix
   have hpowMul : φ ^ (5 * 2) = (φ ^ 5) ^ 2 := by
     simpa [pow_mul] using (pow_mul φ 5 2).symm
   calc
-    (φ ^ 10) x = (φ ^ (5 * 2)) x := by simpa [h10]
-    _ = ((φ ^ 5) ^ 2) x := by simpa [hpowMul]
+    (φ ^ 10) x = (φ ^ (5 * 2)) x := by simp [h10]
+    _ = ((φ ^ 5) ^ 2) x := by simp [hpowMul]
     _ = (φ ^ 5) ((φ ^ 5) x) := rfl
-    _ = (φ ^ 5) x := by simpa [hpow5]
+    _ = (φ ^ 5) x := by simp [hpow5]
     _ = x := hpow5
 
 lemma c8Fallback_balanceAt_fixed_of_pow_fix
@@ -867,7 +867,7 @@ lemma c8Fallback_evalNat_weight_sum4
     evalNat (fun v => w1 v + w2 v + w3 v + w4 v) d =
       evalNat w1 d + evalNat w2 d + evalNat w3 d + evalNat w4 d := by
   unfold evalNat
-  simp [Finsupp.sum, nsmul_add, Finset.sum_add_distrib, add_assoc, add_comm, add_left_comm]
+  simp [Finsupp.sum, Finset.sum_add_distrib, add_assoc, add_comm, add_left_comm]
 
 lemma c8Fallback_evalNat_weight_sum5
     [AddCommMonoid R] [DecidableEq V]
@@ -875,7 +875,7 @@ lemma c8Fallback_evalNat_weight_sum5
     evalNat (fun v => w1 v + w2 v + w3 v + w4 v + w5 v) d =
       evalNat w1 d + evalNat w2 d + evalNat w3 d + evalNat w4 d + evalNat w5 d := by
   unfold evalNat
-  simp [Finsupp.sum, nsmul_add, Finset.sum_add_distrib, add_assoc, add_comm, add_left_comm]
+  simp [Finsupp.sum, Finset.sum_add_distrib, add_assoc, add_comm, add_left_comm]
 
 lemma c8Fallback_evalIntHom_toZProfile_eq4
     [DecidableEq V]
@@ -1207,12 +1207,12 @@ lemma c8Fallback_cycle4_pair_average
   have hpow2z : (φ ^ 2) z = x := by
     calc
       (φ ^ 2) z = φ (φ z) := by simp [pow_succ']
-      _ = φ w := by simpa [hφz]
+      _ = φ w := by simp [hφz]
       _ = x := hφw
   have hpow2w : (φ ^ 2) w = y := by
     calc
       (φ ^ 2) w = φ (φ w) := by simp [pow_succ']
-      _ = φ x := by simpa [hφw]
+      _ = φ x := by simp [hφw]
       _ = y := hφx
   have h2raw :=
     balanceAt_permute_of_balanceNeutral
@@ -1225,13 +1225,13 @@ lemma c8Fallback_cycle4_pair_average
     calc
       (φ ^ 3) y = φ ((φ ^ 2) y) := by simp [pow_succ']
       _ = φ (φ (φ y)) := by simp [pow_succ']
-      _ = φ (φ z) := by simpa [hφy]
-      _ = φ w := by simpa [hφz]
+      _ = φ (φ z) := by simp [hφy]
+      _ = φ w := by simp [hφz]
       _ = x := hφw
   have hpow3z : (φ ^ 3) z = y := by
     calc
       (φ ^ 3) z = φ ((φ ^ 2) z) := by simp [pow_succ']
-      _ = φ x := by simpa [hpow2z]
+      _ = φ x := by simp [hpow2z]
       _ = y := hφx
   have h3raw :=
     balanceAt_permute_of_balanceNeutral
@@ -1329,21 +1329,21 @@ theorem c8Fallback_case1_equationPack4_of_bigOrbitWitness
       _ = d1.φ ((d1.φ ^ k) d1.x) := by simpa [x] using congrArg d1.φ hk.symm
       _ = (d1.φ ^ (k + 1)) d1.x := by simp [pow_succ']
       _ = (d1.φ ^ k) (d1.φ d1.x) := by simp [pow_succ]
-      _ = (d1.φ ^ k) d1.y := by simpa [d1.hφx]
+      _ = (d1.φ ^ k) d1.y := by simp [d1.hφx]
   have hzk : z = (d1.φ ^ k) d1.z := by
     calc
       z = d1.φ y := rfl
       _ = d1.φ ((d1.φ ^ k) d1.y) := by simpa [y] using congrArg d1.φ hyk
       _ = (d1.φ ^ (k + 1)) d1.y := by simp [pow_succ']
       _ = (d1.φ ^ k) (d1.φ d1.y) := by simp [pow_succ]
-      _ = (d1.φ ^ k) d1.z := by simpa [d1.hφy]
+      _ = (d1.φ ^ k) d1.z := by simp [d1.hφy]
   have hsk : s = (d1.φ ^ k) d1.w := by
     calc
       s = d1.φ z := rfl
       _ = d1.φ ((d1.φ ^ k) d1.z) := by simpa [z] using congrArg d1.φ hzk
       _ = (d1.φ ^ (k + 1)) d1.z := by simp [pow_succ']
       _ = (d1.φ ^ k) (d1.φ d1.z) := by simp [pow_succ]
-      _ = (d1.φ ^ k) d1.w := by simpa [d1.hφz]
+      _ = (d1.φ ^ k) d1.w := by simp [d1.hφz]
   have hφx : d1.φ x = y := by rfl
   have hφy : d1.φ y = z := by rfl
   have hφz : d1.φ z = s := by rfl
@@ -1352,7 +1352,7 @@ theorem c8Fallback_case1_equationPack4_of_bigOrbitWitness
       d1.φ s = d1.φ ((d1.φ ^ k) d1.w) := by simpa [s] using congrArg d1.φ hsk
       _ = (d1.φ ^ (k + 1)) d1.w := by simp [pow_succ']
       _ = (d1.φ ^ k) (d1.φ d1.w) := by simp [pow_succ]
-      _ = (d1.φ ^ k) d1.x := by simpa [d1.hφw]
+      _ = (d1.φ ^ k) d1.x := by simp [d1.hφw]
       _ = x := by simpa [x] using hk
   have hxy : x ≠ y := by
     intro hxy'
@@ -1406,7 +1406,7 @@ theorem c8Fallback_case1_equationPack4_of_bigOrbitWitness
     balanceAt B x y d + balanceAt B y z d + balanceAt B z s d + balanceAt B s x d
   have hyOrbit : y ∈ orbitSet d1.φ x := by
     refine ⟨1, ?_⟩
-    simpa [x, y]
+    simp [x, y]
   have hzOrbit : z ∈ orbitSet d1.φ x := by
     refine ⟨2, ?_⟩
     simp [x, y, z, pow_succ']
@@ -1545,7 +1545,7 @@ theorem c8Fallback_case1_equationPack4_of_bigOrbitWitness
             calc
               E9 d0 + E9 d0 + E9 d0
                   = balanceAt B x y (orbitProfileSum (nu d1.φ) 11 d0) := havg11.symm
-              _ = balanceAt B x y (orbitMap d0) := by simpa [orbitMap, h12]
+              _ = balanceAt B x y (orbitMap d0) := by simp [orbitMap, h12]
               _ = 0 := hxy0
           exact c8Fallback_eq_zero_of_triple_sum_eq_zero htriple
       have hψ :
@@ -1694,28 +1694,28 @@ theorem c8Fallback_case2_equationPack5_of_bigOrbitWitness
       _ = d2.φ ((d2.φ ^ k) d2.x) := by simpa [x] using congrArg d2.φ hk.symm
       _ = (d2.φ ^ (k + 1)) d2.x := by simp [pow_succ']
       _ = (d2.φ ^ k) (d2.φ d2.x) := by simp [pow_succ]
-      _ = (d2.φ ^ k) d2.y := by simpa [d2.hφx]
+      _ = (d2.φ ^ k) d2.y := by simp [d2.hφx]
   have hzk : z = (d2.φ ^ k) d2.z := by
     calc
       z = d2.φ y := rfl
       _ = d2.φ ((d2.φ ^ k) d2.y) := by simpa [y] using congrArg d2.φ hyk
       _ = (d2.φ ^ (k + 1)) d2.y := by simp [pow_succ']
       _ = (d2.φ ^ k) (d2.φ d2.y) := by simp [pow_succ]
-      _ = (d2.φ ^ k) d2.z := by simpa [d2.hφy]
+      _ = (d2.φ ^ k) d2.z := by simp [d2.hφy]
   have huk : u = (d2.φ ^ k) d2.u := by
     calc
       u = d2.φ z := rfl
       _ = d2.φ ((d2.φ ^ k) d2.z) := by simpa [z] using congrArg d2.φ hzk
       _ = (d2.φ ^ (k + 1)) d2.z := by simp [pow_succ']
       _ = (d2.φ ^ k) (d2.φ d2.z) := by simp [pow_succ]
-      _ = (d2.φ ^ k) d2.u := by simpa [d2.hφz]
+      _ = (d2.φ ^ k) d2.u := by simp [d2.hφz]
   have hvk : v = (d2.φ ^ k) d2.v := by
     calc
       v = d2.φ u := rfl
       _ = d2.φ ((d2.φ ^ k) d2.u) := by simpa [u] using congrArg d2.φ huk
       _ = (d2.φ ^ (k + 1)) d2.u := by simp [pow_succ']
       _ = (d2.φ ^ k) (d2.φ d2.u) := by simp [pow_succ]
-      _ = (d2.φ ^ k) d2.v := by simpa [d2.hφu]
+      _ = (d2.φ ^ k) d2.v := by simp [d2.hφu]
   have hφx : d2.φ x = y := by rfl
   have hφy : d2.φ y = z := by rfl
   have hφz : d2.φ z = u := by rfl
@@ -1725,7 +1725,7 @@ theorem c8Fallback_case2_equationPack5_of_bigOrbitWitness
       d2.φ v = d2.φ ((d2.φ ^ k) d2.v) := by simpa [v] using congrArg d2.φ hvk
       _ = (d2.φ ^ (k + 1)) d2.v := by simp [pow_succ']
       _ = (d2.φ ^ k) (d2.φ d2.v) := by simp [pow_succ]
-      _ = (d2.φ ^ k) d2.x := by simpa [d2.hφv]
+      _ = (d2.φ ^ k) d2.x := by simp [d2.hφv]
       _ = x := by simpa [x] using hk
   have hxy : x ≠ y := by
     intro hxy'
@@ -1762,12 +1762,12 @@ theorem c8Fallback_case2_equationPack5_of_bigOrbitWitness
     have hvy0 : d2.v = d2.y := by
       calc
         d2.v = d2.φ d2.u := d2.hφu.symm
-        _ = d2.φ d2.x := by simpa [hxu0]
+        _ = d2.φ d2.x := by simp [hxu0]
         _ = d2.y := d2.hφx
     have hzx0 : d2.z = d2.x := by
       calc
         d2.z = d2.φ d2.y := d2.hφy.symm
-        _ = d2.φ d2.v := by simpa [hvy0]
+        _ = d2.φ d2.v := by simp [hvy0]
         _ = d2.x := d2.hφv
     exact d2.hzx hzx0
   have hzv0 : d2.z ≠ d2.v := by
@@ -1823,7 +1823,7 @@ theorem c8Fallback_case2_equationPack5_of_bigOrbitWitness
       balanceAt B u v d + balanceAt B v x d
   have hyOrbit : y ∈ orbitSet d2.φ x := by
     refine ⟨1, ?_⟩
-    simpa [x, y]
+    simp [x, y]
   have hzOrbit : z ∈ orbitSet d2.φ x := by
     refine ⟨2, ?_⟩
     simp [x, y, z, pow_succ']
@@ -1979,7 +1979,7 @@ theorem c8Fallback_case2_equationPack5_of_bigOrbitWitness
             calc
               E15 d0 + E15 d0 + E15 d0
                   = balanceAt B x y (orbitProfileSum (nu d2.φ) 14 d0) := havg14.symm
-              _ = balanceAt B x y (orbitMap d0) := by simpa [orbitMap, h15]
+              _ = balanceAt B x y (orbitMap d0) := by simp [orbitMap, h15]
               _ = 0 := hxy0
           exact c8Fallback_eq_zero_of_triple_sum_eq_zero htriple
       have hψ :

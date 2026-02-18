@@ -512,11 +512,11 @@ lemma c8ThreeOrbit_of_sumCongr_inl
     e ((((e.trans (Equiv.Perm.sumCongr τ σ)).trans e.symm) ^ 3) t)
         = ((Equiv.Perm.sumCongr τ σ) ^ 3) (e t) := by
             simpa using c8Conj_pow_apply e (Equiv.Perm.sumCongr τ σ) 3 t
-    _ = ((Equiv.Perm.sumCongr τ σ) ^ 3) (Sum.inl a) := by simpa [ha]
-    _ = (Equiv.Perm.sumCongr (τ ^ 3) (σ ^ 3)) (Sum.inl a) := by simpa [hpow3]
+    _ = ((Equiv.Perm.sumCongr τ σ) ^ 3) (Sum.inl a) := by simp [ha]
+    _ = (Equiv.Perm.sumCongr (τ ^ 3) (σ ^ 3)) (Sum.inl a) := by simp [hpow3]
     _ = Sum.inl ((τ ^ 3) a) := by simp
-    _ = Sum.inl a := by simpa [hτ3]
-    _ = e t := by simpa [ha]
+    _ = Sum.inl a := by simp [hτ3]
+    _ = e t := by simp [ha]
 
 lemma c8BigOrbit_of_sumCongr_inr_fin4
     {A α : Type*}
@@ -543,13 +543,13 @@ lemma c8BigOrbit_of_sumCongr_inr_fin4
               c8Conj_pow_apply e (Equiv.Perm.sumCongr τ c8Fin4Cycle) b.1 (e.symm (Sum.inr 0))
     _ = ((Equiv.Perm.sumCongr τ c8Fin4Cycle) ^ b.1) (Sum.inr 0) := by simp
     _ = (Equiv.Perm.sumCongr (τ ^ b.1) (c8Fin4Cycle ^ b.1)) (Sum.inr 0) := by
-          simpa [hpow]
+          simp [hpow]
     _ = Sum.inr ((c8Fin4Cycle ^ b.1) 0) := by simp
     _ = Sum.inr b := by
           have hbpow : (c8Fin4Cycle ^ b.1) 0 = b := by
             fin_cases b <;> decide
-          simpa [hbpow]
-    _ = e t := by simpa [hb]
+          simp [hbpow]
+    _ = e t := by simp [hb]
 
 lemma c8BigOrbit_of_sumCongr_inr_fin5
     {A α : Type*}
@@ -576,13 +576,13 @@ lemma c8BigOrbit_of_sumCongr_inr_fin5
               c8Conj_pow_apply e (Equiv.Perm.sumCongr τ c8Fin5Cycle) b.1 (e.symm (Sum.inr 0))
     _ = ((Equiv.Perm.sumCongr τ c8Fin5Cycle) ^ b.1) (Sum.inr 0) := by simp
     _ = (Equiv.Perm.sumCongr (τ ^ b.1) (c8Fin5Cycle ^ b.1)) (Sum.inr 0) := by
-          simpa [hpow]
+          simp [hpow]
     _ = Sum.inr ((c8Fin5Cycle ^ b.1) 0) := by simp
     _ = Sum.inr b := by
           have hbpow : (c8Fin5Cycle ^ b.1) 0 = b := by
             fin_cases b <;> decide
-          simpa [hbpow]
-    _ = e t := by simpa [hb]
+          simp [hbpow]
+    _ = e t := by simp [hb]
 
 /-- Paper-faithful Case-1 orbit-partition data:
 `φ` has one 4-cycle (the designated big block) and all remaining orbits are

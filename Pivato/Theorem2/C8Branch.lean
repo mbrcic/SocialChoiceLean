@@ -490,7 +490,7 @@ lemma c8Branch_orbitProfileSum_split_threeBlocks
     orbitProfileSum π M d
         = Finset.sum (Finset.range (3 * q)) (fun k => permuteNProfile (π ^ k) d) := by
             unfold orbitProfileSum
-            simpa [hM]
+            simp [hM]
     _ = Finset.sum (Finset.range q)
           (fun i => orbitProfileSum π 2 (permuteNProfile (π ^ (3 * i)) d)) := hblocks
 
@@ -547,7 +547,7 @@ lemma c8Branch_cycle3_shift_block_contribution
       ∀ {t : X}, (φ ^ 3) t = t → (φ ^ (3 * i)) t = t := by
     intro t h3
     have hpowMul : (φ ^ (3 * i)) t = ((φ ^ 3) ^ i) t := by
-      simpa [pow_mul] using congrArg (fun p : Equiv.Perm X => p t) (pow_mul φ 3 i).symm
+      exact congrArg (fun p : Equiv.Perm X => p t) (pow_mul φ 3 i)
     have hfix : ∀ n : ℕ, ((φ ^ 3) ^ n) t = t := by
       intro n
       induction n with
@@ -632,7 +632,7 @@ lemma c8Branch_eqC21_zero_on_block_domainImageZ
   have hd0Orbit : orbitMap d0 ∈ D := horbit hd0D
   have hzOrbit : z ∈ orbitSet φ x := by
     refine ⟨1, ?_⟩
-    simpa [pow_succ', hφx]
+    simp [pow_succ', hφx]
   have hyOrbit : y ∈ orbitSet φ x := by
     refine ⟨2, ?_⟩
     simp [pow_succ', hφx, hφz]
@@ -650,7 +650,7 @@ lemma c8Branch_eqC21_zero_on_block_domainImageZ
     c8Branch_threeDiv_exists_blockCount hThreeDiv
   have hq0 : q ≠ 0 := by
     intro hq
-    have hM0 : M + 1 = 0 := by simpa [hMq, hq]
+    have hM0 : M + 1 = 0 := by simp [hMq, hq]
     exact Nat.succ_ne_zero M hM0
   have hqpos : 0 < q := Nat.pos_of_ne_zero hq0
   have hsplit :
@@ -701,7 +701,7 @@ lemma c8Branch_eqC21_zero_on_block_domainImageZ
   have hψ :
       evalIntHom (fun v => B.bal x y v + B.bal y z v + B.bal z x v) (toZProfile d0) = S := by
     simpa [S] using c8Branch_evalIntHom_toZProfile_eq3 (B := B) x y z d0
-  simpa [hψ, hS0]
+  simp [hψ, hS0]
 
 lemma c8Branch_transport_zero_from_block_to_domain
     [DecidableEq V]
