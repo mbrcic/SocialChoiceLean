@@ -1,4 +1,4 @@
-import Pivato.Theorem1.Packaging
+import Pivato.Theorem1.Defs
 import Pivato.Theorem1.PairwiseOrders
 import Mathlib.Order.Extension.Linear
 

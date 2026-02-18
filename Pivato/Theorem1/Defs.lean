@@ -1,10 +1,10 @@
 import Pivato.Theorem1.Representation
 
 /-!
-# Theorem 1 packaging layer
+# Theorem 1 definitions and packaging helpers
 
-This file packages Stage-D representation results into reusable predicates and
-wrapper theorems.
+This file defines the representability predicates used across the Theorem 1
+development, and provides helper theorems connecting them to reinforcement.
 -/
 
 namespace Pivato
@@ -35,7 +35,7 @@ def IsPerfectBalanceRepresentable : Prop :=
       PerfectOn (D := D) (B := B) ∧
         F = balanceRule (D := D) B
 
-/-- Strengthened representability for the corrected converse direction. -/
+/-- Strengthened representability for the backward direction of Theorem 1. -/
 def IsPerfectSkewBalanceRepresentable [DecidableEq V] : Prop :=
   ∃ (R : Type*),
     ∃ (instAdd : AddCommGroup R),
@@ -81,8 +81,8 @@ theorem isBalanceRepresentable_of_reinforcement
   rcases hRep with ⟨B, hFB⟩
   exact ⟨instPre, B, hFB⟩
 
-/-- Corrected Theorem 1 converse packaging: a perfect+skew balance representation
-implies reinforcement, assuming weak additivity on the represented rule. -/
+/-- A perfect+skew balance representation and weak additivity together imply
+reinforcement. -/
 theorem reinforcement_of_perfectSkewBalanceRepresentation
     [DecidableEq V]
     (hWA : WeaklyAdditive D F)
@@ -100,42 +100,14 @@ theorem reinforcement_of_perfectSkewBalanceRepresentation
     balanceRule_reinforcement_of_perfect (D := D) (B := B) hWA_B hskew hperfect
   simpa [hFB] using hR_B
 
-/-- Paper-facing converse packaging name:
-a perfect balance-rule representation (where skew is part of the balance-system
-interface) implies reinforcement, assuming weak additivity. -/
+/-- A perfect balance-rule representation (where skew is part of the
+balance-system interface) and weak additivity imply reinforcement. -/
 theorem reinforcement_of_perfectBalanceRepresentation
     [DecidableEq V]
     (hWA : WeaklyAdditive D F)
     (hRep : IsPerfectBalanceRuleRepresentable (F := F)) :
     Reinforcement D F :=
   reinforcement_of_perfectSkewBalanceRepresentation (F := F) hWA hRep
-
-/-- Corrected Theorem 1 (forward wrapper): reinforcement gives a balance
-representation. -/
-theorem theorem1_corrected
-    [DecidableEq X] [DecidableEq V]
-    (hD : IsDomain D) (hA : GeneralAbstention D F) :
-    Reinforcement D F → IsBalanceRepresentable (F := F) := by
-  intro hR
-  exact isBalanceRepresentable_of_reinforcement (F := F) hD hA hR
-
-/-- Corrected Theorem 1 converse wrapper under explicit perfect+skew structure
-under the explicit Stage-D predicate. -/
-theorem theorem1_corrected_converse
-    [DecidableEq V]
-    (hWA : WeaklyAdditive D F)
-    (hRep : IsPerfectSkewBalanceRepresentable (F := F)) :
-    Reinforcement D F :=
-  reinforcement_of_perfectSkewBalanceRepresentation (F := F) hWA hRep
-
-/-- Paper-facing converse wrapper using the paper-style predicate name
-under the explicit Stage-D predicate. -/
-theorem theorem1_corrected_converse_paper
-    [DecidableEq V]
-    (hWA : WeaklyAdditive D F)
-    (hRep : IsPerfectBalanceRuleRepresentable (F := F)) :
-    Reinforcement D F :=
-  reinforcement_of_perfectBalanceRepresentation (F := F) hWA hRep
 
 end Packaging
 

@@ -218,7 +218,7 @@ theorem c8Bridge_step3_branchSplit_of_cases12
 
 /-- Step 4 (C.8 bridge):
 assemble the global branch split from the cardinal-case partition and steps 2/3. -/
-theorem c8Bridge_step4_branchSplit_of_neutral_perfect_balance_paper
+theorem c8Bridge_step4_branchSplit_of_neutral_perfect_balance
     [Finite X] [Fintype X] [Nonempty X] [DecidableEq X] [DecidableEq V]
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
     {D : Domain V}
@@ -248,8 +248,8 @@ theorem c8Bridge_step4_branchSplit_of_neutral_perfect_balance_paper
       (nu := nu) (R := R) (D := D)
       hCone B hSkew hPerfect hInv hNeutralB hR hNE hCardGtTwo hCase12
 
-/-- Core paper-facing C.8 bridge target in the large-card regime `|X| > 2`. -/
-theorem c8CycleSumHypothesis_of_neutral_perfect_balance_paper
+/-- Core C.8 bridge target in the large-card regime `|X| > 2`. -/
+theorem c8CycleSumHypothesis_of_neutral_perfect_balance
     [Finite X] [Fintype X] [Nonempty X] [DecidableEq X] [DecidableEq V]
     [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
     {D : Domain V}
@@ -263,7 +263,7 @@ theorem c8CycleSumHypothesis_of_neutral_perfect_balance_paper
     (hCardGtTwo : 2 < Fintype.card X) :
     C8CycleSumHypothesis (D := D) (B := B) := by
   exact cycleSumHypothesis_of_branchSplit (D := D) (B := B)
-    (c8Bridge_step4_branchSplit_of_neutral_perfect_balance_paper
+    (c8Bridge_step4_branchSplit_of_neutral_perfect_balance
       (nu := nu) (R := R) (D := D)
       hCone B hSkew hPerfect hInv hNeutralB hNE hCardGtTwo)
 

@@ -1,5 +1,5 @@
 import Pivato.Neutrality.Proposition1
-import Pivato.Theorem1.Packaging
+import Pivato.Theorem1.Defs
 
 /-!
 # Proposition 2 balance-side neutrality results

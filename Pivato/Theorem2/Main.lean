@@ -2,10 +2,11 @@ import Pivato.Theorem2.C8Orbit
 import Pivato.Theorem1.Main
 
 /-!
-# Theorem 2 assembly
+# Theorem 2
 
-This file assembles the Stage-F pipeline into directional wrappers and a final
-Theorem-2 statement in the generalized-neutrality interface.
+This file assembles the proof pipeline into a final biconditional Theorem 2:
+a voting rule on a cone domain satisfies neutrality and reinforcement if and
+only if it is representable as a neutral scoring rule.
 -/
 
 namespace Pivato
@@ -102,73 +103,6 @@ private theorem scoringRule_reinforcement_of_isCone
         add_le_add hyd hye
       simpa [scoreAt_add (S := S)] using hsumLe
 
-/-- Theorem 2 forward direction:
-neutrality + reinforcement imply neutral scoring representability on cone
-domains (with explicit assumptions for C.1 and C.8 bridge inputs). -/
-theorem theorem2_forward
-    [Finite X] [Nonempty X] [DecidableEq X] [DecidableEq V]
-    [Fintype G]
-    (hD : IsDomain D) (hCone : IsCone D) (hA : GeneralAbstention D F)
-    (hNE : NonemptyOnDomain D F)
-    (hSeed :
-      ∀ {R : Type (max uV uX)}
-        [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R],
-        ∀ B : BalanceSystem R X V,
-          BalanceNeutral mu nu B →
-          BalanceSkew (B := B) →
-          PerfectOn (D := D) (B := B) →
-          ∃ x y z : X,
-            x ≠ y ∧ y ≠ z ∧ z ≠ x ∧
-              BalanceCocycleAtTriple D B x y z)
-    (hTransport :
-      ∀ x y z : X, x ≠ y → y ≠ z → z ≠ x →
-        TripleTransportTo (mu := mu) x y z)
-    (hNeutral : RuleNeutral mu nu D F)
-    (hR : Reinforcement D F) :
-    IsNeutralScoringRepresentable (mu := mu) (nu := nu) (D := D) (F := F) := by
-  rcases lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable
-      (F := F) hD hA hR hNE with
-      ⟨R, instAdd, instLin, instCovLe, instCovLt, B, hSkew, hPerfect, hFB⟩
-  letI : AddCommGroup R := instAdd
-  letI : LinearOrder R := instLin
-  letI : CovariantClass R R (fun a b => a + b) (· ≤ ·) := instCovLe
-  letI : CovariantClass R R (fun a b => a + b) (· < ·) := instCovLt
-  let instOrdCancel : IsOrderedCancelAddMonoid R :=
-    IsOrderedCancelAddMonoid.of_add_lt_add_left
-      (fun a b c hbc => by
-        simpa [add_assoc, add_left_comm, add_comm] using add_lt_add_left hbc a)
-  letI : IsOrderedCancelAddMonoid R := instOrdCancel
-  have hRep :
-      ∃ B0 : BalanceSystem R X V,
-        BalanceSkew (B := B0) ∧
-          PerfectOn (D := D) (B := B0) ∧
-          F = balanceRule (D := D) B0 :=
-    ⟨B, hSkew, hPerfect, hFB⟩
-  rcases exists_balanceNeutralPerfectSkew_of_ruleNeutral_representation_with_nonempty
-      (mu := mu) (nu := nu) (D := D) (F := F) hNeutral hRep hNE with
-      ⟨Bbar, hNeutralBar, hSkewBar, hPerfectBar, hFBbar⟩
-  have hRepBar :
-      ∃ B0 : BalanceSystem R X V,
-        BalanceSkew (B := B0) ∧
-          PerfectOn (D := D) (B := B0) ∧
-          F = balanceRule (D := D) B0 :=
-    ⟨Bbar, hSkewBar, hPerfectBar, hFBbar⟩
-  have hSeedR :
-      ∀ B0 : BalanceSystem R X V,
-        BalanceNeutral mu nu B0 →
-        BalanceSkew (B := B0) →
-        PerfectOn (D := D) (B := B0) →
-        ∃ x y z : X,
-          x ≠ y ∧ y ≠ z ∧ z ≠ x ∧
-            BalanceCocycleAtTriple D B0 x y z := by
-    intro B0 hNeutral0 hSkew0 hPerfect0
-    exact hSeed (R := R) B0 hNeutral0 hSkew0 hPerfect0
-  rcases lemmaC8_of_representation
-      (mu := mu) (nu := nu) (R := R) (D := D) (F := F)
-      hCone hRepBar hNeutral hNE hSeedR hTransport with
-      ⟨S, hSNeutral, hFS⟩
-  exact ⟨R, instAdd, instLin, instOrdCancel, S, hSNeutral, hFS⟩
-
 /-- Theorem 2 backward direction:
 neutral scoring representability implies neutrality and reinforcement under
 domain invariance and cone-domain closure. -/
@@ -192,185 +126,17 @@ theorem theorem2_backward
   · simpa [hFS] using hNeutralS
   · simpa [hFS] using hRS
 
-/-- Theorem 2 (generalized-neutrality form under explicit C.1/C.8 inputs). -/
-theorem theorem2
-    [Finite X] [Nonempty X] [DecidableEq X] [DecidableEq V] [Fintype G]
-    (hD : IsDomain D) (hCone : IsCone D) (hA : GeneralAbstention D F)
-    (hInv : DomainInvariant nu D)
-    (hNE : NonemptyOnDomain D F)
-    (hSeed :
-      ∀ {R : Type (max uV uX)}
-        [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R],
-        ∀ B : BalanceSystem R X V,
-          BalanceNeutral mu nu B →
-          BalanceSkew (B := B) →
-          PerfectOn (D := D) (B := B) →
-          ∃ x y z : X,
-            x ≠ y ∧ y ≠ z ∧ z ≠ x ∧
-              BalanceCocycleAtTriple D B x y z)
-    (hTransport :
-      ∀ x y z : X, x ≠ y → y ≠ z → z ≠ x →
-        TripleTransportTo (mu := mu) x y z) :
-    (RuleNeutral mu nu D F ∧ Reinforcement D F) ↔
-      IsNeutralScoringRepresentable (mu := mu) (nu := nu) (D := D) (F := F) := by
-  constructor
-  · intro h
-    exact theorem2_forward (mu := mu) (nu := nu) (F := F)
-      hD hCone hA hNE hSeed hTransport h.1 h.2
-  · intro hScore
-    exact theorem2_backward (mu := mu) (nu := nu) (F := F) hCone hInv hScore
-
 end Theorem2
 
-section Theorem2Paper
+section Theorem2
 
 variable {V : Type uV} {X : Type uX}
 variable (nu : Equiv.Perm X →* Equiv.Perm V)
 variable {D : Domain V} (F : RuleOn D X)
 
-private lemma no_three_distinct_of_card_le_two_main
-    [Fintype X]
-    (hCard : Fintype.card X ≤ 2) :
-    ¬ ∃ x y z : X, x ≠ y ∧ x ≠ z ∧ y ≠ z := by
-  intro hThree
-  have hgt : 2 < Fintype.card X := (Fintype.two_lt_card_iff).2 hThree
-  exact not_lt_of_ge hCard hgt
-
-private lemma balanceAt_diag_eq_zero_of_skew_main
-    {R : Type*}
-    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
-    (B : BalanceSystem R X V)
-    (hSkew : BalanceSkew (B := B))
-    (a : X) (d : NProfile V) :
-    balanceAt B a a d = (0 : R) := by
-  let t : R := balanceAt B a a d
-  have hsk : t = -t := by
-    simpa [t] using (hSkew a a d)
-  have hsum : t + t = 0 := by
-    calc
-      t + t = t + (-t) := by
-        nth_rewrite 2 [hsk]
-        rfl
-      _ = 0 := by simp
-  have htwo :
-      (2 : ℕ) • t = (2 : ℕ) • (0 : R) := by
-    simpa [two_nsmul] using hsum
-  have ht0 : t = 0 :=
-    (nsmul_right_injective (M := R) (by decide : (2 : ℕ) ≠ 0)) htwo
-  simpa [t] using ht0
-
-private lemma balanceCocycleOn_of_skew_card_le_two_main
-    {R : Type*}
-    [Fintype X]
-    [AddCommGroup R] [LinearOrder R] [IsOrderedCancelAddMonoid R]
-    {D : Domain V}
-    (B : BalanceSystem R X V)
-    (hSkew : BalanceSkew (B := B))
-    (hCard : Fintype.card X ≤ 2) :
-    BalanceCocycleOn D B := by
-  have hNoThree : ¬ ∃ x y z : X, x ≠ y ∧ x ≠ z ∧ y ≠ z :=
-    no_three_distinct_of_card_le_two_main (X := X) hCard
-  intro d hd x y z
-  by_cases hxy : x = y
-  · subst y
-    simp [balanceAt_diag_eq_zero_of_skew_main (B := B) hSkew x d]
-  · by_cases hyz : y = z
-    · subst z
-      simp [balanceAt_diag_eq_zero_of_skew_main (B := B) hSkew y d]
-    · by_cases hzx : z = x
-      · subst z
-        calc
-          balanceAt B x y d + balanceAt B y x d
-              = balanceAt B x y d + (-balanceAt B x y d) := by
-                  simp [hSkew y x d]
-          _ = 0 := by simp
-          _ = balanceAt B x x d := by
-              simp [balanceAt_diag_eq_zero_of_skew_main (B := B) hSkew x d]
-      · exfalso
-        apply hNoThree
-        refine ⟨x, y, z, hxy, ?_, hyz⟩
-        intro hxz
-        exact hzx hxz.symm
-
-/-- Paper-facing forward direction without branch packaging in the
-small-alternative regime `|X| ≤ 2`. -/
-theorem theorem2_forward_paper_card_le_two
-    [Finite X] [Nonempty X] [DecidableEq X] [DecidableEq V]
-    [Fintype X]
-    (hCard : Fintype.card X ≤ 2)
-    (hD : IsDomain D) (_hCone : IsCone D) (hA : GeneralAbstention D F)
-    (hNE : NonemptyOnDomain D F)
-    (hNeutral : RuleNeutral (MonoidHom.id (Equiv.Perm X)) nu D F)
-    (hR : Reinforcement D F) :
-    IsNeutralScoringRepresentable
-      (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (F := F) := by
-  rcases lemmaC1_reinforcement_to_isPerfectSkewBalanceRepresentable
-      (F := F) hD hA hR hNE with
-      ⟨R, instAdd, instLin, instCovLe, instCovLt, B, hSkew, hPerfect, hFB⟩
-  letI : AddCommGroup R := instAdd
-  letI : LinearOrder R := instLin
-  letI : CovariantClass R R (fun a b => a + b) (· ≤ ·) := instCovLe
-  letI : CovariantClass R R (fun a b => a + b) (· < ·) := instCovLt
-  let instOrdCancel : IsOrderedCancelAddMonoid R :=
-    IsOrderedCancelAddMonoid.of_add_lt_add_left
-      (fun a b c hbc => by
-        simpa [add_assoc, add_left_comm, add_comm] using add_lt_add_left hbc a)
-  letI : IsOrderedCancelAddMonoid R := instOrdCancel
-  have hRep :
-      ∃ B0 : BalanceSystem R X V,
-        BalanceSkew (B := B0) ∧
-          PerfectOn (D := D) (B := B0) ∧
-          F = balanceRule (D := D) B0 :=
-    ⟨B, hSkew, hPerfect, hFB⟩
-  rcases exists_balanceNeutralPerfectSkew_of_ruleNeutral_representation_with_nonempty
-      (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (F := F)
-      hNeutral hRep hNE with
-      ⟨Bbar, hNeutralBar, hSkewBar, hPerfectBar, hFBbar⟩
-  have hCocycle : BalanceCocycleOn D Bbar :=
-    balanceCocycleOn_of_skew_card_le_two_main (X := X) (B := Bbar) hSkewBar hCard
-  rcases lemmaC4_backward (D := D) Bbar hCocycle with ⟨S0, hBbarS0⟩
-  have hScoreRep :
-      ∃ S : ScoreSystem R X V, F = scoringRule (D := D) S := by
-    refine ⟨S0, ?_⟩
-    calc
-      F = balanceRule (D := D) Bbar := hFBbar
-      _ = scoringRule (D := D) S0 := hBbarS0
-  letI : Fintype (Equiv.Perm X) := inferInstance
-  have hInv : DomainInvariant nu D := hNeutral.domainInvariant
-  rcases (proposition1_of_scoringRepresentation
-      (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (F := F)
-      hInv hScoreRep).1 hNeutral with
-      ⟨S, hSNeutral, hFS⟩
-  exact ⟨R, instAdd, instLin, instOrdCancel, S, hSNeutral, hFS⟩
-
-/-- Paper-facing Theorem 2 wrapper without branch packaging in the
-small-alternative regime `|X| ≤ 2`. -/
-theorem theorem2_paper_card_le_two
-    [Finite X] [Nonempty X] [DecidableEq X] [DecidableEq V]
-    [Fintype X]
-    (hCard : Fintype.card X ≤ 2)
-    (hD : IsDomain D) (hCone : IsCone D) (hA : GeneralAbstention D F)
-    (hInv : DomainInvariant nu D)
-    (hNE : NonemptyOnDomain D F) :
-    (RuleNeutral (MonoidHom.id (Equiv.Perm X)) nu D F ∧ Reinforcement D F) ↔
-      IsNeutralScoringRepresentable
-        (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (F := F) := by
-  constructor
-  · intro h
-    exact theorem2_forward_paper_card_le_two (nu := nu) (F := F)
-      hCard hD hCone hA hNE h.1 h.2
-  · intro hScore
-    exact theorem2_backward
-      (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (F := F)
-      hCone hInv hScore
-
-/-- Paper-facing forward direction (`mu = id` on `Perm X`):
-neutrality + reinforcement imply neutral scoring representability.
-
-Compared to the fully generic theorem, this removes explicit `hSeed` and
-`hTransport` assumptions by using the C.8 paper wrapper, which discharges
-transport and C.8 cycle extraction internally. -/
-theorem theorem2_forward_paper
+/-- Theorem 2 forward direction:
+neutrality + reinforcement imply neutral scoring representability. -/
+theorem theorem2_forward
     [Finite X] [Nonempty X] [DecidableEq X] [DecidableEq V]
     (hD : IsDomain D) (hCone : IsCone D) (hA : GeneralAbstention D F)
     (hNE : NonemptyOnDomain D F)
@@ -396,17 +162,15 @@ theorem theorem2_forward_paper
           PerfectOn (D := D) (B := B0) ∧
           F = balanceRule (D := D) B0 :=
     ⟨B, hSkew, hPerfect, hFB⟩
-  rcases lemmaC8_of_representation_paper
+  rcases lemmaC8_of_representation
       (nu := nu) (R := R) (D := D) (F := F)
       hCone hRep hNeutral hNE with
       ⟨S, hSNeutral, hFS⟩
   exact ⟨R, instAdd, instLin, instOrdCancel, S, hSNeutral, hFS⟩
 
-/-- Paper-facing Theorem 2 wrapper (`mu = id` on `Perm X`).
-
-This keeps domain-invariance explicit (via `hInv`) and uses internal C.8
-packaging instead of explicit seed/transport/cycle assumptions. -/
-theorem theorem2_paper
+/-- Theorem 2: a voting rule satisfies neutrality and reinforcement on a cone
+domain if and only if it is a neutral scoring rule. -/
+theorem theorem2
     [Finite X] [Nonempty X] [DecidableEq X] [DecidableEq V]
     (hD : IsDomain D) (hCone : IsCone D) (hA : GeneralAbstention D F)
     (hInv : DomainInvariant nu D)
@@ -416,13 +180,13 @@ theorem theorem2_paper
         (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (D := D) (F := F) := by
   constructor
   · intro h
-    exact theorem2_forward_paper (nu := nu) (F := F)
+    exact theorem2_forward (nu := nu) (F := F)
       hD hCone hA hNE h.1 h.2
   · intro hScore
     exact theorem2_backward
       (mu := MonoidHom.id (Equiv.Perm X)) (nu := nu) (F := F)
       hCone hInv hScore
 
-end Theorem2Paper
+end Theorem2
 
 end Pivato
