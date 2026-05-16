@@ -215,6 +215,7 @@ import SocialChoice.Rules.River.Derived
 import SocialChoice.Impossibilities.CondorcetStrategyproofness
 import SocialChoice.Impossibilities.CondorcetParticipation
 import SocialChoice.Impossibilities.CondorcetReinforcement
+import SocialChoice.Impossibilities.CondorcetReinforcementN8.Main
 import SocialChoice.Impossibilities.AnonymousNeutralResolute
 import SocialChoice.Impossibilities.GibbardSatterthwaite.Main
 import SocialChoice.Impossibilities.DugganSchwartz.Main

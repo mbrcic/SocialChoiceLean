@@ -1,0 +1,1 @@
+Proves that Condorcet-consistency is incompatible with reinforcement, even for m=3 and n=8 voters. This is a result from "Condorcet-Consistent Choice Among Three Candidates", Felix Brandt, Chris Dong, and Dominik Peters. Games and Economic Behavior, Vol. 153, 2025, though it is not proven there.
