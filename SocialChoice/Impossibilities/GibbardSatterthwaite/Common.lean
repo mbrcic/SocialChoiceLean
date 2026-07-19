@@ -2,6 +2,7 @@ import SocialChoice.Axioms.Core
 import SocialChoice.Axioms.Unanimity
 import SocialChoice.Axioms.Strategyproofness
 import SocialChoice.Axioms.Dictatorship
+import SocialChoice.GSShim
 import Mathlib.Data.Fintype.Basic
 
 namespace SocialChoice
@@ -40,6 +41,28 @@ noncomputable def expandProfile {V A : Type} [Fintype V] [Fintype A] [DecidableE
     else
       P'.pref ⟨v, h⟩     -- other voters use their own
 
+/-! ### Ballot projections (shim) — reduce constructor ballots at the data level -/
+
+@[simp] theorem expandProfile_pref_v2 {V A : Type} [Fintype V] [Fintype A] [DecidableEq V]
+    (v₁ v₂ : V) (hne : v₁ ≠ v₂) (P' : Profile {w : V // w ≠ v₂} A) :
+    (expandProfile v₁ v₂ hne P').pref v₂ = P'.pref ⟨v₁, hne⟩ := by
+  unfold expandProfile; exact dif_pos rfl
+
+theorem expandProfile_pref_of_ne {V A : Type} [Fintype V] [Fintype A] [DecidableEq V]
+    (v₁ v₂ : V) (hne : v₁ ≠ v₂) (P' : Profile {w : V // w ≠ v₂} A) {v : V} (h : v ≠ v₂) :
+    (expandProfile v₁ v₂ hne P').pref v = P'.pref ⟨v, h⟩ := by
+  unfold expandProfile; exact dif_neg h
+
+theorem updateProfile_pref_self {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (v : V) (ballot : LinearOrder A) :
+    (updateProfile P v ballot).pref v = ballot := by
+  unfold updateProfile; exact if_pos rfl
+
+theorem updateProfile_pref_of_ne {V A : Type} [Fintype V] [Fintype A]
+    (P : Profile V A) (v : V) (ballot : LinearOrder A) {w : V} (h : w ≠ v) :
+    (updateProfile P v ballot).pref w = P.pref w := by
+  unfold updateProfile; exact if_neg h
+
 /--
 Given a VotingRule f on voter type V, construct a VotingRule g on {w : V // w ≠ v₂}
 by having v₁'s ballot also count as v₂'s ballot.
@@ -67,20 +90,18 @@ lemma topRank_expandProfile_of_ne {V A : Type} [Fintype V] [Fintype A] [Decidabl
     (v₁ v₂ : V) (hne : v₁ ≠ v₂) (P' : Profile {w : V // w ≠ v₂} A) (c : A)
     (w : {w : V // w ≠ v₂}) (htop : TopRank P' w c) :
     TopRank (expandProfile v₁ v₂ hne P') w.val c := by
-  intro d hd
-  unfold Prefers expandProfile
-  simp only [w.prop, dite_false]
-  exact htop d hd
+  have hb : (expandProfile v₁ v₂ hne P').pref w.val = P'.pref w :=
+    expandProfile_pref_of_ne v₁ v₂ hne P' w.prop
+  exact (topRank_congr_ballot _ _ _ _ hb c).mpr htop
 
 /-- Helper: TopRank at v₂ in expanded profile equals TopRank at v₁ in reduced profile. -/
 lemma topRank_expandProfile_v2 {V A : Type} [Fintype V] [Fintype A] [DecidableEq V]
     (v₁ v₂ : V) (hne : v₁ ≠ v₂) (P' : Profile {w : V // w ≠ v₂} A) (c : A)
     (htop : TopRank P' ⟨v₁, hne⟩ c) :
     TopRank (expandProfile v₁ v₂ hne P') v₂ c := by
-  intro d hd
-  unfold Prefers expandProfile
-  simp only [dite_true]
-  exact htop d hd
+  have hb : (expandProfile v₁ v₂ hne P').pref v₂ = P'.pref ⟨v₁, hne⟩ :=
+    expandProfile_pref_v2 v₁ v₂ hne P'
+  exact (topRank_congr_ballot _ _ _ _ hb c).mpr htop
 
 /-- If f is unanimous, then the cloned rule is unanimous. -/
 lemma clonedRule_unanimity {V A : Type} [Fintype V] [Fintype A] [DecidableEq V]
@@ -113,34 +134,20 @@ lemma expandProfile_updateProfile_eq {V A : Type} [Fintype V] [Fintype A] [Decid
     expandProfile v₁ v₂ hne (updateProfile P' w ballot) =
     updateProfile (expandProfile v₁ v₂ hne P') w.val ballot := by
   ext u
-  unfold expandProfile updateProfile
-  simp only
   by_cases huv₂ : u = v₂
-  · -- u = v₂: both sides use v₁'s ballot
-    simp only [huv₂, dite_true]
-    -- On LHS: (updateProfile P' w ballot).pref ⟨v₁, hne⟩
-    -- Since w.val ≠ v₁, we have ⟨v₁, hne⟩ ≠ w
-    have hne' : (⟨v₁, hne⟩ : {u : V // u ≠ v₂}) ≠ w := by
-      intro heq
-      apply hw
-      exact congrArg Subtype.val heq.symm
-    simp only [ne_eq, hne', ite_false]
-    -- On RHS: if v₂ = w.val then ballot else ...
-    -- But w.val ≠ v₂ by definition, so not equal
-    simp only [w.prop.symm, ite_false]
-  · -- u ≠ v₂
-    simp only [huv₂, dite_false]
+  · rw [huv₂]
+    have hne_w : (⟨v₁, hne⟩ : {u : V // u ≠ v₂}) ≠ w := by
+      intro heq; exact hw (congrArg Subtype.val heq.symm)
+    rw [expandProfile_pref_v2, updateProfile_pref_of_ne _ _ _ hne_w,
+        updateProfile_pref_of_ne _ _ _ (Ne.symm w.prop), expandProfile_pref_v2]
+  · rw [expandProfile_pref_of_ne _ _ _ _ huv₂]
     by_cases huw : u = w.val
-    · -- u = w.val: we should get the new ballot
-      subst huw
-      have hweq : (⟨w.val, huv₂⟩ : {u : V // u ≠ v₂}) = w := by ext; rfl
-      simp only [hweq, ite_true]
-    · -- u ≠ w.val: we should get the original ballot
-      have hne' : (⟨u, huv₂⟩ : {u : V // u ≠ v₂}) ≠ w := by
-        intro heq
-        apply huw
-        exact congrArg Subtype.val heq
-      simp only [ne_eq, hne', ite_false, huw, ite_false]
+    · have hwv : (⟨u, huv₂⟩ : {u : V // u ≠ v₂}) = w := Subtype.ext huw
+      rw [hwv, updateProfile_pref_self, huw, updateProfile_pref_self]
+    · have hne_w : (⟨u, huv₂⟩ : {u : V // u ≠ v₂}) ≠ w :=
+        fun heq => huw (congrArg Subtype.val heq)
+      rw [updateProfile_pref_of_ne _ _ _ hne_w,
+          updateProfile_pref_of_ne _ _ _ huw, expandProfile_pref_of_ne _ _ _ _ huv₂]
 
 /-- Helper: When manipulator is voter 1, the expanded profile for the deviation
     "doubles up" the new ballot. -/
@@ -151,24 +158,18 @@ lemma expandProfile_updateProfile_v1_eq {V A : Type} [Fintype V] [Fintype A] [De
     expandProfile v₁ v₂ hne (updateProfile P' ⟨v₁, hne⟩ ballot) =
     updateProfile (updateProfile (expandProfile v₁ v₂ hne P') v₁ ballot) v₂ ballot := by
   ext u
-  unfold expandProfile updateProfile
-  simp only
   by_cases huv₂ : u = v₂
-  · -- u = v₂
-    simp only [huv₂, dite_true, ite_true]
-    -- LHS: (updateProfile P' ⟨v₁, hne⟩ ballot).pref ⟨v₁, hne⟩ = ballot
-  · -- u ≠ v₂
-    simp only [huv₂, dite_false, ite_false]
+  · rw [huv₂]
+    rw [expandProfile_pref_v2, updateProfile_pref_self, updateProfile_pref_self]
+  · rw [expandProfile_pref_of_ne _ _ _ _ huv₂]
     by_cases huv₁ : u = v₁
-    · -- u = v₁
-      simp only [huv₁, ite_true]
-    · -- u ≠ v₁, u ≠ v₂
-      simp only [huv₁, ite_false]
-      have hne' : (⟨u, huv₂⟩ : {u : V // u ≠ v₂}) ≠ ⟨v₁, hne⟩ := by
-        intro heq
-        apply huv₁
-        exact congrArg Subtype.val heq
-      simp only [ne_eq, hne', ite_false]
+    · have hv1 : (⟨u, huv₂⟩ : {u : V // u ≠ v₂}) = ⟨v₁, hne⟩ := Subtype.ext huv₁
+      rw [hv1, updateProfile_pref_self, huv₁, updateProfile_pref_of_ne _ _ _ hne,
+          updateProfile_pref_self]
+    · have hne_w : (⟨u, huv₂⟩ : {u : V // u ≠ v₂}) ≠ ⟨v₁, hne⟩ :=
+        fun heq => huv₁ (congrArg Subtype.val heq)
+      rw [updateProfile_pref_of_ne _ _ _ hne_w, updateProfile_pref_of_ne _ _ _ huv₂,
+          updateProfile_pref_of_ne _ _ _ huv₁, expandProfile_pref_of_ne _ _ _ _ huv₂]
 
 /-- If f is resolute strategy-proof, then the cloned rule is strategy-proof.
 
@@ -253,9 +254,11 @@ lemma clonedRule_strategyproof {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
       -- And P'.pref ⟨v₁, hne⟩ = P'.pref w (since w = ⟨v₁, hne⟩)
       -- So Prefers P_v1 v₂ y x ↔ Prefers P' w y x
       have hpref_eq : Prefers P_v1 v₂ y x ↔ Prefers P' w y x := by
-        -- v₂ uses v₁'s ballot in the expanded profiles
-        constructor <;> intro h <;>
-          simpa [Prefers, P_v1, P_full, hw', expandProfile, updateProfile, hne, hne.symm] using h
+        have h1 : P_v1.pref v₂ = P_full.pref v₂ :=
+          updateProfile_pref_of_ne P_full v₁ ballot (Ne.symm hne)
+        have h2 : P_full.pref v₂ = P'.pref ⟨v₁, hne⟩ := expandProfile_pref_v2 v₁ v₂ hne P'
+        have hb : P_v1.pref v₂ = P'.pref w := by rw [h1, h2, hw']
+        exact prefers_congr_ballot _ _ _ _ hb y x
       rw [hpref_eq] at hnot_v2
       exact hnot_v2 hpref
     · -- z ≠ x: the intermediate outcome changed
@@ -276,12 +279,18 @@ lemma clonedRule_strategyproof {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
       -- Prefers P_full v₁ = using P'.pref ⟨v₁, hne⟩
       -- Prefers P_v1 v₂ = using P'.pref ⟨v₁, hne⟩ (since v₂ still has original)
       have hpref_v1_full : Prefers P_full v₁ y x ↔ Prefers P' w y x := by
-        simp [Prefers, P_full, hw', expandProfile, hne]
+        have h2 : P_full.pref v₁ = P'.pref ⟨v₁, hne⟩ := expandProfile_pref_of_ne v₁ v₂ hne P' hne
+        have hb : P_full.pref v₁ = P'.pref w := by rw [h2, hw']
+        exact prefers_congr_ballot _ _ _ _ hb y x
       have hpref_v2_pv1 : Prefers P_v1 v₂ y z ↔ Prefers P_full v₂ y z := by
-        constructor <;> intro h <;>
-          simpa [Prefers, P_v1, P_full, updateProfile, hne, hne.symm] using h
+        have hb : P_v1.pref v₂ = P_full.pref v₂ :=
+          updateProfile_pref_of_ne P_full v₁ ballot (Ne.symm hne)
+        exact prefers_congr_ballot _ _ _ _ hb y z
       have hpref_full_v2_v1 : Prefers P_full v₂ y z ↔ Prefers P_full v₁ y z := by
-        simp [Prefers, P_full, expandProfile, hne]
+        have ha : P_full.pref v₂ = P'.pref ⟨v₁, hne⟩ := expandProfile_pref_v2 v₁ v₂ hne P'
+        have hc : P_full.pref v₁ = P'.pref ⟨v₁, hne⟩ := expandProfile_pref_of_ne v₁ v₂ hne P' hne
+        have hb : P_full.pref v₂ = P_full.pref v₁ := by rw [ha, hc]
+        exact prefers_congr_ballot _ _ _ _ hb y z
 
       -- We have:
       -- ¬ Prefers P_full v₁ z x (from hnot_v1)
@@ -350,8 +359,9 @@ lemma clonedRule_strategyproof {V A : Type} [Fintype V] [Fintype A] [Nonempty A]
 
     -- Show that Prefers in expanded profile equals Prefers in P' for w
     have hpref_eq : Prefers (expandProfile v₁ v₂ hne P') w.val y x ↔ Prefers P' w y x := by
-      unfold Prefers expandProfile
-      simp only [w.prop, dite_false]
+      have hb : (expandProfile v₁ v₂ hne P').pref w.val = P'.pref w :=
+        expandProfile_pref_of_ne v₁ v₂ hne P' w.prop
+      exact prefers_congr_ballot _ _ _ _ hb y x
 
     rw [hpref_eq] at hnot
     exact hnot hpref
