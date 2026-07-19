@@ -120,8 +120,10 @@ theorem gs_case1
   have hP_from_Q₁₁ : P = updateProfile Q₁₁ v₂ (P.pref v₂) := by
     ext w
     by_cases hwv₂ : w = v₂
-    · subst hwv₂; simp [updateProfile, Q₁₁, expandProfile, P'_v1]
-    · simp [updateProfile, Q₁₁, expandProfile, P'_v1, hwv₂]
+    · rw [hwv₂, updateProfile_pref_self]
+    · rw [updateProfile_pref_of_ne _ _ _ hwv₂]
+      have h2 : Q₁₁.pref w = P.pref w := expandProfile_pref_of_ne v₁ v₂ hne P'_v1 hwv₂
+      rw [h2]
 
   -- By strategy-proofness of f applied at Q₁₁:
   -- f Q₁₁ = {a}, f P = {b}
@@ -141,11 +143,19 @@ theorem gs_case1
   have hP_from_Q₂₂ : P = updateProfile Q₂₂ v₁ (P.pref v₁) := by
     ext w
     by_cases hwv₁ : w = v₁
-    · subst hwv₁; simp [updateProfile, Q₂₂, expandProfile, P'_v2]
-    · by_cases hwv₂ : w = v₂
-      · subst hwv₂
-        simp [updateProfile, Q₂₂, expandProfile, P'_v2, hwv₁]
-      · simp [updateProfile, Q₂₂, expandProfile, P'_v2, hwv₁, hwv₂]
+    · rw [hwv₁, updateProfile_pref_self]
+    · have h1 : (updateProfile Q₂₂ v₁ (P.pref v₁)).pref w = Q₂₂.pref w :=
+        updateProfile_pref_of_ne Q₂₂ v₁ (P.pref v₁) hwv₁
+      by_cases hwv₂ : w = v₂
+      · have h2 : Q₂₂.pref w = P.pref w := by
+          have hb : Q₂₂.pref w = P'_v2.pref ⟨v₁, hne⟩ := by
+            rw [hwv₂]; exact expandProfile_pref_v2 v₁ v₂ hne P'_v2
+          rw [hb, hwv₂]; exact if_pos rfl
+        rw [h1, h2]
+      · have h2 : Q₂₂.pref w = P.pref w := by
+          have hb : Q₂₂.pref w = P'_v2.pref ⟨w, hwv₂⟩ := expandProfile_pref_of_ne v₁ v₂ hne P'_v2 hwv₂
+          rw [hb]; exact if_neg hwv₁
+        rw [h1, h2]
 
   have hfP2 : f (updateProfile Q₂₂ v₁ (P.pref v₁)) = {b} := by
     simpa [hP_from_Q₂₂.symm] using hfP
@@ -167,8 +177,13 @@ theorem gs_case1
   have hQ₁₁_from_P : Q₁₁ = updateProfile P v₂ (P.pref v₁) := by
     ext v
     by_cases hv : v = v₂
-    · subst hv; simp [Q₁₁, updateProfile, expandProfile, P'_v1]
-    · simp [Q₁₁, updateProfile, expandProfile, P'_v1, hv]
+    · rw [hv]
+      have h1 : Q₁₁.pref v₂ = P.pref v₁ := expandProfile_pref_v2 v₁ v₂ hne P'_v1
+      rw [h1, updateProfile_pref_self]
+    · have h1 : Q₁₁.pref v = P.pref v := expandProfile_pref_of_ne v₁ v₂ hne P'_v1 hv
+      have h2 : (updateProfile P v₂ (P.pref v₁)).pref v = P.pref v :=
+        updateProfile_pref_of_ne P v₂ (P.pref v₁) hv
+      rw [h1, h2]
 
   -- Actually we need P without the rewriting
   have hfP_orig : f P = {b} := hfP
@@ -180,10 +195,25 @@ theorem gs_case1
   have hQ₂₂_from_P : Q₂₂ = updateProfile P v₁ (P.pref v₂) := by
     ext v
     by_cases hv₁ : v = v₁
-    · subst hv₁; simp [Q₂₂, updateProfile, expandProfile, P'_v2, hne]
+    · rw [hv₁]
+      have h1 : Q₂₂.pref v₁ = P.pref v₂ := by
+        have hb : Q₂₂.pref v₁ = P'_v2.pref ⟨v₁, hne⟩ := expandProfile_pref_of_ne v₁ v₂ hne P'_v2 hne
+        rw [hb]; exact if_pos rfl
+      rw [h1, updateProfile_pref_self]
     · by_cases hv₂ : v = v₂
-      · subst hv₂; simp [Q₂₂, updateProfile, expandProfile, P'_v2, hv₁]
-      · simp [Q₂₂, updateProfile, expandProfile, P'_v2, hv₁, hv₂]
+      · rw [hv₂]
+        have h1 : Q₂₂.pref v₂ = P.pref v₂ := by
+          have hb : Q₂₂.pref v₂ = P'_v2.pref ⟨v₁, hne⟩ := expandProfile_pref_v2 v₁ v₂ hne P'_v2
+          rw [hb]; exact if_pos rfl
+        have h2 : (updateProfile P v₁ (P.pref v₂)).pref v₂ = P.pref v₂ :=
+          updateProfile_pref_of_ne P v₁ (P.pref v₂) (hv₂ ▸ hv₁)
+        rw [h1, h2]
+      · have h1 : Q₂₂.pref v = P.pref v := by
+          have hb : Q₂₂.pref v = P'_v2.pref ⟨v, hv₂⟩ := expandProfile_pref_of_ne v₁ v₂ hne P'_v2 hv₂
+          rw [hb]; exact if_neg hv₁
+        have h2 : (updateProfile P v₁ (P.pref v₂)).pref v = P.pref v :=
+          updateProfile_pref_of_ne P v₁ (P.pref v₂) hv₁
+        rw [h1, h2]
 
   rw [hQ₂₂_from_P] at hQ₂₂
   have hsp4 : ¬ Prefers P v₁ a b := hf_sp P v₁ (P.pref v₂) b a hfP_orig hQ₂₂
@@ -204,7 +234,8 @@ theorem gs_case1
     simp [Q₁₁, expandProfile, P'_v1]
 
   have hsp1' : ¬ (P.pref v₁).lt b a := by
-    simpa [hQ₁₁_v₂] using hsp1
+    rw [hQ₁₁_v₂] at hsp1
+    exact hsp1
 
   have hsp4' : ¬ (P.pref v₁).lt a b := by
     simpa using hsp4
