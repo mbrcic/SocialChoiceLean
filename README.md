@@ -1,5 +1,15 @@
 # SocialChoiceLean
 
+> **Maintenance / porting fork.** This is a fork of
+> [DominikPeters/SocialChoiceLean](https://github.com/DominikPeters/SocialChoiceLean).
+> It exists as a Lean-4.31 porting workspace, used to stage and vendor
+> individual results (e.g. Gibbard–Satterthwaite) into
+> [ai-safety-formalization-atlas](https://github.com/mbrcic/ai-safety-formalization-atlas).
+> **Original authorship and credit belong upstream** (Dominik Peters et al.);
+> see the Credits section below. Changes here are compatibility ports, not new
+> theory. Not intended as a standalone/authoritative copy — use the upstream
+> repository for the canonical library.
+
 A Lean 4 formalization of single-winner voting theory, including classical impossibility theorems and axiomatic properties of voting rules.
 
 ## Overview
